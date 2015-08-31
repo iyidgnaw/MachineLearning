@@ -1,2 +1,2 @@
 # MachineLearning
-About the work of mine
+About the works of mine
