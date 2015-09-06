@@ -80,10 +80,14 @@ for i in range(len(data)-1):
   loss, dWxh, dWhh, dWhy, dbh, dby, hprev = lossFun(inputs, targets, hprev)
   # Wxh, Whh, Why, bh, by=dWxh, dWhh, dWhy, dbh, dby
 
+  # # perform parameter update with Adagrad
+  # for param, dparam, mem in zip([Wxh, Whh, Why, bh, by],
+  #                               [dWxh, dWhh, dWhy, dbh, dby],
+  #                               [mWxh, mWhh, mWhy, mbh, mby]):
+  #    mem += dparam * dparam
+  #    param += -learning_rate * dparam / np.sqrt(mem + 1e-8) # adagrad update
 
-  # perform parameter update with Adagrad
-  for param, dparam, mem in zip([Wxh, Whh, Why, bh, by],
-                                [dWxh, dWhh, dWhy, dbh, dby],
-                                [mWxh, mWhh, mWhy, mbh, mby]):
-     mem += dparam * dparam
-     param += -learning_rate * dparam / np.sqrt(mem + 1e-8) # adagrad update
+  
+  for param, dparam in zip([Wxh, Whh, Why, bh, by],
+                                [dWxh, dWhh, dWhy, dbh, dby]):
+    param += -learning_rate * dparam # adagrad update
