@@ -80,6 +80,7 @@ for i in range(len(data)-1):
   loss, dWxh, dWhh, dWhy, dbh, dby, hprev = lossFun(inputs, targets, hprev)
   # Wxh, Whh, Why, bh, by=dWxh, dWhh, dWhy, dbh, dby
 
+
   # perform parameter update with Adagrad
   for param, dparam, mem in zip([Wxh, Whh, Why, bh, by],
                                 [dWxh, dWhh, dWhy, dbh, dby],
