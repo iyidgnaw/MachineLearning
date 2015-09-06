@@ -1,2 +1,2 @@
 # MachineLearning
-About the works of mine
+About the works of RNN+CNN
