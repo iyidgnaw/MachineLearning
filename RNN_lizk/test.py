@@ -54,8 +54,8 @@ def lossFun(inputs, targets, hprev):
 
   dy = np.copy(p)
   dy[targets][0] -= 1 # backprop into y
-  # for i in range(len(dy)):
-  #     dy[i][0]=-dy[i][0]
+  for i in range(len(dy)):
+      dy[i][0]=-dy[i][0]
   dWhy += learning_rate*np.dot(dy, h.T)
   dby += dy
   dh = np.dot(Why.T, dy) # backprop into h
@@ -68,6 +68,10 @@ def lossFun(inputs, targets, hprev):
   return loss, dWxh, dWhh, dWhy, dbh, dby, h
 
 
+mWxh, mWhh, mWhy = np.zeros_like(Wxh), np.zeros_like(Whh), np.zeros_like(Why)
+mbh, mby = np.zeros_like(bh), np.zeros_like(by) # memory variables for Adagrad
+
+
 for i in range(len(data)-1):
   if i == 0:
     hprev = np.ones((hidden_size,1)) # reset RNN memory
@@ -75,3 +79,10 @@ for i in range(len(data)-1):
   targets = char_to_ix[data[i+1]]
   loss, dWxh, dWhh, dWhy, dbh, dby, hprev = lossFun(inputs, targets, hprev)
   # Wxh, Whh, Why, bh, by=dWxh, dWhh, dWhy, dbh, dby
+
+  # perform parameter update with Adagrad
+  for param, dparam, mem in zip([Wxh, Whh, Why, bh, by],
+                                [dWxh, dWhh, dWhy, dbh, dby],
+                                [mWxh, mWhh, mWhy, mbh, mby]):
+     mem += dparam * dparam
+     param += -learning_rate * dparam / np.sqrt(mem + 1e-8) # adagrad update
