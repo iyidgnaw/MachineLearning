@@ -64,8 +64,8 @@ for i in range(len(data)-1):
   inputs = char_to_ix[data[i]]
   targets = char_to_ix[data[i+1]]
   loss, dWxh, dWhh, dWhy, hprev = lossFun(inputs, targets, hprev)
-  Wxh-=dWxh
-  Why-=dWhy
-  Whh-=dWhh
+  Wxh+=dWxh
+  Why+=dWhy
+  Whh+=dWhh
   print loss
 
