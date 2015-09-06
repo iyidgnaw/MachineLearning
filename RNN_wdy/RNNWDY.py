@@ -8,7 +8,7 @@ import xlrd
 import xlwt
 data = xlrd.open_workbook('./test.xlsx') # should be simple plain text file
 table = data.sheets()[0]
-data = table.col_values(1)
+data = table.col_values(0)
 chars = list(set(data))
 data_size, movie_size = len(data), len(chars)
 print 'data has %d characters, %d unique.' % (data_size, movie_size)
@@ -36,18 +36,10 @@ def lossFun(inputs, targets, hprev):
 
   x = np.zeros((movie_size,1)) # encode in 1-of-k representation
   x[inputs-1][0] = 1
-  print "x:"
-  print x
   h = np.tanh(np.dot(Wxh, x) + np.dot(Whh, hl)) # hidden state
-  print "h:"
-  print h
   y = np.dot(Why, h) # unnormalized log probabilities for next chars
-  print "y:"
-  print y
   p = np.exp(y) / np.sum(np.exp(y)) # probabilities for next chars
-  print "p:"
-  print p
-  loss=p[targets][0]
+  loss=-np.log(p[targets][0])
 
   dWxh, dWhh, dWhy = np.zeros_like(Wxh), np.zeros_like(Whh), np.zeros_like(Why)
 
@@ -56,11 +48,11 @@ def lossFun(inputs, targets, hprev):
   dy[targets][0] -= 1 # backprop into y
   for i in range(len(dy)):
       dy[i][0]=-dy[i][0]
-  dWhy += learning_rate*np.dot(dy, h.T)
+  dWhy = learning_rate*np.dot(dy, h.T)
   dh = np.dot(Why.T, dy) # backprop into h
   dhraw = (1-h * h) * dh # backprop through tanh nonlinearity
-  dWxh += learning_rate*np.dot(dhraw, x.T)
-  dWhh += learning_rate*np.dot(dhraw, hl.T)
+  dWxh = learning_rate*np.dot(dhraw, x.T)
+  dWhh = learning_rate*np.dot(dhraw, hl.T)
   for dparam in [dWxh, dWhh, dWhy]:
     np.clip(dparam, -5, 5, out=dparam) # clip to mitigate exploding gradients
   return loss, dWxh, dWhh, dWhy, h
@@ -72,5 +64,8 @@ for i in range(len(data)-1):
   inputs = char_to_ix[data[i]]
   targets = char_to_ix[data[i+1]]
   loss, dWxh, dWhh, dWhy, hprev = lossFun(inputs, targets, hprev)
-  Wxh, Whh, Why=dWxh, dWhh, dWhy
+  Wxh-=dWxh
+  Why-=dWhy
+  Whh-=dWhh
+  print loss
 
