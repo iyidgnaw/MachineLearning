@@ -6,14 +6,6 @@ BSD License
 import numpy as np
 import xlrd
 import xlwt
-data = xlrd.open_workbook('./test.xlsx') # should be simple plain text file
-table = data.sheets()[0]
-data = table.col_values(0)
-chars = list(set(data))
-data_size, goods_size = len(data), len(chars)
-print 'data has %d characters, %d unique.' % (data_size, goods_size)
-char_to_ix = { ch:i for i,ch in enumerate(chars) }
-ix_to_char = { i:ch for i,ch in enumerate(chars) }
 
 # hyperparameters
 hidden_size = 100 # size of hidden layer of neurons
@@ -42,7 +34,7 @@ def lossFun(inputs, targets, negtargets,hprev):#loss function
 		x = np.zeros((goods_size,1)) # encode in 1-of-k representation
 		x[i][0] = 1
 		h = sigmoid(np.dot(np.dot(u,t),x) + np.dot(w,hl)) # hidden state
-	for i in targets:
+	for i in targets:#calculate the loss 
 		x = np.zeros((goods_size,1))
 		x[i][0] = 1
 		loss+=np.log(sigmoid(np.dot(np.dot(x.T,t),h)))
@@ -50,15 +42,17 @@ def lossFun(inputs, targets, negtargets,hprev):#loss function
 		x = np.zeros((goods_size,1))
 		x[i][0] = 1
 		loss+=np.log(sigmoid(np.dot(np.dot(x.T,t),h)))
+
+
 	du, dw ,dt= np.zeros_like(u), np.zeros_like(w), np.zeros_like(t)
-	for i in targets:
+	for i in targets:#loss to hide
 		x = np.zeros((goods_size,1))
 		x[i][0] = 1
 		mid+=(1-sigmoid(np.dot(np.dot(x.T,t).h)))*np.dot(x.T,t)
 	for i in negtargets:
 		x = np.zeros((goods_size,1))
 		x[i][0] = 1
-		mid+=sigmoid(np.dot(np.dot(x.T,t).h))*np.dot(x.T,t)	#loss to hide
+		mid+=sigmoid(np.dot(np.dot(x.T,t).h))*np.dot(x.T,t)	
 	dw=np.dot(mid*h*(1-h).T,hl.T)	
 		
 	return loss, du, dw, dt, h
