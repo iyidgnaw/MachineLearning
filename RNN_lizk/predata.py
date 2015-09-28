@@ -23,19 +23,6 @@ try:
     j = 0
     for i in range(numrows):
 
-        # if i > 0:
-        #      if rows[i-1][1] != rows[i][1]:
-        #         # print "date"
-        #         # print rows[i][1]                           #date
-        #         i = i + 1
-        #         basket[i].append([])
-        #
-        #         if rows[i-1][2] != rows[i][2]:                  #customer
-        #             # print "customer"
-        #             # print rows[i][2]
-        #             basketdic[rows[i][2]] = basket
-        #             basket = []
-        #             i = 0
         if i == 0:
             basket.append([])
             basket[k].append(int(rows[i][0]))
