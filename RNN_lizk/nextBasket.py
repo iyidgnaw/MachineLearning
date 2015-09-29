@@ -19,6 +19,7 @@ f1.close()
 f1 = open("F:\\pythonPro\\data_custmList.txt", "rb")
 listcust = pickle.load(f1)
 f1.close()
+print len(listcust)
 
 # hyperparameters
 hidden_size = 1559 # size of hidden layer of neurons
@@ -36,8 +37,6 @@ def sigmoid(x):                  #sigmoid function
 
 
 def lossFun(inputs, targets, negtargets, hprev)                    :#loss function    everybasket
-    hl = {}
-    x = []
     loss = 0
     mid = 0
     midn = 0
@@ -53,7 +52,7 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
     for i in targets:                 #calculate the loss
         xt = np.zeros((goods_size,1))
         xt[i-1][0] = 1
-        loss -= np.log(sigmoid(np.dot(np.dot(xt.T,t),h)))
+        loss += np.log(sigmoid(np.dot(np.dot(xt.T,t),h)))
     for i in negtargets:
         xn = np.zeros((goods_size,1))
         xn[i-1][0] = 1
@@ -70,14 +69,14 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
         xt[i-1][0] = 1
         # mid += 1-sigmoid(np.dot((np.dot(np.dot(x.T, t), h)), np.dot(x.T,t)))
         mid += (1-sigmoid(np.dot(np.dot(xt.T,t),h)))*np.dot(xt.T,t).T
-        midt += (1-sigmoid(np.dot(np.dot(xt.T, t), h))) * np.dot(xt,h.T)
+        midt += (1-sigmoid(np.dot(np.dot(xt.T, t), h))) * np.dot(xt,h.T).T
 
         # print np.shape(mid)  #1, 1559
     for i in negtargets:
         xn= np.zeros((goods_size,1))
         xn[i-1][0] = 1
         mid -= sigmoid(np.dot(np.dot(xn.T, t), h))*np.dot(xn.T,t).T
-        midn += sigmoid(np.dot(np.dot(xn.T, t), h))*np.dot(xn,h.T)
+        midn += sigmoid(np.dot(np.dot(xn.T, t), h))*np.dot(xn,h.T).T
 
     dw = np.dot(mid*h*(1-h),hl.T)
     for i in inputs:
@@ -86,14 +85,10 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
         du += np.dot(mid*h*(1-h), np.dot(t,x).T)         #x how to choose   x x+1
         dt += np.dot(mid*h*(1-h), np.dot(x.T, u.T))
 
-    dt += midt + midn
-
+    dt += midt - midn
     # dt = np.dot(np.dot((1 - sigmoid(np.dot(np.dot(x.T,t), h))),x),h.T) + midn + \
     #      np.dot(np.dot(mid.T*hl*(1-hl), u.T), x.T)
-
     hl = h
-
-
     return loss, du, dw, dt, hl
 
 
@@ -108,23 +103,26 @@ def negasamp(targets):
         negtargets.append(random.choice(list2))
     return negtargets
 
-
 for i in range(len(listcust)-1):
     customer = data[listcust[i]]
     hprev = np.zeros((hidden_size, 1))
-    print "basket"
+
+    print "customer"
     print i
+    print customer
 
     for j in range(len(customer)-1):
+
         inputs = customer[j]
         targets = customer[j+1]
-
-    negtargets = negasamp(targets)
-
-    for j in range(len(inputs)-1):
+        negtargets = negasamp(targets)
         loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
+    # for j in range(len(inputs)-1):
+    #     # print "basket"
+    #     # print j
+    #     loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
     for param, dparam in zip([u, w, t],
                              [du, dw, dt]):
-        param += -learning_rate * dparam # adagrad update
+        param += learning_rate * dparam # adagrad update
 
 
