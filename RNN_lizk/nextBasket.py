@@ -79,11 +79,8 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
         midn += sigmoid(np.dot(np.dot(xn.T, t), h))*np.dot(xn,h.T).T
 
     dw = np.dot(mid*h*(1-h),hl.T)
-    for i in inputs:
-        x = np.zeros((goods_size,1)) # encode in 1-of-k representation
-        x[i-1][0] = 1
-        du += np.dot(mid*h*(1-h), np.dot(t,x).T)         #x how to choose   x x+1
-        dt += np.dot(mid*h*(1-h), np.dot(x.T, u.T))
+    du += np.dot(mid*h*(1-h), np.dot(t,x).T)         #x how to choose   x x+1
+    dt += np.dot(mid*h*(1-h), np.dot(x.T, u.T))
 
     dt += midt - midn
     # dt = np.dot(np.dot((1 - sigmoid(np.dot(np.dot(x.T,t), h))),x),h.T) + midn + \
@@ -121,8 +118,8 @@ for i in range(len(listcust)-1):
     #     # print "basket"
     #     # print j
     #     loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
-    for param, dparam in zip([u, w, t],
+    	for param, dparam in zip([u, w, t],
                              [du, dw, dt]):
-        param += learning_rate * dparam # adagrad update
+        	param += learning_rate * dparam # adagrad update
 
 
