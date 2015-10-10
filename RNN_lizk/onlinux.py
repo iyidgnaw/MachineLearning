@@ -122,16 +122,11 @@ while(n<20):
 	    	for param, dparam in zip([u, w, t],
 		                     [du, dw, dt]):
 			param += learning_rate * dparam # adagrad update
-	    if i%50==0:
-		hint="This is round %d"%i
-		print hint
-		print u
-		print w
-		print t
-		pickle.dump(u,open("./resultu.txt", "w"))
-		pickle.dump(w,open("./resultw.txt", "w"))
-		pickle.dump(t,open("./resultt.txt", "w"))
+
 
 	print "This is round %d"%n
+	pickle.dump(u,open("./resultu.txt", "w"))
+	pickle.dump(w,open("./resultw.txt", "w"))
+	pickle.dump(t,open("./resultt.txt", "w"))
 	n=n+1
 	
