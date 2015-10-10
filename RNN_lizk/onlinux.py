@@ -22,14 +22,14 @@ f1.close()
 print len(listcust)
 
 # hyperparameters
-hidden_size = 1559 # size of hidden layer of neurons
+hidden_size = 20 # size of hidden layer of neurons
 learning_rate = 1e-1
 goods_size = 1559
 
 # model parameters
-u = np.random.randn(hidden_size, goods_size)*0.01 # input to hidden
+u = np.random.randn(hidden_size, hidden_size)*0.01 # input to hidden
 w = np.random.randn(hidden_size, hidden_size)*0.01 # hidden to hidden
-t = np.random.randn(goods_size, goods_size)*0.01 # one-hot to embedding
+t = np.random.randn(goods_size, hidden_size)*0.01 # one-hot to embedding
 
 
 def sigmoid(x):                  #sigmoid function
@@ -48,7 +48,7 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
   # forward pass
     for i in inputs:
         x[i-1][0] = 1
-    h = sigmoid(np.dot(np.dot(u,t),x) + np.dot(w,hl)) # hidden state
+    h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
     for i in targets:                 #calculate the loss
         xt = np.zeros((goods_size,1))
         xt[i-1][0] = 1
@@ -67,21 +67,21 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
     for i in targets:                   #loss to hide
         xt = np.zeros((goods_size,1))
         xt[i-1][0] = 1
-        # mid += 1-sigmoid(np.dot((np.dot(np.dot(x.T, t), h)), np.dot(x.T,t)))
+        # mid += 1-sigmoid(np.dot((np.dot(np.dot(x.T, t), h)), np.dot(x.T,t))).T
         mid += (1-sigmoid(np.dot(np.dot(xt.T,t),h)))*np.dot(xt.T,t).T
-        midt += (1-sigmoid(np.dot(np.dot(xt.T, t), h))) * np.dot(xt,h.T).T
+        midt += (1-sigmoid(np.dot(np.dot(xt.T, t), h))) * np.dot(xt,h.T)
 
         # print np.shape(mid)  #1, 1559
     for i in negtargets:
         xn= np.zeros((goods_size,1))
         xn[i-1][0] = 1
         mid -= sigmoid(np.dot(np.dot(xn.T, t), h))*np.dot(xn.T,t).T
-        midn += sigmoid(np.dot(np.dot(xn.T, t), h))*np.dot(xn,h.T).T
+        midn += sigmoid(np.dot(np.dot(xn.T, t), h)) * np.dot(xn,h.T)
     dw = np.dot(mid*h*(1-h),hl.T)
-    du += np.dot(mid*h*(1-h), np.dot(t,x).T)         #x how to choose   x x+1
-    dt += np.dot(mid*h*(1-h), np.dot(x.T, u.T))
+    du += np.dot(mid*h*(1-h), np.dot(t.T,x).T)         #x how to choose   x x+1
+    dt += np.dot(np.dot(u.T,mid*h*(1-h)),x.T).T
 
-    dt += midt - midn
+    dt +=midt-midn
     # dt = np.dot(np.dot((1 - sigmoid(np.dot(np.dot(x.T,t), h))),x),h.T) + midn + \
     #      np.dot(np.dot(mid.T*hl*(1-hl), u.T), x.T)
     hl = h
