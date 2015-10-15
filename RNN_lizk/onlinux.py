@@ -21,6 +21,7 @@ listcust = pickle.load(f1)
 f1.close()
 print len(listcust)
 
+
 # hyperparameters
 hidden_size = 20 # size of hidden layer of neurons
 learning_rate = 1e-1
@@ -98,32 +99,34 @@ def negasamp(targets):
     for i in range(50):
         negtargets.append(random.choice(list2))
     return negtargets
+n=0
+while(n<20):
+	for i in range(len(listcust)-1):
+	    customer = data[listcust[i]]
+	    hprev = np.zeros((hidden_size, 1))
 
-for i in range(len(listcust)-1):
-    customer = data[listcust[i]]
-    hprev = np.zeros((hidden_size, 1))
+	    print "customer"
+	    print i
+	    print customer
 
-    print "customer"
-    print i
-    print customer
+	    for j in range(len(customer)-1):
 
-    for j in range(len(customer)-1):
+		inputs = customer[j]
+		targets = customer[j+1]
+		negtargets = negasamp(targets)
+		loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
+	    # for j in range(len(inputs)-1):
+	    #     # print "basket"
+	    #     # print j
+	    #     loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
+	    	for param, dparam in zip([u, w, t],
+		                     [du, dw, dt]):
+			param += learning_rate * dparam # adagrad update
 
-        inputs = customer[j]
-        targets = customer[j+1]
-        negtargets = negasamp(targets)
-        loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
-    # for j in range(len(inputs)-1):
-    #     # print "basket"
-    #     # print j
-    #     loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
-    	for param, dparam in zip([u, w, t],
-                             [du, dw, dt]):
-        	param += learning_rate * dparam # adagrad update
-    if i%50==0:
-	hint="This is round %d"%i
-	print hint
-	print u
-	print w
-	print t
-		
+
+	print "This is round %d"%n
+	pickle.dump(u,open("./resultu.txt", "w"))
+	pickle.dump(w,open("./resultw.txt", "w"))
+	pickle.dump(t,open("./resultt.txt", "w"))
+	n=n+1
+	
