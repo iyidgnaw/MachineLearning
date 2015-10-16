@@ -28,11 +28,11 @@ f1.close()
 print len(listcust)
 
 # hyperparameters
-hidden_size = 20 # size of hidden layer of neurons
+hidden_size = 5 # size of hidden layer of neurons
 learning_rate = 1e-1
 goods_size = 1559
 itert = 0
-top = 20
+top = 5
 
 # model parameters
 u = np.random.randn(hidden_size, hidden_size)*0.01 # input to hidden
@@ -125,10 +125,7 @@ def predict(customer, u, w, t):
 			xt[i-1][0] = 1
 			valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
 			xt = np.zeros((goods_size,1)) 
-			print i
-			print valuet
 			rank = sort(rank)
-			print rank[0][0]
 			if valuet > rank[0][1]:
 				rank[0][0] = i
 				rank[0][1] = valuet
@@ -137,6 +134,7 @@ def predict(customer, u, w, t):
 				if i == rank[j][0]:
 					right += 1
 		hl = h
+		x = np.zeros((goods_size,1)) 
 		for i in targets:
 			x[i-1][0] = 1
 		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
