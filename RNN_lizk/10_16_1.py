@@ -119,7 +119,7 @@ def predict(customer, u, w, t):
 		for i in inputs:
 			x[i-1][0] = 1
 		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-	for j in range((int(len(customer)*0.7)+2), len(customer)):
+	for j in range((int(len(customer)*0.7)+1), len(customer)):
 		targets = customer[j]
 		for i in product_id:
 			xt[i-1][0] = 1
@@ -131,8 +131,10 @@ def predict(customer, u, w, t):
 				rank[0][1] = valuet
 		for i in targets:
 			for j in range(top):
+
 				if i == rank[j][0]:
 					right += 1
+					print "!"
 		hl = h
 		x = np.zeros((goods_size,1)) 
 		for i in targets:
@@ -177,6 +179,7 @@ while True:
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
 		right += predict(customer, u, w, t)
+		print "This is customer %d"%i
 		print right
 	strright=str(right)+" "
 	result=open("result.txt", "a")
