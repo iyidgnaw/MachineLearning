@@ -124,7 +124,11 @@ def predict(customer, u, w, t):
 		for i in product_id:
 			xt[i-1][0] = 1
 			valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
+			xt = np.zeros((goods_size,1)) 
+			print i
+			print valuet
 			rank = sort(rank)
+			print rank[0][0]
 			if valuet > rank[0][1]:
 				rank[0][0] = i
 				rank[0][1] = valuet
@@ -176,12 +180,13 @@ while True:
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
 		right += predict(customer, u, w, t)
-
+	print right
 	strright=str(right)+" "
-	pickle.dump(strright,open("./result/result.txt", "a"))
-	pickle.dump(u,open("./result/resultu.txt", "w"))
-	pickle.dump(w,open("./result/resultw.txt", "w"))
-	pickle.dump(t,open("./result/resultt.txt", "w"))
+	result=open("result.txt", "a")
+	result.write(strright)
+	pickle.dump(u,open("resultu.txt", "w"))
+	pickle.dump(w,open("resultw.txt", "w"))
+	pickle.dump(t,open("resultt.txt", "w"))
 
 
 
