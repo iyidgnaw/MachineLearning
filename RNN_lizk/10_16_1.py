@@ -175,7 +175,7 @@ while True:
 	#     loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
 			for param, dparam in zip([u, w, t],[du, dw, dt]):
 				param += learning_rate * dparam # adagrad update
-	print "iter %d"%itert
+	print "iter %d"%itert 
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
 		right += predict(customer, u, w, t)
