@@ -13,16 +13,16 @@ f1 = open("./data_NextBasket.txt", "rb")
 data = pickle.load(f1)
 f1.close()
 # data.get(3)
-f1 = open("./data_idList.txt", "rb")
+f1 = open("./data_idList_test.txt", "rb")
 listfre = pickle.load(f1)
 f1.close()
-f1 = open("./list_cust4List.txt", "rb")
+f1 = open("./list_cust4List_test.txt", "rb")
 listcust = pickle.load(f1)
 f1.close()
 f1 = open("./dic_custbasketnum.txt", "rb")
 custbasketnum = pickle.load(f1)
 f1.close()
-f1 = open("./list_product_id.txt", "rb")
+f1 = open("./list_product_id_test.txt", "rb")
 product_id = pickle.load(f1)
 f1.close()
 print len(listcust)
@@ -30,7 +30,7 @@ print len(listcust)
 # hyperparameters
 hidden_size = 5 # size of hidden layer of neurons
 learning_rate = 1e-1
-goods_size = 1559
+goods_size = ?
 itert = 0
 top = 5
 
