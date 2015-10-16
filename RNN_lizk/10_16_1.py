@@ -30,9 +30,9 @@ print len(listcust)
 # hyperparameters
 hidden_size = 5 # size of hidden layer of neurons
 learning_rate = 1e-1
-goods_size = ?
+goods_size = 1558
 itert = 0
-top = 5
+top = 50
 
 # model parameters
 u = np.random.randn(hidden_size, hidden_size)*0.01 # input to hidden
@@ -175,8 +175,6 @@ while True:
 				param += learning_rate * dparam # adagrad update
 	print "iter %d"%itert
 	for i in range(len(listcust)-1):
-		print "customer"
-		print i
 		customer = data[listcust[i]]
 		right += predict(customer, u, w, t)
 		print right
