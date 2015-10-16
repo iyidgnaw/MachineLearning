@@ -13,24 +13,24 @@ f1 = open("./data_NextBasket.txt", "rb")
 data = pickle.load(f1)
 f1.close()
 # data.get(3)
-f1 = open("./data_idList_test.txt", "rb")
+f1 = open("./data_idList.txt", "rb")
 listfre = pickle.load(f1)
 f1.close()
-f1 = open("./list_cust4List_test.txt", "rb")
+f1 = open("./list_cust4List.txt", "rb")
 listcust = pickle.load(f1)
 f1.close()
 f1 = open("./dic_custbasketnum.txt", "rb")
 custbasketnum = pickle.load(f1)
 f1.close()
-f1 = open("./list_product_id_test.txt", "rb")
+f1 = open("./list_product_id.txt", "rb")
 product_id = pickle.load(f1)
 f1.close()
 print len(listcust)
 
 # hyperparameters
-hidden_size = 5 # size of hidden layer of neurons
+hidden_size = 10 # size of hidden layer of neurons
 learning_rate = 1e-1
-goods_size = 1558
+goods_size = 1559
 itert = 0
 top = 50
 
@@ -176,17 +176,20 @@ while True:
 			for param, dparam in zip([u, w, t],[du, dw, dt]):
 				param += learning_rate * dparam # adagrad update
 	print "iter %d"%itert 
-	for i in range(len(listcust)-1):
-		customer = data[listcust[i]]
-		right += predict(customer, u, w, t)
-		print "This is customer %d"%i
-		print right
-	strright=str(right)+" "
-	result=open("result.txt", "a")
-	result.write(strright)
-	pickle.dump(u,open("resultu.txt", "w"))
-	pickle.dump(w,open("resultw.txt", "w"))
-	pickle.dump(t,open("resultt.txt", "w"))
+	try:
+		for i in range(len(listcust)-1):
+			customer = data[listcust[i]]
+			right += predict(customer, u, w, t)
+			print "This is customer %d"%i
+			print right
+		strright=str(right)+" "
+		result=open("result.txt", "a")
+		result.write(strright)
+		pickle.dump(u,open("resultu.txt", "w"))
+		pickle.dump(w,open("resultw.txt", "w"))
+		pickle.dump(t,open("resultt.txt", "w"))
+	except:
+		continue
 
 
 
