@@ -171,14 +171,15 @@ while True:
 	#     # print "basket"
 	#     # print j
 	#     loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
-			for param, dparam in zip([u, w, t],
-									[du, dw, dt]):
+			for param, dparam in zip([u, w, t],[du, dw, dt]):
 				param += learning_rate * dparam # adagrad update
 	print "iter %d"%itert
 	for i in range(len(listcust)-1):
+		print "customer"
+		print i
 		customer = data[listcust[i]]
 		right += predict(customer, u, w, t)
-	print right
+		print right
 	strright=str(right)+" "
 	result=open("result.txt", "a")
 	result.write(strright)
