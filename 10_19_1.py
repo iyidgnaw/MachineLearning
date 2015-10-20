@@ -5,7 +5,7 @@ def getlist(dir):
 	list = os.listdir(dir)
 	return list
 
-def seperate(name,bool):
+def seperate(name,bool,target):
 	if bool==True:
 		for i in name:
 			content="+1"
@@ -13,9 +13,14 @@ def seperate(name,bool):
 			js=json.loads(line)
 			for j in range(1,len(js.keys())):
 				content+=" %d:"%(j)+str(js[js.keys()[j]])
-			#content+="\n"
-			print content
-			
+			content+="\n"
+			eventname=js["eventname"].encode('utf-8')
+			dir=getlist(target)
+			if eventname in dir:
+				train.write(content)
+			else:
+				test.write(content)
+
 	else:
 		for i in name:
 			content="-1"
@@ -23,14 +28,21 @@ def seperate(name,bool):
 			js=json.loads(line)
 			for j in range(1,len(js.keys())):
 				content+=" %d:"%(j)+str(js[js.keys()[j]])
-			#content+="\n"
-			print content
+			content+="\n"
+			eventname=js["eventname"].encode('utf-8')
+			dir=getlist(target)
+			if eventname in dir:
+				train.write(content)
+			else:
+				test.write(content)
 	return
 
 
-
-train=open("train.txt",'w')
-test=open("test.txt",'w')
+url1="./rumor/rumor_weibo_train"
+url2="./nonrumor/nonrumor_weibo_train"
+train=open("train.txt",'a')
+test=open("test.txt",'a')
 rumor=open("./rumor/featureresult.json",'r')
 nonrumor=open("./nonrumor/featureresult.json",'r')
-seperate(rumor,True)
+seperate(rumor,True,url1)
+seperate(nonrumor,False,url2)
