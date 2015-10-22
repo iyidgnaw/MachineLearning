@@ -126,13 +126,14 @@ def predict(customer, u, w, t):
 
 	for j in range(len(customer)-1, len(customer)):
 		targets = customer[j]
-		print len(targets)
+		a=0
 		for i in product_id:
 			xt[i-1][0] = 1
 			valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
 			xt = np.zeros((goods_size,1))
-			allrank[i-1][0] = i
-			allrank[i-1][1] = valuet
+			allrank[a][0] = i
+			allrank[a][1] = valuet
+			a+=1
 		allrank.sort(key=lambda x:x[1])
 
 		for i in targets:
@@ -171,25 +172,20 @@ while True:
 				param += learning_rate * dparam # adagrad update
 	print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) )			
 	time1=time.clock()
-	try:
-		if itert%5==0:
-			for p in range(len(listcust)-1):
-				customer = data[listcust[p]]
-				right += predict(customer, u, w, t)
+	if itert%1==0:
+		for p in range(len(listcust)-1):
+			customer = data[listcust[p]]
+			right += predict(customer, u, w, t)
 
-			strright=str(right)+" "
-			result=open("result.txt", "a")
-			result.write(strright)
-			pickle.dump(u,open("resultu.txt", "w"))
-			pickle.dump(w,open("resultw.txt", "w"))
-			pickle.dump(t,open("resultt.txt", "w"))
-			time2=time.clock()
-			print "Total right is :%d"%right
-			print "Predict cost  %f seconds"%(time2-time1)
-
-
-	except:
-		continue
+		strright=str(right)+" "
+		result=open("result.txt", "a")
+		result.write(strright)
+		pickle.dump(u,open("resultu.txt", "w"))
+		pickle.dump(w,open("resultw.txt", "w"))
+		pickle.dump(t,open("resultt.txt", "w"))
+		time2=time.clock()
+		print "Total right is :%d"%right
+		print "Predict cost  %f seconds"%(time2-time1)
 
 
 
