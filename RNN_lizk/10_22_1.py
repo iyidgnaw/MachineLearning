@@ -154,6 +154,10 @@ def negasamp(targets):
 #
 # 	return right
 
+
+
+
+
 def predict(customer, u, w, t):
 
 	right = 0
@@ -162,7 +166,6 @@ def predict(customer, u, w, t):
 	xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
 	# rank = np.zeros((20,2))
 	rank = [[0]*2 for row in range(top)]
-	allrank = [[0]*2 for row in range(len(product_id))]
 
 	for j in range(int(len(customer)*0.7)+1):
 		inputs = customer[j]
@@ -177,14 +180,14 @@ def predict(customer, u, w, t):
 			xt[i-1][0] = 1
 			valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
 			xt = np.zeros((goods_size,1))
-			allrank[i-1][0] = i
-			allrank[i-1][1] = valuet
-		allrank.sort(key=lambda x:x[1])
-
+			if valuet > rank[0][1]:
+				rank[0][0] = i
+				rank[0][1] = valuet
+			rank.sort(key=lambda x:x[1])
 		for i in targets:
 			for j in range(top):
 
-				if i == allrank[len(product_id)-j-1][0]:
+				if i == rank[j][0]:
 					right += 1
 					print "!"
 		hl = h
@@ -195,6 +198,55 @@ def predict(customer, u, w, t):
 		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
 
 	return right
+
+
+
+
+
+
+
+
+# def predict(customer, u, w, t):
+#
+# 	right = 0
+# 	hl = np.zeros((hidden_size, 1))
+# 	x = np.zeros((goods_size,1)) # encode in 1-of-k representation
+# 	xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
+# 	# rank = np.zeros((20,2))
+# 	rank = [[0]*2 for row in range(top)]
+# 	allrank = [[0]*2 for row in range(len(product_id))]
+#
+# 	for j in range(int(len(customer)*0.7)+1):
+# 		inputs = customer[j]
+# 		for i in inputs:
+# 			x[i-1][0] = 1
+# 		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
+#
+# 	for j in range((int(len(customer)*0.7)+1), len(customer)):
+# 		targets = customer[j]
+#
+# 		for i in product_id:
+# 			xt[i-1][0] = 1
+# 			valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
+# 			xt = np.zeros((goods_size,1))
+# 			allrank[i-1][0] = i
+# 			allrank[i-1][1] = valuet
+# 		allrank.sort(key=lambda x:x[1])
+#
+# 		for i in targets:
+# 			for j in range(top):
+#
+# 				if i == allrank[len(product_id)-j-1][0]:
+# 					right += 1
+# 					print "!"
+# 		hl = h
+# 		x = np.zeros((goods_size,1))
+#
+# 		for i in targets:
+# 			x[i-1][0] = 1
+# 		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
+#
+# 	return right
 
 while True:
 	right = 0
@@ -221,6 +273,7 @@ while True:
 			#time4=time.clock()
 	timea = time.clock()
 	for i in range(len(listcust)-1):
+		customer = data[listcust[i]]
 		print len(listcust)
 		time1 = time.clock()
 		right += predict(customer, u, w, t)
@@ -231,6 +284,7 @@ while True:
 	timeA = time.clock()
 	print "allcustpre"
 	print timeA - timea
+	print right
 
 	try:
 		if itert%5==0:
