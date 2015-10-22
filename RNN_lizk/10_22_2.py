@@ -100,7 +100,7 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
 def negasamp(targets):
 	negtargets = []
 	list2 = product_id
-	negtargets=random.sample(list, 80)
+	negtargets=random.sample(list2, 80)
 	for i in targets:
 		negtargets = filter(lambda a: a != i, negtargets)
 	negtargets = negtargets[0:50]
@@ -156,7 +156,7 @@ while True:
 	print "This is iter %d"%itert
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
-		if i%100==0:
+		if i%500==0:
 			print "Training customer %d"%i
 		hprev = np.zeros((hidden_size, 1))
 
