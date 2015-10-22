@@ -105,12 +105,14 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
 
 
 def negasamp(targets):
-	negtargets=fre
+	negtargets = []
+	list2 = product_id
+	for i in range(80):
+		negtargets.append(random.choice(list2))
 	for i in targets:
-		if i in negtargets:
-			negtargets.remove(i)
-	return negtargets[:50]
-
+		negtargets = filter(lambda a: a != i, negtargets)
+	negtargets = negtargets[0:50]
+	return negtargets
 
 
 
@@ -162,17 +164,26 @@ while True:
 	right = 0
 	rightpre= -100
 	itert += 1
+	timec = time.clock()
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
 		hprev = np.zeros((hidden_size, 1))
 
-		for j in range(int(len(customer)*0.7)+1):
+		for j in range(len(customer)-1):
+
 			inputs = customer[j]
 			targets = customer[j+1]
-			#time1=time.clock()
+			timeb=time.clock()
+
 			negtargets = negasamp(targets)
-			#time2=time.clock()
+			# timeB=time.clock()
+			# print "b"
+			# print timeB-timeb
+
 			loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
+			# timec=time.clock()
+			# print "c"
+			# print timec-timeB
 			#time3=time.clock()
 	# for j in range(len(inputs)-1):
 	#     # print "basket"
@@ -182,6 +193,8 @@ while True:
 				param += learning_rate * dparam # adagrad update
 			#time4=time.clock()
 	timea = time.clock()
+	print "a-c"
+	print timea - timec
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
 		print len(listcust)
