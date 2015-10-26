@@ -166,11 +166,14 @@ while True:
 	print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) )         
 	time1=time.clock()
 	if itert%1==0:
+		avr=0
 		for p in range(len(listcust)-1):
+
 			customer = data[listcust[p]]
-			avr= predict(customer, u, w, t)
-			print "Customer %d"%p
-			print avr
+			avr+= predict(customer, u, w, t)
+			
+		avr=avr/len(listcust)
+		print "Average is %f"%avr	
 
 		
 		time2=time.clock()

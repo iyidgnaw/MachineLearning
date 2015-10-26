@@ -1,5 +1,6 @@
-import pickle
-f1 = open("./result.txt", "rb")
-product_id = pickle.load(f1)
-f1.close()
-print product_id
+import time
+
+
+ISOTIMEFORMAT='%Y-%m-%d %X'
+print "Start time is :"
+print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) ) 

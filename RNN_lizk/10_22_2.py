@@ -99,11 +99,11 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
 
 def negasamp(targets):
 	negtargets = []
-	list2 = product_id
-	negtargets=random.sample(list2, 80)
-	for i in targets:
-		negtargets = filter(lambda a: a != i, negtargets)
-	negtargets = negtargets[0:50]
+	# list2 = product_id
+	# negtargets=random.sample(list2, 80)
+	# for i in targets:
+	# 	negtargets = filter(lambda a: a != i, negtargets)
+	# negtargets = negtargets[0:50]
 	return negtargets
 
 
@@ -172,7 +172,7 @@ while True:
 				param += learning_rate * dparam # adagrad update
 	print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) )			
 	time1=time.clock()
-	if itert%1==0:
+	if itert%5==0:
 		for p in range(len(listcust)-1):
 			customer = data[listcust[p]]
 			right += predict(customer, u, w, t)
