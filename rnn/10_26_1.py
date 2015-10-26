@@ -7,28 +7,25 @@ import numpy as np
 import pickle
 import random
 import time
-from collections import Counter
 
+
+ISOTIMEFORMAT='%Y-%m-%d %X'
+print "Start time is :"
+print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) ) 
 #read
 f1 = open("./data_NextBasket.txt", "rb")
 data = pickle.load(f1)
 f1.close()
 # data.get(3)
-f1 = open("./data_idList.txt", "rb")
-listfre = pickle.load(f1)
-f1.close()
 f1 = open("./list_cust4List.txt", "rb")
 listcust = pickle.load(f1)
 f1.close()
 f1 = open("./list_product_id.txt", "rb")
 product_id = pickle.load(f1)
+product_id=random.sample(product_id, 500)
 f1.close()
 print len(listcust)
-dict=Counter(listfre)
-frelist=sorted(dict.items(), key=lambda e:e[1], reverse=True)
-fre=[]
-for i in range(80):
-	fre.append(frelist[i][0])
+
 
 
 # hyperparameters
@@ -37,7 +34,6 @@ learning_rate = 1e-1
 goods_size = 1559
 itert = 0
 top = 50
-
 # model parameters
 u = np.random.randn(hidden_size, hidden_size)*0.5 # input to hidden
 w = np.random.randn(hidden_size, hidden_size)*0.5 # hidden to hidden
@@ -78,7 +74,8 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
 		# mid += 1-sigmoid(np.dot((np.dot(np.dot(x.T, t), h)), np.dot(x.T,t))).T
 		mid += (1-sigmoid(np.dot(xt.T,h)))* xt
 		midt += (1-sigmoid(np.dot(xt.T, h))) *xh
-
+	#time3=time.clock()
+		# print np.shape(mid)  #1, 1559
 	for i in negtargets:
 		xn= np.zeros((hidden_size,1))
 		xh= np.zeros((goods_size,hidden_size))
@@ -101,20 +98,14 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
 
 
 def negasamp(targets):
-	# list2 = product_id
-	# negtargets=random.sample(list2,80)
-	# for i in targets:
-	# 	negtargets = filter(lambda a: a != i, negtargets)
-	# negtargets = negtargets[0:50]
-	# return negtargets
-
-	# negtargets = fre[0:-1]
-	# for i in targets:
-	# 	if i in negtargets:
-	# 		negtargets.remove(i)
-	# return negtargets[:50]
 	negtargets = []
+	# list2 = product_id
+	# negtargets=random.sample(list2, 80)
+	# for i in targets:
+	#   negtargets = filter(lambda a: a != i, negtargets)
+	# negtargets = negtargets[0:50]
 	return negtargets
+
 
 
 
@@ -125,7 +116,6 @@ def predict(customer, u, w, t):
 	x = np.zeros((goods_size,1)) # encode in 1-of-k representation
 	xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
 	# rank = np.zeros((20,2))
-	rank = [[0]*2 for row in range(top)]
 	allrank = [[0]*2 for row in range(len(product_id))]
 
 	for j in range(len(customer)-1):
@@ -136,19 +126,20 @@ def predict(customer, u, w, t):
 
 	for j in range(len(customer)-1, len(customer)):
 		targets = customer[j]
+		a=0
 		valuet=0
 		for i in targets:
 			xt[i-1][0] = 1
-			valuet += sigmoid(np.dot(np.dot(xt.T,t),h))
+			valuet += np.dot(np.dot(xt.T,t),h)
 			xt = np.zeros((goods_size,1))
 		avr=valuet/len(targets)
 
-
+	
 		# hl = h
 		# x = np.zeros((goods_size,1))
 		#
 		# for i in targets:
-		# 	x[i-1][0] = 1
+		#   x[i-1][0] = 1
 		# h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
 
 	return avr
@@ -212,20 +203,20 @@ while True:
 	f1 = open("./resultt.txt", "r")
 	t = pickle.load(f1)
 	f1.close()
-	try:
-		if itert % 1 == 0:
-			avr=0
-			for i in range(len(listcust)-1):
-				customer = data[listcust[i]]
-				avr += predict(customer, u, w, t)
-			avr=avr/len(listcust)
-			print "Average is %f"%avr		
+	
+	print u,w,t
+	if itert % 1 == 0:
+		avr=0
+		for i in range(len(listcust)-1):
+			customer = data[listcust[i]]
+			avr += predict(customer, u, w, t)
+		avr=avr/len(listcust)
+		print "Average is %f"%avr		
 
-			
-		print "iter %d" % itert
 		
-	except:
-		continue
+	print "iter %d" % itert
+		
+	
 
 
 
