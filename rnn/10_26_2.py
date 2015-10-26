@@ -34,6 +34,8 @@ learning_rate = 1e-1
 goods_size = 1559
 itert = 0
 top = 50
+bias = 6
+sig = 0
 # model parameters
 u = np.random.randn(hidden_size, hidden_size)*0.5 # input to hidden
 w = np.random.randn(hidden_size, hidden_size)*0.5 # hidden to hidden
@@ -72,8 +74,8 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
 			xt.T[0][j]=t[i-1][j]
 		xh[i-1]=h.T
 		# mid += 1-sigmoid(np.dot((np.dot(np.dot(x.T, t), h)), np.dot(x.T,t))).T
-		mid += (1-sigmoid(np.dot(xt.T,h)))* xt
-		midt += (1-sigmoid(np.dot(xt.T, h))) *xh
+		mid +=bias* (1-sigmoid(np.dot(xt.T,h)))* xt
+		midt +=bias* (1-sigmoid(np.dot(xt.T, h))) *xh
 	#time3=time.clock()
 		# print np.shape(mid)  #1, 1559
 	for i in negtargets:
@@ -86,7 +88,7 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
 		midn +=sigmoid(np.dot(xn.T,h))* xh
 	#time4=time.clock()
 	dw = np.dot(mid*h*(1-h),hl.T)
-	du += np.dot(mid*h*(1-h), tx.T)         #x how to choose   x x+1
+	du = np.dot(mid*h*(1-h), tx.T)       #x how to choose   x x+1
 	dt += np.dot(np.dot(u.T,mid*h*(1-h)),x.T).T
 	#time5=time.clock()
 	dt +=midt-midn
@@ -99,11 +101,11 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
 
 def negasamp(targets):
 	negtargets = []
-	# list2 = product_id
-	# negtargets=random.sample(list2, 80)
-	# for i in targets:
-	# 	negtargets = filter(lambda a: a != i, negtargets)
-	# negtargets = negtargets[0:50]
+	list2 = product_id
+	negtargets=random.sample(list2, 80)
+	for i in targets:
+		negtargets = filter(lambda a: a != i, negtargets)
+	negtargets = negtargets[0:50]
 	return negtargets
 
 
@@ -123,37 +125,34 @@ def predict(customer, u, w, t):
 		for i in inputs:
 			x[i-1][0] = 1
 		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-
 	for j in range(len(customer)-1, len(customer)):
 		targets = customer[j]
 		a=0
 		for i in product_id:
 			xt[i-1][0] = 1
-			valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
+			valuet = np.dot(np.dot(xt.T,t),h)
 			xt = np.zeros((goods_size,1))
 			allrank[a][0] = i
 			allrank[a][1] = valuet
 			a+=1
 		allrank.sort(key=lambda x:x[1])
-		avr=0
-		for i in targets:
-			xt[i-1][0] = 1
-			avr+= np.dot(np.dot(xt.T,t),h)
-			xt = np.zeros((goods_size,1))
-		avr=avr/len(targets)		
+		avr=0		
 		for i in targets:
 			for j in range(top):
 
 				if i == allrank[len(product_id)-j-1][0]:
 					right += 1
+					avr+=len(product_id)-j
 					break
 		# hl = h
 		# x = np.zeros((goods_size,1))
 		#
 		# for i in targets:
 		# 	x[i-1][0] = 1
-		# h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-
+		if right != 0 :	# h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
+			avr=avr/right
+			sig=sig+1
+		
 	return right,avr
 
 while True:
@@ -178,13 +177,13 @@ while True:
 				param += learning_rate * dparam # adagrad update
 	print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) )			
 	time1=time.clock()
-	if itert%5==0:
+	if itert%1==0:
 		for p in range(len(listcust)-1):
 			customer = data[listcust[p]]
 			rightmid ,avrmid= predict(customer, u, w, t)
 			right+=rightmid
 			average+=avrmid
-		average =average/len(listcust)
+		average =average/sig
 		strright=str(right)+"("+str(average)+")"+" "
 		result=open("result.txt", "a")
 		result.write(strright)
