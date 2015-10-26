@@ -20,9 +20,6 @@ f1.close()
 f1 = open("./list_cust4List.txt", "rb")
 listcust = pickle.load(f1)
 f1.close()
-f1 = open("./dic_custbasketnum.txt", "rb")
-custbasketnum = pickle.load(f1)
-f1.close()
 f1 = open("./list_product_id.txt", "rb")
 product_id = pickle.load(f1)
 f1.close()
@@ -217,19 +214,16 @@ while True:
 	f1.close()
 	try:
 		if itert % 1 == 0:
+			avr=0
 			for i in range(len(listcust)-1):
 				customer = data[listcust[i]]
-				avr = predict(customer, u, w, t)
+				avr += predict(customer, u, w, t)
+			avr=avr/len(listcust)
+			print "Average is %f"%avr		
 
-
-			# strright=str(right)+" "
-			# result=open("result.txt", "a")
-			# result.write(strright)
-			# pickle.dump(u,open("resultu.txt", "w"))
-			# pickle.dump(w,open("resultw.txt", "w"))
-			# pickle.dump(t,open("resultt.txt", "w"))
+			
 		print "iter %d" % itert
-		print right
+		
 	except:
 		continue
 
