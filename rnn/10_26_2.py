@@ -102,7 +102,7 @@ def negasamp(targets):
 	# list2 = product_id
 	# negtargets=random.sample(list2, 80)
 	# for i in targets:
-	#   negtargets = filter(lambda a: a != i, negtargets)
+	# 	negtargets = filter(lambda a: a != i, negtargets)
 	# negtargets = negtargets[0:50]
 	return negtargets
 
@@ -127,25 +127,38 @@ def predict(customer, u, w, t):
 	for j in range(len(customer)-1, len(customer)):
 		targets = customer[j]
 		a=0
-		valuet=0
+		for i in product_id:
+			xt[i-1][0] = 1
+			valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
+			xt = np.zeros((goods_size,1))
+			allrank[a][0] = i
+			allrank[a][1] = valuet
+			a+=1
+		allrank.sort(key=lambda x:x[1])
+		avr=0
 		for i in targets:
 			xt[i-1][0] = 1
-			valuet += np.dot(np.dot(xt.T,t),h)
+			avr+= np.dot(np.dot(xt.T,t),h)
 			xt = np.zeros((goods_size,1))
-		avr=valuet/len(targets)
+		avr=avr/len(targets)		
+		for i in targets:
+			for j in range(top):
 
-	
+				if i == allrank[len(product_id)-j-1][0]:
+					right += 1
+					break
 		# hl = h
 		# x = np.zeros((goods_size,1))
 		#
 		# for i in targets:
-		#   x[i-1][0] = 1
+		# 	x[i-1][0] = 1
 		# h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
 
-	return avr
+	return right,avr
 
 while True:
 	right = 0
+	average=0
 	itert += 1
 	print "This is iter %d"%itert
 	for i in range(len(listcust)-1):
@@ -163,21 +176,24 @@ while True:
 
 			for param, dparam in zip([u, w, t],[du, dw, dt]):
 				param += learning_rate * dparam # adagrad update
-	print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) )         
+	print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) )			
 	time1=time.clock()
-	if itert%1==0:
-		avr=0
+	if itert%5==0:
 		for p in range(len(listcust)-1):
-
 			customer = data[listcust[p]]
-			avr+= predict(customer, u, w, t)
-			
-		avr=avr/len(listcust)
-		print "Average is %f"%avr	
-
-		
+			rightmid ,avrmid= predict(customer, u, w, t)
+			right+=rightmid
+			average+=avrmid
+		average =average/len(listcust)
+		strright=str(right)+"("+str(average)+")"+" "
+		result=open("result.txt", "a")
+		result.write(strright)
+		pickle.dump(u,open("resultu.txt", "w"))
+		pickle.dump(w,open("resultw.txt", "w"))
+		pickle.dump(t,open("resultt.txt", "w"))
 		time2=time.clock()
 		print "Total right is :%d"%right
+		print "The average value of test set is : %d"%average
 		print "Predict cost  %f seconds"%(time2-time1)
 
 
