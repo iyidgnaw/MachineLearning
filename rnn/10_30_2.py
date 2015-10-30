@@ -226,15 +226,15 @@ while True:
 			customer = data[listcust[p]]
 			rightmid = predict(customer, u, w, t)
 			rightpredict+=rightmid
-	strright=str(rightpredict)+" "
-	result=open("result.txt", "a")
-	result.write(strright)
-	pickle.dump(u,open("resultu.txt", "w"))
-	pickle.dump(w,open("resultw.txt", "w"))
-	pickle.dump(t,open("resultt.txt", "w"))
-	time2=time.clock()
-	print "Total right is :%d"%rightpredict
-	print "Predict cost  %f seconds"%(time2-time1)
+		strright=str(rightpredict)+" "
+		result=open("result.txt", "a")
+		result.write(strright)
+		pickle.dump(u,open("resultu.txt", "w"))
+		pickle.dump(w,open("resultw.txt", "w"))
+		pickle.dump(t,open("resultt.txt", "w"))
+		time2=time.clock()
+		print "Total right is :%d"%rightpredict
+		print "Predict cost  %f seconds"%(time2-time1)
 
 
 
