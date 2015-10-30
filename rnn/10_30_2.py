@@ -57,7 +57,7 @@ def lossFun(inputs, targets, negtargets, hprev,itert)                    :#loss 
 	hl = np.copy(hprev)
 	x = np.zeros((goods_size,1)) 
 	xt= np.zeros((goods_size,1)) # encode in 1-of-k representation
-	bias=50/len(targets)
+	bias=1
 
   # forward pass
 	for i in inputs:
@@ -130,11 +130,11 @@ def lossFun(inputs, targets, negtargets, hprev,itert)                    :#loss 
 
 def negasamp(targets):
 	negtargets = []
-	list2 = product_id
-	negtargets=random.sample(list2, 80)
-	for i in targets:
-		negtargets = filter(lambda a: a != i, negtargets)
-	negtargets = negtargets[0:50]
+	#list2 = product_id
+	#negtargets=random.sample(list2, 80)
+	#for i in targets:
+	#	negtargets = filter(lambda a: a != i, negtargets)
+	#negtargets = negtargets[0:50]
 	return negtargets
 
 
@@ -165,13 +165,12 @@ def predict(customer, u, w, t):
 			allrank[a][1] = valuet
 			a+=1
 		allrank.sort(key=lambda x:x[1])
-		     
+			 
 		for i in targets:
 			for j in range(top):
 
 				if i == allrank[len(product_id)-j-1][0]:
 					right += 1
-					
 					break
 	
 	
@@ -203,11 +202,8 @@ while True:
 			negtargets = negasamp(targets)
 			basketnum+=1
 			loss, du, dw, dt, hprev ,totalmid,rightmid,valuetruemid,valuepredictmid= lossFun(inputs, targets, negtargets, hprev,itert)
-			avrloss+=loss
-			valuepredict+=valuepredictmid
-			valuetrue+=valuetruemid
-			total+=totalmid
-			right+=rightmid
+			for param, dparam in zip([avrloss, valuepredict, valuetrue,total,right],[loss, valuepredictmid, valuetruemid,totalmid,rightmid]):
+				param += dparam # adagrad update
 			for param, dparam in zip([u, w, t],[du, dw, dt]):
 				param += learning_rate * dparam # adagrad update
 	avrloss=avrloss/basketnum
