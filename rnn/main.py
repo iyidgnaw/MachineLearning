@@ -57,7 +57,7 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
     midn = 0
     midt = 0
     hl = np.copy(hprev)
-    x = np.zeros((goods_size,1))
+    x = np.zeros((goods_size,1)) 
     tx= np.zeros((hidden_size,1))# the result of (t.T,x),shape is the same as the h
 
     # forward pass
@@ -112,6 +112,52 @@ def negasamp(targets):
     return negtargets[:50]
 
 
+# def predict(customer, u, w, t):
+#
+#   right = 0
+#   hl = np.zeros((hidden_size, 1))
+#   x = np.zeros((goods_size,1)) # encode in 1-of-k representation
+#   xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
+#   # rank = np.zeros((20,2))
+#   rank = [[0]*2 for row in range(top)]
+#   allrank = [[0]*2 for row in range(len(product_id))]
+#
+#   for j in range(int(len(customer)*0.7)+1):
+#       inputs = customer[j]
+#       for i in inputs:
+#           x[i-1][0] = 1
+#       h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
+#
+#   for j in range((int(len(customer)*0.7)+1), len(customer)):
+#       targets = customer[j]
+#
+#       for i in product_id:
+#           xt[i-1][0] = 1
+#           valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
+#           xt = np.zeros((goods_size,1))
+#           if valuet > rank[0][1]:
+#               rank[0][0] = i
+#               rank[0][1] = valuet
+#               rank.sort(key=lambda x:x[1])
+#       for i in targets:
+#           for j in range(top):
+#
+#               if i == rank[j][0]:
+#                   right += 1
+#                   print "!"
+#       hl = h
+#       x = np.zeros((goods_size,1))
+#
+#       for i in targets:
+#           x[i-1][0] = 1
+#       h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
+#
+#   return right
+
+
+
+
+
 def predict(customer, u, w, t):
 
     right = 0
@@ -153,6 +199,55 @@ def predict(customer, u, w, t):
 
     return right
 
+
+
+
+
+
+
+
+# def predict(customer, u, w, t):
+#
+#   right = 0
+#   hl = np.zeros((hidden_size, 1))
+#   x = np.zeros((goods_size,1)) # encode in 1-of-k representation
+#   xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
+#   # rank = np.zeros((20,2))
+#   rank = [[0]*2 for row in range(top)]
+#   allrank = [[0]*2 for row in range(len(product_id))]
+#
+#   for j in range(int(len(customer)*0.7)+1):
+#       inputs = customer[j]
+#       for i in inputs:
+#           x[i-1][0] = 1
+#       h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
+#
+#   for j in range((int(len(customer)*0.7)+1), len(customer)):
+#       targets = customer[j]
+#
+#       for i in product_id:
+#           xt[i-1][0] = 1
+#           valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
+#           xt = np.zeros((goods_size,1))
+#           allrank[i-1][0] = i
+#           allrank[i-1][1] = valuet
+#       allrank.sort(key=lambda x:x[1])
+#
+#       for i in targets:
+#           for j in range(top):
+#
+#               if i == allrank[len(product_id)-j-1][0]:
+#                   right += 1
+#                   print "!"
+#       hl = h
+#       x = np.zeros((goods_size,1))
+#
+#       for i in targets:
+#           x[i-1][0] = 1
+#       h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
+#
+#   return right
+
 while True:
     right = 0
     rightpre= -100
@@ -176,23 +271,41 @@ while True:
             for param, dparam in zip([u, w, t],[du, dw, dt]):
                 param += learning_rate * dparam # adagrad update
             #time4=time.clock()
-
+    timea = time.clock()
     for i in range(len(listcust)-1):
         customer = data[listcust[i]]
+        print len(listcust)
+        time1 = time.clock()
         right += predict(customer, u, w, t)
+        time2 = time.clock()
+        print i
+        print "eachcustpre"
+        print time2-time1
+    timeA = time.clock()
+    print "allcustpre"
+    print timeA - timea
     print right
+
     try:
         if itert%5==0:
             for i in range(len(listcust)-1):
                 customer = data[listcust[i]]
                 right += predict(customer, u, w, t)
+
             strright=str(right)+" "
             result=open("result.txt", "a")
             result.write(strright)
             pickle.dump(u,open("resultu.txt", "w"))
             pickle.dump(w,open("resultw.txt", "w"))
             pickle.dump(t,open("resultt.txt", "w"))
-        print "iter %d"%itert
+        print "iter %d"%itert 
         print right
     except:
         continue
+
+
+
+    
+
+
+
