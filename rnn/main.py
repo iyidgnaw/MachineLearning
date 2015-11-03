@@ -57,7 +57,7 @@ def lossFun(inputs, targets, negtargets, hprev,itert)                    :#loss 
 	hl = np.copy(hprev)
 	x = np.zeros((goods_size,1)) 
 	xt= np.zeros((goods_size,1)) # encode in 1-of-k representation
-	bias=50/len(targets)
+	bias=1
 
   # forward pass
 	for i in inputs:
@@ -130,11 +130,11 @@ def lossFun(inputs, targets, negtargets, hprev,itert)                    :#loss 
 
 def negasamp(targets):
 	negtargets = []
-	list2 = product_id
-	negtargets=random.sample(list2, 80)
-	for i in targets:
-		negtargets = filter(lambda a: a != i, negtargets)
-	negtargets = negtargets[0:50]
+	#list2 = product_id
+	#negtargets=random.sample(list2, 80)
+	#for i in targets:
+	#	negtargets = filter(lambda a: a != i, negtargets)
+	#negtargets = negtargets[0:50]
 	return negtargets
 
 
@@ -153,8 +153,7 @@ def predict(customer, u, w, t):
 		inputs = customer[j]
 		for i in inputs:
 			x[i-1][0] = 1
-		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) 
-		hl=h# hidden state
+		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
 	for j in range(len(customer)-1, len(customer)):
 		targets = customer[j]
 		a=0
@@ -166,13 +165,12 @@ def predict(customer, u, w, t):
 			allrank[a][1] = valuet
 			a+=1
 		allrank.sort(key=lambda x:x[1])
-		     
+			 
 		for i in targets:
 			for j in range(top):
 
 				if i == allrank[len(product_id)-j-1][0]:
 					right += 1
-					
 					break
 	
 	
@@ -204,11 +202,8 @@ while True:
 			negtargets = negasamp(targets)
 			basketnum+=1
 			loss, du, dw, dt, hprev ,totalmid,rightmid,valuetruemid,valuepredictmid= lossFun(inputs, targets, negtargets, hprev,itert)
-			avrloss+=loss
-			valuepredict+=valuepredictmid
-			valuetrue+=valuetruemid
-			total+=totalmid
-			right+=rightmid
+			for param, dparam in zip([avrloss, valuepredict, valuetrue,total,right],[loss, valuepredictmid, valuetruemid,totalmid,rightmid]):
+				param += dparam # adagrad update
 			for param, dparam in zip([u, w, t],[du, dw, dt]):
 				param += learning_rate * dparam # adagrad update
 	avrloss=avrloss/basketnum
@@ -226,20 +221,20 @@ while True:
 		print "The average value of predict basket on trainset is : %f"% valuepredict  
 	time1=time.clock()
 	print "Training cost :%f second"%(time1-time0)
-	if itert%1==0:
+	if itert%5==0:
 		for p in range(len(listcust)-1):
 			customer = data[listcust[p]]
 			rightmid = predict(customer, u, w, t)
 			rightpredict+=rightmid
-	strright=str(rightpredict)+" "
-	result=open("result.txt", "a")
-	result.write(strright)
-	pickle.dump(u,open("resultu.txt", "w"))
-	pickle.dump(w,open("resultw.txt", "w"))
-	pickle.dump(t,open("resultt.txt", "w"))
-	time2=time.clock()
-	print "Total right is :%d"%rightpredict
-	print "Predict cost  %f seconds"%(time2-time1)
+		strright=str(rightpredict)+" "
+		result=open("result.txt", "a")
+		result.write(strright)
+		pickle.dump(u,open("resultu.txt", "w"))
+		pickle.dump(w,open("resultw.txt", "w"))
+		pickle.dump(t,open("resultt.txt", "w"))
+		time2=time.clock()
+		print "Total right is :%d"%rightpredict
+		print "Predict cost  %f seconds"%(time2-time1)
 
 
 
