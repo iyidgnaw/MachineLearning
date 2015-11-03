@@ -23,7 +23,7 @@ print len(listcust)
 
 user_size = len(listcust)
 hidden_size = 20
-learning_rate = 1e-1
+learning_rate = 5e-2
 goods_size = 1559 
 itert = 0
 top = 50
@@ -91,13 +91,14 @@ def predict(customer,user):
 				if b == allrank[len(product_id)-s-1][0]:
 					right += 1
 					break
-	print right
 	return right
 
 while True:
 	itert += 1
 	#Train
+	right=0
 	avrloss=0
+	preloss=-3
 	print "This is iter %d"%itert
 	time0=time.clock()
 	for i in range(len(listcust)-1):
@@ -115,16 +116,19 @@ while True:
 
 		avrloss+=loss
 	avrloss=avrloss/len(listcust)
-	print u,t
 	print avrloss
+	if avrloss>preloss:
+		learning_rate=learning_rate*1.05
+	else:
+		learning_rate=learning_rate*0.95
+	preloss=avrloss
 
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
-		print "customer %d"%i
 		user = np.zeros((hidden_size,1))
 		for j in range(hidden_size):
 			user[j][0] = u[j][i]	
-		right=predict(customer,user)
+		right+=predict(customer,user)
 	print right
 
 
