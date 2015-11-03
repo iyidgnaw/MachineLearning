@@ -22,20 +22,19 @@ listcust = pickle.load(f1)
 f1.close()
 f1 = open("./list_product_id.txt", "rb")
 product_id = pickle.load(f1)
-product_id=random.sample(product_id, 500)
+product_id=product_id[0:500]
 f1.close()
 print len(listcust)
 
 
 
 # hyperparameters
-hidden_size = 10 # size of hidden layer of neurons
+hidden_size = 13# size of hidden layer of neurons
 learning_rate = 1e-1
 goods_size = 1559
 itert = 0
-top = 50
-bias = 6
-sig = 0
+top = 10
+bias = 0
 # model parameters
 u = np.random.randn(hidden_size, hidden_size)*0.5 # input to hidden
 w = np.random.randn(hidden_size, hidden_size)*0.5 # hidden to hidden
@@ -45,57 +44,58 @@ t = np.random.randn(goods_size, hidden_size)*0.5 # one-hot to embedding
 def sigmoid(x):                  #sigmoid function
     return 1.0/(1+np.exp(-x))
 
-
+def nonlinear(hidden):
+    for i in len(hidden):
+        hidden[i][0]=(1-np.exp(-2*hidden[i][0]))/(1+np.exp(-2*hidden[i][0]))
+    return hidden
 def lossFun(inputs, targets, negtargets, hprev)                    :#loss function    everybasket
     loss = 0
     mid = 0
     midn = 0
     midt = 0
     hl = np.copy(hprev)
-    x = np.zeros((goods_size,1))
-    tx= np.zeros((hidden_size,1))# the result of (t.T,x),shape is the same as the h
+    x = np.zeros((goods_size,1)) # encode in 1-of-k representation
+    bias=50/len(targets)
 
-    # forward pass
-    #time1=time.clock()
+  # forward pass
     for i in inputs:
-        x[i-1][0]=1
-        for j in range(hidden_size):
-            tx[j][0]+=t.T[j][i-1]
-    h = sigmoid(np.dot(u,tx)+ np.dot(w,hl)) # hidden state
-    #time2=time.clock()
+        x[i-1][0] = 1
+    h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
+    for i in targets:                 #calculate the loss
+        xt = np.zeros((goods_size,1))
+        xt[i-1][0] = 1
+        loss += bias*np.log(sigmoid(np.dot(np.dot(xt.T,t),h)))
+    for i in negtargets:
+        xn = np.zeros((goods_size,1))
+        xn[i-1][0] = 1
+        loss += np.log(1 - sigmoid(np.dot(np.dot(xn.T,t),h)))
+
+
     du, dw, dt = np.zeros_like(u), np.zeros_like(w), np.zeros_like(t)
 
 
 
     for i in targets:                   #loss to hide
-        xt = np.zeros((hidden_size,1))# the result of (x.T,t).T
-        xh= np.zeros((goods_size,hidden_size))#the result of (x, h.T),shape is the same as the t
-        for j in range(hidden_size):
-            xt.T[0][j]=t[i-1][j]
-        xh[i-1]=h.T
+        xt = np.zeros((goods_size,1))
+        xt[i-1][0] = 1
         # mid += 1-sigmoid(np.dot((np.dot(np.dot(x.T, t), h)), np.dot(x.T,t))).T
-        mid +=bias* (1-sigmoid(np.dot(xt.T,h)))* xt
-        midt +=bias* (1-sigmoid(np.dot(xt.T, h))) *xh
-    #time3=time.clock()
+        mid += bias*(1-sigmoid(np.dot(np.dot(xt.T,t),h)))*np.dot(xt.T,t).T
+        midt += bias*(1-sigmoid(np.dot(np.dot(xt.T, t), h))) * np.dot(xt,h.T)
+
         # print np.shape(mid)  #1, 1559
     for i in negtargets:
-        xn= np.zeros((hidden_size,1))
-        xh= np.zeros((goods_size,hidden_size))
-        for j in range(hidden_size):
-            xn.T[0][j]=t[i-1][j]
-        xh[i-1]=h.T
-        mid -= sigmoid(np.dot(xn.T,h))*xn
-        midn +=sigmoid(np.dot(xn.T,h))* xh
-    #time4=time.clock()
+        xn= np.zeros((goods_size,1))
+        xn[i-1][0] = 1
+        mid -= sigmoid(np.dot(np.dot(xn.T, t), h))*np.dot(xn.T,t).T
+        midn += sigmoid(np.dot(np.dot(xn.T, t), h)) * np.dot(xn,h.T)
     dw = np.dot(mid*h*(1-h),hl.T)
-    du = np.dot(mid*h*(1-h), tx.T)       #x how to choose   x x+1
+    du = np.dot(mid*h*(1-h), np.dot(t.T,x).T)         #x how to choose   x x+1
     dt += np.dot(np.dot(u.T,mid*h*(1-h)),x.T).T
-    #time5=time.clock()
+
     dt +=midt-midn
     # dt = np.dot(np.dot((1 - sigmoid(np.dot(np.dot(x.T,t), h))),x),h.T) + midn + \
     #      np.dot(np.dot(mid.T*hl*(1-hl), u.T), x.T)
     hl = h
-    #print (time2-time1),(time3-time2),(time4-time3),(time5-time4)
     return loss, du, dw, dt, hl
 
 
@@ -151,7 +151,6 @@ def predict(customer, u, w, t):
         #   x[i-1][0] = 1
         if right != 0 : # h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
             avr=avr/right
-            sig=sig+1
         
     return right,avr
 
@@ -159,31 +158,35 @@ while True:
     right = 0
     average=0
     itert += 1
+    basketnum=0
     print "This is iter %d"%itert
+    time0=time.clock()
     for i in range(len(listcust)-1):
         customer = data[listcust[i]]
         if i%500==0:
             print "Training customer %d"%i
         hprev = np.zeros((hidden_size, 1))
-
+        avrloss=0
         for j in range(len(customer)-1):
             inputs = customer[j]
             targets = customer[j+1]
             negtargets = negasamp(targets)
-
+            basketnum+=1
             loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
-
+            avrloss+=loss
             for param, dparam in zip([u, w, t],[du, dw, dt]):
                 param += learning_rate * dparam # adagrad update
+    avrloss=avrloss/basketnum
+    print avrloss
     print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) )         
     time1=time.clock()
+    print "Training cost :%f"%(time1-time0)
     if itert%1==0:
         for p in range(len(listcust)-1):
             customer = data[listcust[p]]
             rightmid ,avrmid= predict(customer, u, w, t)
             right+=rightmid
             average+=avrmid
-        average =average/sig
         strright=str(right)+"("+str(average)+")"+" "
         result=open("result.txt", "a")
         result.write(strright)
