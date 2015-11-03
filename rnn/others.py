@@ -23,15 +23,15 @@ print len(listcust)
 
 user_size = len(listcust)
 hidden_size = 20
-learning_rate = 1e-3
+learning_rate = 1e-1
 goods_size = 1559 
 itert = 0
 top = 50
 bias = 0
 # model parameters
-u = np.random.randn(user_size, hidden_size)*0.5 # input to hidden
+u = np.random.randn(hidden_size, user_size)*0.5 # input to hidden
 t = np.random.randn(hidden_size, goods_size)*0.5 # one-hot to embedding
-print u
+
 
 def lossfunction(customer,user):
 	pos=[]
@@ -47,11 +47,9 @@ def lossfunction(customer,user):
 	neg=negasamp(pos)
 	for i in neg:
 		xn[i-1][0]=1
-	print np.shape(x),np.shape(xn),np.shape(user),np.shape(t)
-	print user
-	loss=np.dot(np.dot(user,t),x)-np.dot(np.dot(user,t),xn)
+	loss=np.dot(np.dot(user.T,t),x)-np.dot(np.dot(user.T,t),xn)
 	du, dt= np.zeros_like(user), np.zeros_like(t)
-	dt=np.dot(user.T,x.T)-np.dot(user.T,xn.T)
+	dt=np.dot(user,x.T)-np.dot(user,xn.T)
 	du=np.dot(t,x)-np.dot(t,xn)
 	return loss , du ,dt
 
@@ -68,55 +66,66 @@ def negasamp(pos):
 
 
 
-def predict(customer, u, w, t):
+def predict(customer,user):
 
 	right = 0
-	hl = np.zeros((hidden_size, 1))
-	x = np.zeros((goods_size,1)) # encode in 1-of-k representation
 	xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
-	# rank = np.zeros((20,2))
+	
 	allrank = [[0]*2 for row in range(len(product_id))]
 
-	for q in range(len(customer)-1):
-		inputs = customer[q]
-		for c in inputs:
-			x[c-1][0] = 1
-		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-		hl=h
+	
 	for z in range(len(customer)-1, len(customer)):
 		targets = customer[z]
 		a=0
 		for r in product_id:
 			xt[r-1][0] = 1
-			valuet = np.dot(np.dot(xt.T,t),h)
+			valuet = np.dot(np.dot(user.T,t),xt)
 			xt = np.zeros((goods_size,1))
 			allrank[a][0] = r
 			allrank[a][1] = valuet
 			a+=1
 		allrank.sort(key=lambda x:x[1])
-			 
 		for b in targets:
 			for s in range(top):
 
 				if b == allrank[len(product_id)-s-1][0]:
 					right += 1
 					break
+	print right
 	return right
 
 while True:
 	itert += 1
 	#Train
+	avrloss=0
 	print "This is iter %d"%itert
 	time0=time.clock()
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
-		user = np.zeros((1,hidden_size))
+		if i%500==0:
+			print "Training customer %d"%i
+		user = np.zeros((hidden_size,1))
 		for j in range(hidden_size):
-			user[0][j] = u[i][j]
+			user[j][0] = u[j][i]
 		loss, du, dt=lossfunction(customer,user)
-		
-	
-	
+		t+=dt*learning_rate
+
+		for j in range(hidden_size):
+			u[j][i]+= user[j][0]
+
+		avrloss+=loss
+	avrloss=avrloss/len(listcust)
+	print u,t
+	print avrloss
+
+	for i in range(len(listcust)-1):
+		customer = data[listcust[i]]
+		print "customer %d"%i
+		user = np.zeros((hidden_size,1))
+		for j in range(hidden_size):
+			user[j][0] = u[j][i]	
+		right=predict(customer,user)
+	print right
 
 
 
