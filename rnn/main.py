@@ -25,8 +25,7 @@ print len(listcust)
 
 hidden_size = 10
 learning_rate = 1e-3
-goods_size = 1559
-user_size= len(listcust)  
+goods_size = 1559 
 itert = 0
 top = 50
 bias = 0
@@ -34,12 +33,12 @@ bias = 0
 u = np.random.randn(hidden_size, hidden_size)*0.5 # input to hidden
 w = np.random.randn(hidden_size, hidden_size)*0.5 # hidden to hidden
 t = np.random.randn(goods_size, hidden_size)*0.5 # one-hot to embedding
-r= np.random.randn(user_size, hidden_size)*0.5
+
 
 def sigmoid(x):                  #sigmoid function
 	return 1.0/(1+np.exp(-x))
 
-def lossFun(inputs, targets, negtargets, hprev,itert,hu)                    :#loss function    everybasket
+def lossFun(inputs, targets, negtargets, hprev,itert)                    :#loss function    everybasket
 	loss = 0
 	midh = 0
 	midt = 0
@@ -51,29 +50,27 @@ def lossFun(inputs, targets, negtargets, hprev,itert,hu)                    :#lo
 	for k in inputs:
 		x[k-1][0] = 1
 	h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-	hsum=h+hu
 	for n in targets:                 #calculate the loss
 		xt = np.zeros((goods_size,1))
 		xt[n-1][0] = 1
-		loss += bias*np.log(sigmoid(np.dot(np.dot(xt.T,t),hsum)))
-		midh += bias*(1-sigmoid(np.dot(np.dot(xt.T,t),hsum)))*np.dot(xt.T,t).T
-		midt += bias*(1-sigmoid(np.dot(np.dot(xt.T, t), hsum))) * np.dot(xt,hsum.T)
+		loss += bias*np.log(sigmoid(np.dot(np.dot(xt.T,t),h)))
+		midh += bias*(1-sigmoid(np.dot(np.dot(xt.T,t),h)))*np.dot(xt.T,t).T
+		midt += bias*(1-sigmoid(np.dot(np.dot(xt.T, t), h))) * np.dot(xt,h.T)
 
 	for g in negtargets:
 		xn = np.zeros((goods_size,1))
 		xn[g-1][0] = 1
-		loss += np.log(1 - sigmoid(np.dot(np.dot(xn.T,t),hsum)))
-		midh -= sigmoid(np.dot(np.dot(xn.T, t), hsum))*np.dot(xn.T,t).T
-		midt -= sigmoid(np.dot(np.dot(xn.T, t), hsum)) * np.dot(xn,hsum.T)
+		loss += np.log(1 - sigmoid(np.dot(np.dot(xn.T,t),h)))
+		midh -= sigmoid(np.dot(np.dot(xn.T, t), h))*np.dot(xn.T,t).T
+		midt -= sigmoid(np.dot(np.dot(xn.T, t), h)) * np.dot(xn,h.T)
 
 	du, dw, dt= np.zeros_like(u), np.zeros_like(w), np.zeros_like(t)
 	dw = np.dot(midh*h*(1-h),hl.T)
 	du = np.dot(midh*h*(1-h), np.dot(t.T,x).T)         #x how to choose   x x+1
 	dt += np.dot(np.dot(u.T,midh*h*(1-h)),x.T).T+midt
-	dhu=midh
 	hl = h
 
-	return loss, du, dw, dt, hl,dhu
+	return loss, du, dw, dt, hl
 
 def negasamp(targets):
 	negtargets = []
@@ -90,6 +87,7 @@ def predict(customer, u, w, t):
 	hl = np.zeros((hidden_size, 1))
 	x = np.zeros((goods_size,1)) # encode in 1-of-k representation
 	xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
+	# rank = np.zeros((20,2))
 	allrank = [[0]*2 for row in range(len(product_id))]
 
 	for q in range(len(customer)-1):
@@ -128,9 +126,6 @@ while True:
 	time0=time.clock()
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
-		y = np.zeros((user_size,1)) 
-		y[i-1][0]=1
-		hu=np.dot(y.T,r)
 		if i%500==0:
 			print "Training customer %d"%i
 		hprev = np.zeros((hidden_size, 1))
@@ -139,10 +134,10 @@ while True:
 			targets = customer[j+1]
 			negtargets = negasamp(targets)
 			basketnum+=1
-			loss, du, dw, dt, hprev,dhu= lossFun(inputs, targets, negtargets, hprev,itert,hu)
+			loss, du, dw, dt, hprev= lossFun(inputs, targets, negtargets, hprev,itert)
 			avrloss+=loss
-			dr=np.dot(y.T,dhu)
-			for param, dparam in zip([u, w, t,r],[du, dw, dt,dr]):
+	
+			for param, dparam in zip([u, w, t],[du, dw, dt]):
 				param += learning_rate * dparam # adagrad update
 	avrloss=avrloss/basketnum
 	if avrloss>preloss:
@@ -154,12 +149,14 @@ while True:
 	time1=time.clock()
 	print "Training cost :%f second"%(time1-time0)
 
+
+
 	if itert%1==0:
 	#predict/test
 		rightpredict=0
-		for p in range(len(listcust)-1):
+		for p in range(len(listcust)-1):	
 			customer = data[listcust[p]]
-			rightpredict += predict(customer, u, w, t,r)
+			rightpredict += predict(customer, u, w, t)
 			
 		time2=time.clock()
 		print "Total right is :%d"%rightpredict
