@@ -7,31 +7,25 @@ import numpy as np
 import pickle
 import random
 import time
-from collections import Counter
 
+
+ISOTIMEFORMAT='%Y-%m-%d %X'
+print "Start time is :"
+print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) ) 
 #read
 f1 = open("./data_NextBasket.txt", "rb")
 data = pickle.load(f1)
 f1.close()
 # data.get(3)
-f1 = open("./data_idList.txt", "rb")
-listfre = pickle.load(f1)
-f1.close()
 f1 = open("./list_cust4List.txt", "rb")
 listcust = pickle.load(f1)
 f1.close()
-f1 = open("./dic_custbasketnum.txt", "rb")
-custbasketnum = pickle.load(f1)
-f1.close()
 f1 = open("./list_product_id.txt", "rb")
 product_id = pickle.load(f1)
+product_id=random.sample(product_id, 500)
 f1.close()
 print len(listcust)
-dict=Counter(listfre)
-frelist=sorted(dict.items(), key=lambda e:e[1], reverse=True)
-fre=[]
-for i in range(80):
-    fre.append(frelist[i][0])
+
 
 
 # hyperparameters
@@ -40,7 +34,6 @@ learning_rate = 1e-1
 goods_size = 1559
 itert = 0
 top = 50
-
 # model parameters
 u = np.random.randn(hidden_size, hidden_size)*0.5 # input to hidden
 w = np.random.randn(hidden_size, hidden_size)*0.5 # hidden to hidden
@@ -57,7 +50,7 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
     midn = 0
     midt = 0
     hl = np.copy(hprev)
-    x = np.zeros((goods_size,1)) 
+    x = np.zeros((goods_size,1))
     tx= np.zeros((hidden_size,1))# the result of (t.T,x),shape is the same as the h
 
     # forward pass
@@ -105,55 +98,13 @@ def lossFun(inputs, targets, negtargets, hprev)                    :#loss functi
 
 
 def negasamp(targets):
-    negtargets=fre
-    for i in targets:
-        if i in negtargets:
-            negtargets.remove(i)
-    return negtargets[:50]
-
-
-# def predict(customer, u, w, t):
-#
-#   right = 0
-#   hl = np.zeros((hidden_size, 1))
-#   x = np.zeros((goods_size,1)) # encode in 1-of-k representation
-#   xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
-#   # rank = np.zeros((20,2))
-#   rank = [[0]*2 for row in range(top)]
-#   allrank = [[0]*2 for row in range(len(product_id))]
-#
-#   for j in range(int(len(customer)*0.7)+1):
-#       inputs = customer[j]
-#       for i in inputs:
-#           x[i-1][0] = 1
-#       h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-#
-#   for j in range((int(len(customer)*0.7)+1), len(customer)):
-#       targets = customer[j]
-#
-#       for i in product_id:
-#           xt[i-1][0] = 1
-#           valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
-#           xt = np.zeros((goods_size,1))
-#           if valuet > rank[0][1]:
-#               rank[0][0] = i
-#               rank[0][1] = valuet
-#               rank.sort(key=lambda x:x[1])
-#       for i in targets:
-#           for j in range(top):
-#
-#               if i == rank[j][0]:
-#                   right += 1
-#                   print "!"
-#       hl = h
-#       x = np.zeros((goods_size,1))
-#
-#       for i in targets:
-#           x[i-1][0] = 1
-#       h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-#
-#   return right
-
+    negtargets = []
+    # list2 = product_id
+    # negtargets=random.sample(list2, 80)
+    # for i in targets:
+    #   negtargets = filter(lambda a: a != i, negtargets)
+    # negtargets = negtargets[0:50]
+    return negtargets
 
 
 
@@ -165,147 +116,80 @@ def predict(customer, u, w, t):
     x = np.zeros((goods_size,1)) # encode in 1-of-k representation
     xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
     # rank = np.zeros((20,2))
-    rank = [[0]*2 for row in range(top)]
+    allrank = [[0]*2 for row in range(len(product_id))]
 
-    for j in range(int(len(customer)*0.7)+1):
+    for j in range(len(customer)-1):
         inputs = customer[j]
         for i in inputs:
             x[i-1][0] = 1
         h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
 
-    for j in range((int(len(customer)*0.7)+1), len(customer)):
+    for j in range(len(customer)-1, len(customer)):
         targets = customer[j]
-
+        a=0
         for i in product_id:
             xt[i-1][0] = 1
             valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
             xt = np.zeros((goods_size,1))
-            if valuet > rank[0][1]:
-                rank[0][0] = i
-                rank[0][1] = valuet
-            rank.sort(key=lambda x:x[1])
+            allrank[a][0] = i
+            allrank[a][1] = valuet
+            a+=1
+        allrank.sort(key=lambda x:x[1])
+
         for i in targets:
             for j in range(top):
 
-                if i == rank[j][0]:
+                if i == allrank[len(product_id)-j-1][0]:
                     right += 1
-                    print "!"
-        hl = h
-        x = np.zeros((goods_size,1))
-
-        for i in targets:
-            x[i-1][0] = 1
-        h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
+                    break
+        # hl = h
+        # x = np.zeros((goods_size,1))
+        #
+        # for i in targets:
+        #   x[i-1][0] = 1
+        # h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
 
     return right
 
-
-
-
-
-
-
-
-# def predict(customer, u, w, t):
-#
-#   right = 0
-#   hl = np.zeros((hidden_size, 1))
-#   x = np.zeros((goods_size,1)) # encode in 1-of-k representation
-#   xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
-#   # rank = np.zeros((20,2))
-#   rank = [[0]*2 for row in range(top)]
-#   allrank = [[0]*2 for row in range(len(product_id))]
-#
-#   for j in range(int(len(customer)*0.7)+1):
-#       inputs = customer[j]
-#       for i in inputs:
-#           x[i-1][0] = 1
-#       h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-#
-#   for j in range((int(len(customer)*0.7)+1), len(customer)):
-#       targets = customer[j]
-#
-#       for i in product_id:
-#           xt[i-1][0] = 1
-#           valuet = sigmoid(np.dot(np.dot(xt.T,t),h))
-#           xt = np.zeros((goods_size,1))
-#           allrank[i-1][0] = i
-#           allrank[i-1][1] = valuet
-#       allrank.sort(key=lambda x:x[1])
-#
-#       for i in targets:
-#           for j in range(top):
-#
-#               if i == allrank[len(product_id)-j-1][0]:
-#                   right += 1
-#                   print "!"
-#       hl = h
-#       x = np.zeros((goods_size,1))
-#
-#       for i in targets:
-#           x[i-1][0] = 1
-#       h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-#
-#   return right
-
 while True:
     right = 0
-    rightpre= -100
     itert += 1
+    print "This is iter %d"%itert
     for i in range(len(listcust)-1):
         customer = data[listcust[i]]
+        if i%500==0:
+            print "Training customer %d"%i
         hprev = np.zeros((hidden_size, 1))
 
-        for j in range(int(len(customer)*0.7)+1):
+        for j in range(len(customer)-1):
             inputs = customer[j]
             targets = customer[j+1]
-            #time1=time.clock()
             negtargets = negasamp(targets)
-            #time2=time.clock()
+
             loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
-            #time3=time.clock()
-    # for j in range(len(inputs)-1):
-    #     # print "basket"
-    #     # print j
-    #     loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
+
             for param, dparam in zip([u, w, t],[du, dw, dt]):
                 param += learning_rate * dparam # adagrad update
-            #time4=time.clock()
-    timea = time.clock()
-    for i in range(len(listcust)-1):
-        customer = data[listcust[i]]
-        print len(listcust)
-        time1 = time.clock()
-        right += predict(customer, u, w, t)
-        time2 = time.clock()
-        print i
-        print "eachcustpre"
-        print time2-time1
-    timeA = time.clock()
-    print "allcustpre"
-    print timeA - timea
-    print right
+    print time.strftime( ISOTIMEFORMAT, time.localtime( time.time() ) )         
+    time1=time.clock()
+    if itert%5==0:
+        for p in range(len(listcust)-1):
+            customer = data[listcust[p]]
+            right += predict(customer, u, w, t)
 
-    try:
-        if itert%5==0:
-            for i in range(len(listcust)-1):
-                customer = data[listcust[i]]
-                right += predict(customer, u, w, t)
-
-            strright=str(right)+" "
-            result=open("result.txt", "a")
-            result.write(strright)
-            pickle.dump(u,open("resultu.txt", "w"))
-            pickle.dump(w,open("resultw.txt", "w"))
-            pickle.dump(t,open("resultt.txt", "w"))
-        print "iter %d"%itert 
-        print right
-    except:
-        continue
+        strright=str(right)+" "
+        result=open("result.txt", "a")
+        result.write(strright)
+        pickle.dump(u,open("resultu.txt", "w"))
+        pickle.dump(w,open("resultw.txt", "w"))
+        pickle.dump(t,open("resultt.txt", "w"))
+        time2=time.clock()
+        print "Total right is :%d"%right
+        print "Predict cost  %f seconds"%(time2-time1)
 
 
 
-    
+
 
 
 
