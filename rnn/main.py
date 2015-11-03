@@ -30,9 +30,19 @@ itert = 0
 top = 50
 bias = 0
 # model parameters
-u = np.random.randn(hidden_size, hidden_size)*0.5 # input to hidden
-w = np.random.randn(hidden_size, hidden_size)*0.5 # hidden to hidden
-t = np.random.randn(goods_size, hidden_size)*0.5 # one-hot to embedding
+# u = np.random.randn(hidden_size, hidden_size)*0.5 # input to hidden
+# w = np.random.randn(hidden_size, hidden_size)*0.5 # hidden to hidden
+# t = np.random.randn(goods_size, hidden_size)*0.5 # one-hot to embedding
+
+f1 = open("./resultt.txt", "r")
+t = pickle.load(f1)
+f1.close()
+f1 = open("./resultu.txt", "r")
+u = pickle.load(f1)
+f1.close()
+f1 = open("./resultw.txt", "r")
+t = pickle.load(f1)
+f1.close()
 
 
 def sigmoid(x):                  #sigmoid function
@@ -119,42 +129,40 @@ def predict(customer, u, w, t):
 while True:
 	itert += 1
 	#Train
-	basketnum=0
-	avrloss=0
-	preloss=0
-	print "This is iter %d"%itert
-	time0=time.clock()
-	for i in range(len(listcust)-1):
-		customer = data[listcust[i]]
-		if i%500==0:
-			print "Training customer %d"%i
-		hprev = np.zeros((hidden_size, 1))
-		for j in range(len(customer)-1):
-			inputs = customer[j]
-			targets = customer[j+1]
-			negtargets = negasamp(targets)
-			basketnum+=1
-			loss, du, dw, dt, hprev= lossFun(inputs, targets, negtargets, hprev,itert)
-			avrloss+=loss
+	# basketnum=0
+	# avrloss=0
+	# preloss=0
+	# print "This is iter %d"%itert
+	# time0=time.clock()
+	# for i in range(len(listcust)-1):
+	# 	customer = data[listcust[i]]
+	# 	if i%500==0:
+	# 		print "Training customer %d"%i
+	# 	hprev = np.zeros((hidden_size, 1))
+	# 	for j in range(len(customer)-1):
+	# 		inputs = customer[j]
+	# 		targets = customer[j+1]
+	# 		negtargets = negasamp(targets)
+	# 		basketnum+=1
+	# 		loss, du, dw, dt, hprev= lossFun(inputs, targets, negtargets, hprev,itert)
+	# 		avrloss+=loss
 	
-			for param, dparam in zip([u, w, t],[du, dw, dt]):
-				param += learning_rate * dparam # adagrad update
-	avrloss=avrloss/basketnum
-	if avrloss>preloss:
-		learning_rate=learning_rate*1.02
-	else:
-		learning_rate=learning_rate*0.98
-	preloss=avrloss
-	print "The average loss is :%f"%avrloss
-	time1=time.clock()
-	print "Training cost :%f second"%(time1-time0)
-
-
+	# 		for param, dparam in zip([u, w, t],[du, dw, dt]):
+	# 			param += learning_rate * dparam # adagrad update
+	# avrloss=avrloss/basketnum
+	# if avrloss>preloss:
+	# 	learning_rate=learning_rate*1.02
+	# else:
+	# 	learning_rate=learning_rate*0.98
+	# preloss=avrloss
+	# print "The average loss is :%f"%avrloss
+	# time1=time.clock()
+	# print "Training cost :%f second"%(time1-time0)
 
 	if itert%1==0:
 	#predict/test
 		rightpredict=0
-		for p in range(len(listcust)-1):	
+		for p in range(len(listcust)-1):
 			customer = data[listcust[p]]
 			rightpredict += predict(customer, u, w, t)
 			
