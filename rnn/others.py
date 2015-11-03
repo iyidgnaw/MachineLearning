@@ -30,9 +30,8 @@ top = 50
 bias = 0
 # model parameters
 u = np.random.randn(user_size, hidden_size)*0.5 # input to hidden
-t = np.random.randn(goods_size, hidden_size)*0.5 # one-hot to embedding
-
-
+t = np.random.randn(hidden_size, goods_size)*0.5 # one-hot to embedding
+print u
 
 def lossfunction(customer,user):
 	pos=[]
@@ -49,6 +48,7 @@ def lossfunction(customer,user):
 	for i in neg:
 		xn[i-1][0]=1
 	print np.shape(x),np.shape(xn),np.shape(user),np.shape(t)
+	print user
 	loss=np.dot(np.dot(user,t),x)-np.dot(np.dot(user,t),xn)
 	du, dt= np.zeros_like(user), np.zeros_like(t)
 	dt=np.dot(user.T,x.T)-np.dot(user.T,xn.T)
@@ -110,7 +110,9 @@ while True:
 	time0=time.clock()
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
-		user=u[i]
+		user = np.zeros((1,hidden_size))
+		for j in range(hidden_size):
+			user[0][j] = u[i][j]
 		loss, du, dt=lossfunction(customer,user)
 		
 	
