@@ -30,7 +30,7 @@ print len(listcust)
 
 # hyperparameters
 hidden_size = 5# size of hidden layer of neurons
-learning_rate = 1e-2
+learning_rate = 1e-3
 goods_size = 1559
 itert = 0
 top = 50
@@ -44,10 +44,7 @@ t = np.random.randn(goods_size, hidden_size)*0.5 # one-hot to embedding
 def sigmoid(x):                  #sigmoid function
 	return 1.0/(1+np.exp(-x))
 
-def nonlinear(hidden):
-	for i in len(hidden):
-		hidden[i][0]=(1-np.exp(-2*hidden[i][0]))/(1+np.exp(-2*hidden[i][0]))
-	return hidden
+
 def lossFun(inputs, targets, negtargets, hprev,itert)                    :#loss function    everybasket
 	loss = 0
 	total=0
@@ -55,6 +52,8 @@ def lossFun(inputs, targets, negtargets, hprev,itert)                    :#loss 
 	midn = 0
 	midt = 0
 	right=0
+	valuetrue=0
+	valuepredict=0
 	hl = np.copy(hprev)
 	x = np.zeros((goods_size,1)) 
 	xt= np.zeros((goods_size,1)) # encode in 1-of-k representation
@@ -64,7 +63,7 @@ def lossFun(inputs, targets, negtargets, hprev,itert)                    :#loss 
 	for i in inputs:
 		x[i-1][0] = 1
 	h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-	if itert%10==0:
+	if itert%5==0:
 		allrank = [[0]*2 for row in range(len(product_id))]
 		a=0
 		for i in product_id:
@@ -80,6 +79,15 @@ def lossFun(inputs, targets, negtargets, hprev,itert)                    :#loss 
 				if i == allrank[len(product_id)-j-1][0]:
 					right += 1
 					break
+		for i in targets:
+			xt[i-1][0] = 1
+			valuet = np.dot(np.dot(xt.T,t),h)
+			valuetrue+=valuet
+			xt = np.zeros((goods_size,1))
+		valuetrue=valuetrue/len(targets)
+		for j in range(len(targets)):
+			valuepredict+=allrank[len(product_id)-j-1][1]
+		valuepredict=valuepredict/len(targets)
 	for i in targets:                 #calculate the loss
 		xt = np.zeros((goods_size,1))
 		xt[i-1][0] = 1
@@ -115,9 +123,9 @@ def lossFun(inputs, targets, negtargets, hprev,itert)                    :#loss 
 	# dt = np.dot(np.dot((1 - sigmoid(np.dot(np.dot(x.T,t), h))),x),h.T) + midn + \
 	#      np.dot(np.dot(mid.T*hl*(1-hl), u.T), x.T)
 	hl = h
-	if itert%10==0:
+	if itert%5==0:
 		total=len(targets)
-	return loss, du, dw, dt, hl,total,right
+	return loss, du, dw, dt, hl,total,right,valuetrue,valuepredict
 
 
 def negasamp(targets):
@@ -145,7 +153,8 @@ def predict(customer, u, w, t):
 		inputs = customer[j]
 		for i in inputs:
 			x[i-1][0] = 1
-		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
+		h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) 
+		hl=h# hidden state
 	for j in range(len(customer)-1, len(customer)):
 		targets = customer[j]
 		a=0
@@ -157,32 +166,31 @@ def predict(customer, u, w, t):
 			allrank[a][1] = valuet
 			a+=1
 		allrank.sort(key=lambda x:x[1])
-		avr=0       
+		     
 		for i in targets:
 			for j in range(top):
 
 				if i == allrank[len(product_id)-j-1][0]:
 					right += 1
-					avr+=len(product_id)-j
+					
 					break
-		# hl = h
-		# x = np.zeros((goods_size,1))
-		#
-		# for i in targets:
-		#   x[i-1][0] = 1
-		if right != 0 : # h = sigmoid(np.dot(np.dot(u,t.T),x) + np.dot(w,hl)) # hidden state
-			avr=avr/right
+	
+	
 		
-	return right,avr
+	return right
 
 while True:
 	right = 0
-	average=0
+	rightpredict=0
 	itert += 1
 	basketnum=0
 	total=0
 	avrloss=0
 	preloss=0
+	valuetruemid=0
+	valuepredictmid=0
+	valuetrue=0
+	valuepredict=0
 	print "This is iter %d"%itert
 	time0=time.clock()
 	for i in range(len(listcust)-1):
@@ -195,40 +203,43 @@ while True:
 			targets = customer[j+1]
 			negtargets = negasamp(targets)
 			basketnum+=1
-			loss, du, dw, dt, hprev ,totalmid,rightmid= lossFun(inputs, targets, negtargets, hprev,itert)
+			loss, du, dw, dt, hprev ,totalmid,rightmid,valuetruemid,valuepredictmid= lossFun(inputs, targets, negtargets, hprev,itert)
 			avrloss+=loss
-
+			valuepredict+=valuepredictmid
+			valuetrue+=valuetruemid
 			total+=totalmid
 			right+=rightmid
 			for param, dparam in zip([u, w, t],[du, dw, dt]):
 				param += learning_rate * dparam # adagrad update
-	if itert%10==0:
-		print total,right
 	avrloss=avrloss/basketnum
+	valuetrue=valuetrue/basketnum
+	valuepredict=valuepredict/basketnum
 	if avrloss>preloss:
 		learning_rate=learning_rate*1.05
 	else:
 		learning_rate=learning_rate*0.95
 	preloss=avrloss
-	print "The average loss is :%f"%avrloss       
+	print "The average loss is :%f"%avrloss
+	if itert%5==0:
+		print total,right
+		print "The average value of next basket on trainset is : %f"% valuetrue
+		print "The average value of predict basket on trainset is : %f"% valuepredict  
 	time1=time.clock()
-	print "Training cost :%f"%(time1-time0)
-	# if itert%100==0:
-	#   for p in range(len(listcust)-1):
-	#       customer = data[listcust[p]]
-	#       rightmid ,avrmid= predict(customer, u, w, t)
-	#       right+=rightmid
-	#       average+=avrmid
-	#   strright=str(right)+"("+str(average)+")"+" "
-	#   result=open("result.txt", "a")
-	#   result.write(strright)
-	#   pickle.dump(u,open("resultu.txt", "w"))
-	#   pickle.dump(w,open("resultw.txt", "w"))
-	#   pickle.dump(t,open("resultt.txt", "w"))
-	#   time2=time.clock()
-	#   print "Total right is :%d"%right
-	#   print "The average value of test set is : %d"%average
-	#   print "Predict cost  %f seconds"%(time2-time1)
+	print "Training cost :%f second"%(time1-time0)
+	if itert%1==0:
+		for p in range(len(listcust)-1):
+			customer = data[listcust[p]]
+			rightmid = predict(customer, u, w, t)
+			rightpredict+=rightmid
+	strright=str(rightpredict)+" "
+	result=open("result.txt", "a")
+	result.write(strright)
+	pickle.dump(u,open("resultu.txt", "w"))
+	pickle.dump(w,open("resultw.txt", "w"))
+	pickle.dump(t,open("resultt.txt", "w"))
+	time2=time.clock()
+	print "Total right is :%d"%rightpredict
+	print "Predict cost  %f seconds"%(time2-time1)
 
 
 
