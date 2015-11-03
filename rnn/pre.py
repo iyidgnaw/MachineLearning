@@ -1,70 +1,125 @@
-__author__ = 'lizk'
-import MySQLdb as mdb
-import sys
+__author__ = 'wangdiyi'
+"""
+Minimal character-level Vanilla RNN model. Written by Andrej Karpathy (@karpathy)
+BSD License
+"""
+import numpy as np
 import pickle
-
-con = None
-
-try:
-
-    con = mdb.connect('localhost', 'root',
-        'lzk199445', 'test');
-
-    cur = con.cursor()
-    cur.execute("SELECT * FROM data_order")
-
-    rows = cur.fetchall()
-    numrows = int(cur.rowcount)
+import random
 
 
-    basketdic = {}
-    basket = []
-    k = 0
-    j = 0
-    for i in range(numrows):
+#read
+f1 = open("F:\\pythonPro\\data_NextBasket.txt", "rb")
+data = pickle.load(f1)
+f1.close()
+# data.get(3)
+f1 = open("F:\\pythonPro\\data_idList.txt", "rb")
+listfre = pickle.load(f1)
+f1.close()
+f1 = open("F:\\pythonPro\\data_custmList.txt", "rb")
+listcust = pickle.load(f1)
+f1.close()
+print len(listcust)
 
-        if i == 0:
-            basket.append([])
-            basket[k].append(int(rows[i][0]))
-            continue
+# hyperparameters
+hidden_size = 1559 # size of hidden layer of neurons
+learning_rate = 1e-1
+goods_size = 1559
 
-        if rows[i-1][2] != rows[i][2]:                  #customer
-            basketdic[int(rows[i-1][2])] = basket
-            basket = []
-            k = 0
-            basket.append([])
-            basket[k].append(int(rows[i][0]))
-
-            continue
-
-        if rows[i-1][1] != rows[i][1]:                         #date
-            k = k + 1
-            basket.append([])
-
-        print rows[i][0]
-        basket[k].append(int(rows[i][0]))
-    basketdic[int(rows[i][2])] = basket
-
-    # save dict
-    f1 = open("F:\\pythonPro\\data_NextBasket.txt", "wb")
-    pickle.dump(basketdic, f1)
-    f1.close()
-    #read
-    # f1 = open("F:\\pythonPro\\RNN_lizk.txt", "rb")
-    # d = pickle.load(f1)
-    # f1.close()
+# model parameters
+u = np.random.randn(hidden_size, goods_size)*0.01 # input to hidden
+w = np.random.randn(hidden_size, hidden_size)*0.01 # hidden to hidden
+t = np.random.randn(goods_size, goods_size)*0.01 # one-hot to embedding
 
 
+def sigmoid(x):                  #sigmoid function
+    return 1.0/(1+np.exp(-x))
+
+
+def lossFun(inputs, targets, negtargets, hprev)                    :#loss function    everybasket
+    loss = 0
+    mid = 0
+    midn = 0
+    midt = 0
+    hl = np.copy(hprev)
+    x = np.zeros((goods_size,1)) # encode in 1-of-k representation
+
+
+  # forward pass
+    for i in inputs:
+        x[i-1][0] = 1
+    h = sigmoid(np.dot(np.dot(u,t),x) + np.dot(w,hl)) # hidden state
+    for i in targets:                 #calculate the loss
+        xt = np.zeros((goods_size,1))
+        xt[i-1][0] = 1
+        loss += np.log(sigmoid(np.dot(np.dot(xt.T,t),h)))
+    for i in negtargets:
+        xn = np.zeros((goods_size,1))
+        xn[i-1][0] = 1
+        loss += np.log(1 - sigmoid(np.dot(np.dot(xn.T,t),h)))
+    print loss
+
+
+    du, dw, dt = np.zeros_like(u), np.zeros_like(w), np.zeros_like(t)
 
 
 
+    for i in targets:                   #loss to hide
+        xt = np.zeros((goods_size,1))
+        xt[i-1][0] = 1
+        # mid += 1-sigmoid(np.dot((np.dot(np.dot(x.T, t), h)), np.dot(x.T,t)))
+        mid += (1-sigmoid(np.dot(np.dot(xt.T,t),h)))*np.dot(xt.T,t).T
+        midt += (1-sigmoid(np.dot(np.dot(xt.T, t), h))) * np.dot(xt,h.T).T
 
-except mdb.Error, e:
+        # print np.shape(mid)  #1, 1559
+    for i in negtargets:
+        xn= np.zeros((goods_size,1))
+        xn[i-1][0] = 1
+        mid -= sigmoid(np.dot(np.dot(xn.T, t), h))*np.dot(xn.T,t).T
+        midn += sigmoid(np.dot(np.dot(xn.T, t), h))*np.dot(xn,h.T).T
 
-    print "Error %d: %s" % (e.args[0],e.args[1])
-    sys.exit(1)
+    dw = np.dot(mid*h*(1-h),hl.T)
+    du += np.dot(mid*h*(1-h), np.dot(t,x).T)         #x how to choose   x x+1
+    dt += np.dot(mid*h*(1-h), np.dot(x.T, u.T))
 
-finally:
+    dt += midt - midn
+    # dt = np.dot(np.dot((1 - sigmoid(np.dot(np.dot(x.T,t), h))),x),h.T) + midn + \
+    #      np.dot(np.dot(mid.T*hl*(1-hl), u.T), x.T)
+    hl = h
+    return loss, du, dw, dt, hl
 
-    if con:
-        con.close()
+
+def negasamp(targets):
+    list2 = listfre
+    for i in targets:
+        list2 = filter(lambda a: a != i, list2)
+    # print targets
+    # print list2
+    negtargets = []
+    for i in range(50):
+        negtargets.append(random.choice(list2))
+    return negtargets
+
+for i in range(len(listcust)-1):
+    customer = data[listcust[i]]
+    hprev = np.zeros((hidden_size, 1))
+
+    print "customer"
+    print i
+    print customer
+
+    for j in range(len(customer)-1):
+
+        inputs = customer[j]
+        targets = customer[j+1]
+        negtargets = negasamp(targets)
+        loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
+    # for j in range(len(inputs)-1):
+    #     # print "basket"
+    #     # print j
+    #     loss, du, dw, dt, hprev = lossFun(inputs, targets, negtargets, hprev)
+        for param, dparam in zip([u, w, t],
+                             [du, dw, dt]):
+            param += learning_rate * dparam # adagrad update
+
+
