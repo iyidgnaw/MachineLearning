@@ -27,7 +27,6 @@ learning_rate = 5e-2
 goods_size = 1559 
 itert = 0
 top = 50
-bias = 0
 # model parameters
 u = np.random.randn(hidden_size, user_size)*0.5 # input to hidden
 t = np.random.randn(hidden_size, goods_size)*0.5 # one-hot to embedding
@@ -53,8 +52,6 @@ def lossfunction(customer,user):
 	du=np.dot(t,x)-np.dot(t,xn)
 	return loss , du ,dt
 
-
-
 def negasamp(pos):
 	list3 = []
 	list2 = product_id
@@ -63,34 +60,17 @@ def negasamp(pos):
 	list3=random.sample(list2, len(pos))
 	return list3
 
-
-
-
 def predict(customer,user):
 
 	right = 0
-	xt = np.zeros((goods_size,1)) # encode in 1-of-k representation
-	
-	allrank = [[0]*2 for row in range(len(product_id))]
-
-	
+	result=[]
 	for z in range(len(customer)-1, len(customer)):
 		targets = customer[z]
-		a=0
-		for r in product_id:
-			xt[r-1][0] = 1
-			valuet = np.dot(np.dot(user.T,t),xt)
-			xt = np.zeros((goods_size,1))
-			allrank[a][0] = r
-			allrank[a][1] = valuet
-			a+=1
-		allrank.sort(key=lambda x:x[1])
-		for b in targets:
-			for s in range(top):
-
-				if b == allrank[len(product_id)-s-1][0]:
-					right += 1
-					break
+		valuet = np.dot(user.T,t)
+		valuet=valuet.argsort()
+		for s in range(top):
+			result.append(valuet[0][len(product_id)-s-1])
+		right=len(list(set(targets) & set(result)))
 	return right
 
 while True:
@@ -98,7 +78,6 @@ while True:
 	#Train
 	right=0
 	avrloss=0
-	preloss=-3
 	print "This is iter %d"%itert
 	time0=time.clock()
 	for i in range(len(listcust)-1):
@@ -110,18 +89,12 @@ while True:
 			user[j][0] = u[j][i]
 		loss, du, dt=lossfunction(customer,user)
 		t+=dt*learning_rate
-
 		for j in range(hidden_size):
-			u[j][i]+= user[j][0]
+			u[j][i]+= du[j][0]*learning_rate
 
 		avrloss+=loss
 	avrloss=avrloss/len(listcust)
 	print avrloss
-	if avrloss>preloss:
-		learning_rate=learning_rate*1.05
-	else:
-		learning_rate=learning_rate*0.95
-	preloss=avrloss
 
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
