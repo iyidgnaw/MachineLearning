@@ -22,34 +22,28 @@ print len(listcust)
 
 
 user_size = len(listcust)
-hidden_size = 20
+hidden_size =10
 learning_rate = 5e-2
 goods_size = 1559 
 itert = 0
-top = 50
+top=50
 # model parameters
 u = np.random.randn(hidden_size, user_size)*0.5 # input to hidden
 t = np.random.randn(hidden_size, goods_size)*0.5 # one-hot to embedding
 
+def function(x):
+	result=np.log(1+np.exp(-x))
+	return result
 
-def lossfunction(customer,user):
-	pos=[]
-	x = np.zeros((goods_size,1))
-	xn = np.zeros((goods_size,1))
 
-	for i in range(len(customer)-1):
-		for j in range(len(customer[i])):
-			pos.append(customer[i][j])
-	pos=list(set(pos))
-	for i in pos:
-		x[i-1][0]=1
-	neg=negasamp(pos)
-	for i in neg:
-		xn[i-1][0]=1
-	loss=np.dot(np.dot(user.T,t),x)-np.dot(np.dot(user.T,t),xn)
+def lossfunction(x,xn,user,t):
+	minus=np.dot(np.dot(user.T,t),x)-np.dot(np.dot(user.T,t),xn)
+	loss =function(minus)
 	du, dt= np.zeros_like(user), np.zeros_like(t)
-	dt=np.dot(user,x.T)-np.dot(user,xn.T)
-	du=np.dot(t,x)-np.dot(t,xn)
+	dtmid=np.dot(user,x.T)-np.dot(user,xn.T)
+	dt=(np.exp(minus)*dtmid)/(1+np.exp(minus))
+	dumid=np.dot(t,x)-np.dot(t,xn)
+	du=(np.exp(minus)*dumid)/(1+np.exp(minus))
 	return loss , du ,dt
 
 def negasamp(pos):
@@ -76,25 +70,45 @@ def predict(customer,user):
 while True:
 	itert += 1
 	#Train
-	right=0
+	number=0
 	avrloss=0
+	right=0
 	print "This is iter %d"%itert
 	time0=time.clock()
+
+
+
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
+		#hint 
 		if i%500==0:
 			print "Training customer %d"%i
+		#prepare the user 	
 		user = np.zeros((hidden_size,1))
 		for j in range(hidden_size):
 			user[j][0] = u[j][i]
-		loss, du, dt=lossfunction(customer,user)
-		t+=dt*learning_rate
-		for j in range(hidden_size):
-			u[j][i]+= du[j][0]*learning_rate
+		
+		#prepare the positive set and negative set
+		pos=[]
+		for i in range(len(customer)-1):
+			for j in range(len(customer[i])):
+				pos.append(customer[i][j])
+		pos=list(set(pos))
+		neg=negasamp(pos)
+		for i in range(len(pos)):
+			number+=1
+			x = np.zeros((goods_size,1))
+			xn = np.zeros((goods_size,1))
+			x[pos[i]-1][0]=1
+			xn[neg[i]-1][0]=1
+			loss, du, dt=lossfunction(x,xn,user,t)
+			t-=dt*learning_rate
+			avrloss+=loss
+			for j in range(hidden_size):
+				u[j][i]-= du[j][0]*learning_rate
+	print avrloss/number
 
-		avrloss+=loss
-	avrloss=avrloss/len(listcust)
-	print avrloss
+
 
 	for i in range(len(listcust)-1):
 		customer = data[listcust[i]]
