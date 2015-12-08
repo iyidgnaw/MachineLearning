@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import math
 user_size=943
 item_size=1682
 rating_matrix=np.zeros((user_size,item_size))
@@ -69,4 +70,30 @@ def item_bias(target,avg):
 	return biaslist
 
 
-	
+def predict(user_matrix, item_matrix):
+	predict = np.zeros((user_size,item_size))
+	for i in range(user_size):
+		for j in range(item_size):
+			# predict[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])+userbias[i]+itembias[j]
+			predict[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])
+	return predict
+
+
+def evaluate(predict, test_matrix):
+	counter = 0
+	sum = 0
+	for i in range(user_size):
+		for j in range(item_size):
+			if((predict[i][j]>0) & (test_matrix[i][j]>0)):
+				counter += 1
+				sum += math.pow(test_matrix[i][j] - predict[i][j], 2)
+
+	return math.sqrt(sum/counter)
+
+
+# user_matrix = np.random.randn(943, 10)
+# item_matrix = np.random.randn(item_size, 10)
+# predict_matrix = predict(user_matrix, item_matrix)
+# evalu = evaluate(predict_matrix, test_matrix)
+# print predict_matrix
+# print evalu
