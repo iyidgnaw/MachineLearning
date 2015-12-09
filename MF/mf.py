@@ -57,7 +57,7 @@ def user_bias(target,avg):
 				count+=1
 				total+=j-avg
 		totalcount+=count
-		userbias=total/(count+10)
+		userbias=total/(count)
 		# userbias=useravg-avg
 		biaslist.append(userbias)
 	return biaslist
@@ -74,7 +74,7 @@ def item_bias(target,avg):
 				total+=target[j][i]
 		totalcount+=count		
 		if count!=0:
-			itemavg=total/(count+25)
+			itemavg=total/(count)
 			itembias=itemavg-avg
 		else:
 			itembias=0
@@ -93,48 +93,25 @@ def train(user_matrix,item_matrix):
 				count+=1
 				pr=avg+userbias[i]+itembias[j]+np.dot(user_matrix[i],item_matrix[j].T)
 
-				# print "user"
-				# print user_matrix[i]
-				# print "item_matrix"
-				# print item_matrix[j]
 				regular=fanshu(user_matrix[i])+fanshu(item_matrix[j])+userbias[i]*userbias[i]+itembias[j]*itembias[j]
-				# print "rating_matrix"
-				# print rating_matrix[i][j]
-				# print "pr"
-				# print pr
 				eui=rating_matrix[i][j]-pr
 				if eui>5:
 					print "eui"
 					print eui,user_matrix[i],item_matrix[j]
-				# print "eui"
-				# print eui
 				loss = eui*eui+lamda*regular
 				totalloss+=loss
 				tmp = user_matrix[i]
 				user_matrix[i]+=learn_rate*(eui*item_matrix[j]-lamda*user_matrix[i])
 				item_matrix[j]+=learn_rate*(eui*tmp-lamda*item_matrix[j])
-	# print "user"
-	# for i in range(user_size):
-	# 	print user_matrix[i]
-	# print "item"
-	# for i in range(item_size):
-	# 	print item_matrix[i]
 	avrloss=totalloss/count	
 	print "The average loss of this iter is %f"%avrloss
 	return user_matrix,item_matrix
 
-def predict(user_matrix, item_matrix):
+def predict(user_matrix, item_matrix, userbias, itembias):
 	predict = np.zeros((user_size,item_size))
 	for i in range(user_size):
 		for j in range(item_size):
-			# predict[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])+userbias[i]+itembias[j]
-			predict[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])
-			# print "1"
-			# print user_matrix[i][:]
-			# print "2"
-			# print item_matrix[j][:].T
-			# print np.shape(item_matrix[j][:].T)
-			# print predict[i][j]
+			predict[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])+userbias[i]+itembias[j]
 	return predict
 
 
