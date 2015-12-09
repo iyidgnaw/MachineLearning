@@ -4,9 +4,9 @@ import math
 user_size=943
 item_size=1682
 hidden_size=10
-lamda=0.001
-learn_rate=0.05
-
+lamda=0.03
+learn_rate=0.01
+#fanshu   overall_avg -> count
 rating_matrix=np.zeros((user_size,item_size))
 test_matrix=np.zeros((user_size,item_size))#Initiation
 user_matrix=np.random.randn(user_size, hidden_size)*0.5
@@ -29,7 +29,7 @@ def fanshu(vector):
 	fanshu=0
 	for i in range(len(vector)):
 		fanshu+=vector[i]*vector[i]
-	print fanshu
+		fanshu = math.sqrt(fanshu)
 	return fanshu
 def overall_avg(target,key):
 	total=0.0
@@ -37,25 +37,28 @@ def overall_avg(target,key):
 		count=80000
 	else:
 		count=20000
+	count = 0
 	for i in range(user_size):
 		for j in range(item_size):
-			total+=target[i][j]
-	avg=total/count
+			if target[i][j] != 0:
+				total += target[i][j]
+				count += 1
+	avg = total/count
 	return avg
 
 def user_bias(target,avg):
 	biaslist=[]
 	totalcount=0
 	for i in range(user_size):
-		count=0
+		count=10
 		total=0.0
 		for j in target[i]:
 			if j!=0:
 				count+=1
-				total+=j
+				total+=j-avg
 		totalcount+=count
-		useravg=total/count
-		userbias=useravg-avg
+		userbias=total/(count+10)
+		# userbias=useravg-avg
 		biaslist.append(userbias)
 	return biaslist
 
@@ -71,7 +74,7 @@ def item_bias(target,avg):
 				total+=target[j][i]
 		totalcount+=count		
 		if count!=0:
-			itemavg=total/count
+			itemavg=total/(count+25)
 			itembias=itemavg-avg
 		else:
 			itembias=0
@@ -89,27 +92,49 @@ def train(user_matrix,item_matrix):
 			if rating_matrix[i][j]!=0:
 				count+=1
 				pr=avg+userbias[i]+itembias[j]+np.dot(user_matrix[i],item_matrix[j].T)
+
+				# print "user"
+				# print user_matrix[i]
+				# print "item_matrix"
+				# print item_matrix[j]
 				regular=fanshu(user_matrix[i])+fanshu(item_matrix[j])+userbias[i]*userbias[i]+itembias[j]*itembias[j]
+				# print "rating_matrix"
+				# print rating_matrix[i][j]
+				# print "pr"
+				# print pr
 				eui=rating_matrix[i][j]-pr
+				if eui>5:
+					print "eui"
+					print eui,user_matrix[i],item_matrix[j]
+				# print "eui"
+				# print eui
 				loss = eui*eui+lamda*regular
 				totalloss+=loss
+				tmp = user_matrix[i]
 				user_matrix[i]+=learn_rate*(eui*item_matrix[j]-lamda*user_matrix[i])
-				item_matrix[j]+=learn_rate*(eui*user_matrix[i]-lamda*item_matrix[j])
+				item_matrix[j]+=learn_rate*(eui*tmp-lamda*item_matrix[j])
+	# print "user"
+	# for i in range(user_size):
+	# 	print user_matrix[i]
+	# print "item"
+	# for i in range(item_size):
+	# 	print item_matrix[i]
 	avrloss=totalloss/count	
 	print "The average loss of this iter is %f"%avrloss
 	return user_matrix,item_matrix
-for i in range(5):
-	train(user_matrix,item_matrix)
 
-
-
-<<<<<<< HEAD
 def predict(user_matrix, item_matrix):
 	predict = np.zeros((user_size,item_size))
 	for i in range(user_size):
 		for j in range(item_size):
 			# predict[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])+userbias[i]+itembias[j]
 			predict[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])
+			# print "1"
+			# print user_matrix[i][:]
+			# print "2"
+			# print item_matrix[j][:].T
+			# print np.shape(item_matrix[j][:].T)
+			# print predict[i][j]
 	return predict
 
 
@@ -131,4 +156,8 @@ def evaluate(predict, test_matrix):
 # evalu = evaluate(predict_matrix, test_matrix)
 # print predict_matrix
 # print evalu
+for i in range(100):
+	print "iter"
+	print i
+	train(user_matrix,item_matrix)
 
