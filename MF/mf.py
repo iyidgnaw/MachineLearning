@@ -6,7 +6,6 @@ item_size=1682
 hidden_size=10
 lamda=0.03
 learn_rate=0.01
-#fanshu   overall_avg -> count
 rating_matrix=np.zeros((user_size,item_size))
 test_matrix=np.zeros((user_size,item_size))#Initiation
 user_matrix=np.random.randn(user_size, hidden_size)*0.5
@@ -48,7 +47,7 @@ def overall_avg(target,key):
 
 def user_bias(target,avg):
 	biaslist=[]
-	totalcount=0
+
 	for i in range(user_size):
 		count=10
 		total=0.0
@@ -56,7 +55,7 @@ def user_bias(target,avg):
 			if j!=0:
 				count+=1
 				total+=j-avg
-		totalcount+=count
+
 		userbias=total/(count)
 		# userbias=useravg-avg
 		biaslist.append(userbias)
@@ -64,7 +63,6 @@ def user_bias(target,avg):
 
 def item_bias(target,avg):
 	biaslist=[]
-	totalcount=0
 	for i in range(item_size):
 		count=0
 		total=0
@@ -72,7 +70,7 @@ def item_bias(target,avg):
 			if target[j][i]!=0:
 				count+=1
 				total+=target[j][i]
-		totalcount+=count		
+		
 		if count!=0:
 			itemavg=total/(count)
 			itembias=itemavg-avg
@@ -98,43 +96,45 @@ def train(user_matrix,item_matrix):
 				if eui>5:
 					print "eui"
 					print eui,user_matrix[i],item_matrix[j]
-				loss = eui*eui+lamda*regular
+				loss = eui*eui
 				totalloss+=loss
 				tmp = user_matrix[i]
 				user_matrix[i]+=learn_rate*(eui*item_matrix[j]-lamda*user_matrix[i])
 				item_matrix[j]+=learn_rate*(eui*tmp-lamda*item_matrix[j])
-	avrloss=totalloss/count	
-	print "The average loss of this iter is %f"%avrloss
+
+	RMSE=totalloss/count	
+	print "RMSE of trainset is %f"%RMSE
 	return user_matrix,item_matrix
 
-def predict(user_matrix, item_matrix, userbias, itembias):
-	predict = np.zeros((user_size,item_size))
+def predict(user_matrix, item_matrix):
+	avg=overall_avg(test_matrix,"Test")
+	userbias=user_bias(test_matrix,avg)
+	itembias=item_bias(test_matrix,avg)
+	predict_matrix = np.zeros((user_size,item_size))
 	for i in range(user_size):
 		for j in range(item_size):
-			predict[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])+userbias[i]+itembias[j]
-	return predict
+			predict_matrix[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])+userbias[i]+itembias[j]+avg
+
+	return predict_matrix
 
 
-def evaluate(predict, test_matrix):
+def evaluate(predict_matrix, test_matrix):
 	counter = 0
 	sum = 0
 	for i in range(user_size):
 		for j in range(item_size):
-			if((predict[i][j]>0) & (test_matrix[i][j]>0)):
+			if((predict_matrix[i][j]>0) & (test_matrix[i][j]>0)):
 				counter += 1
-				sum += math.pow(test_matrix[i][j] - predict[i][j], 2)
+				sum += math.pow(test_matrix[i][j] - predict_matrix[i][j], 2)
 
-	return math.sqrt(sum/counter)
+	RMSE=math.sqrt(sum/counter)	
+	print "RMSE of testset is %f"%RMSE
+	return
 
 
-# user_matrix = np.random.randn(943, 10)
-# item_matrix = np.random.randn(item_size, 10)
-# predict_matrix = predict(user_matrix, item_matrix)
-# evalu = evaluate(predict_matrix, test_matrix)
-# print predict_matrix
-# print evalu
 for i in range(100):
 	print "iter"
 	print i
 	train(user_matrix,item_matrix)
-
+	predict_matrix=predict(user_matrix, item_matrix)
+	evaluate(predict_matrix, test_matrix)
