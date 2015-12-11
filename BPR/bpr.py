@@ -5,13 +5,15 @@ import math
 user_size=943
 item_size=1682
 hidden_size=10
-lamda=0.001
-learn_rate=0.001
+lamda=10
+learn_rate=0.01
 
 rating_matrix=np.zeros((user_size,item_size))
 test_matrix=np.zeros((user_size,item_size))#Initiation
 user_matrix=np.random.randn(user_size, hidden_size)*0.5
 item_matrix=np.random.randn(item_size, hidden_size)*0.5
+
+
 def load_file(name,target):#load data function
 	data=open(name,'r')
 	lines=data.readlines()
@@ -36,7 +38,7 @@ def fanshu(vector):
 def overall_avg(target,key):
 	total=0.0
 	if key=='Train':
-		count=80000
+		count=50000
 	else:
 		count=20000
 	count = 0
@@ -98,7 +100,7 @@ def train(user_matrix,item_matrix):
 				negy =  random.randint(0, item_size-1)
 				while not((negy != j)&(rating_matrix[i][negy]<4)):
 					negy =  random.randint(0, item_size-1)
-				minus_Xij = np.dot(user_matrix[i], item_matrix[negy]) - np.dot(user_matrix[i],item_matrix[j])
+				minus_Xij = np.dot(user_matrix[i], item_matrix[negy]) +itembias[negy]- np.dot(user_matrix[i],item_matrix[j])-itembias[j]
 				if (minus_Xij<-5):
 					minus_Xij=-5
 				if (minus_Xij>0):
@@ -106,21 +108,12 @@ def train(user_matrix,item_matrix):
 				# print "minus"
 				# print minus_Xij
 				tmp_user = user_matrix[i]
-				user_matrix[i] += learn_rate*(item_matrix[negy]-item_matrix[j])*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+lamda*user_matrix[i]
-				item_matrix[j] += -learn_rate*tmp_user*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+lamda*item_matrix[j]
-				item_matrix[negy] += learn_rate*tmp_user*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+lamda*item_matrix[negy]
-				# print "user"
-				# print user_matrix[i]
-				# print "item"
-				# print item_matrix[j]
-	# 	totalloss += np.dot(user_matrix[i],item_matrix[j]) - rating_matrix[i][j]
-	# 	count+=1
-	# 	# if(count%100==0):
-	# 	print count
-	# loss = totalloss/count
-	# print "loss of trainset is %f"%loss
-	# print user_matrix
-	# print item_matrix
+				user_matrix[i] += learn_rate*(item_matrix[negy]-item_matrix[j])*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*lamda*user_matrix[i]
+				item_matrix[j] += -learn_rate*tmp_user*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*lamda*item_matrix[j]
+				item_matrix[negy] += learn_rate*tmp_user*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*lamda*item_matrix[negy]
+				# itembias[j]+=learn_rate*lamda*itembias[j]
+				# itembias[negy]+=learn_rate*lamda*itembias[negy]
+
 	return user_matrix, item_matrix
 
 def predict(user_matrix, item_matrix):
@@ -144,6 +137,11 @@ def evaluate(predict_matrix, test_matrix):
 	# print "rank_index"
 	# print rank_index
 	for user in range(user_size):
+		count1=0
+		for j in range(item_size):
+			if test_matrix[user][j]>3:
+				count1+=1
+		top=
 		for i in range(5):
 			x = user
 			y = rank_index[user][i]
