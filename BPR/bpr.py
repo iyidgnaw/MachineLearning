@@ -4,8 +4,11 @@ import random
 import math
 user_size=943
 item_size=1682
-hidden_size=10
-lamda=10
+hidden_size=20
+itemlamda = 2
+userlamda = 2
+itembiaslamda = 10
+# lamda=2                         #2 0.01
 learn_rate=0.01
 
 rating_matrix=np.zeros((user_size,item_size))
@@ -91,9 +94,6 @@ def train(user_matrix,item_matrix):
 	avg=overall_avg(rating_matrix,"Train")
 	userbias=user_bias(rating_matrix,avg)
 	itembias=item_bias(rating_matrix,avg)
-	totalloss=0
-	count=0
-	loss = 0
 	for i in range(user_size):						#each user
 		for j in range(item_size):       			#each item in user
 			if rating_matrix[i][j]>3:
@@ -108,11 +108,11 @@ def train(user_matrix,item_matrix):
 				# print "minus"
 				# print minus_Xij
 				tmp_user = user_matrix[i]
-				user_matrix[i] += learn_rate*(item_matrix[negy]-item_matrix[j])*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*lamda*user_matrix[i]
-				item_matrix[j] += -learn_rate*tmp_user*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*lamda*item_matrix[j]
-				item_matrix[negy] += learn_rate*tmp_user*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*lamda*item_matrix[negy]
-				# itembias[j]+=learn_rate*lamda*itembias[j]
-				# itembias[negy]+=learn_rate*lamda*itembias[negy]
+				user_matrix[i] += learn_rate*(item_matrix[negy]-item_matrix[j])*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*userlamda*user_matrix[i]
+				item_matrix[j] += -learn_rate*tmp_user*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*itemlamda*item_matrix[j]
+				item_matrix[negy] += learn_rate*tmp_user*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*itemlamda*item_matrix[negy]
+				itembias[j] += learn_rate*itembiaslamda*itembias[j]
+				itembias[negy] += learn_rate*itembiaslamda*itembias[negy]
 
 	return user_matrix, item_matrix
 
@@ -123,7 +123,7 @@ def predict(user_matrix, item_matrix):
 	predict_matrix = np.zeros((user_size,item_size))
 	for i in range(user_size):
 		for j in range(item_size):
-			predict_matrix[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])+userbias[i]+itembias[j]+avg
+			predict_matrix[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])+itembias[j]
 	return predict_matrix
 
 def evaluate(predict_matrix, test_matrix):
@@ -133,19 +133,22 @@ def evaluate(predict_matrix, test_matrix):
 	# print "rank"
 	# print rank_index
 	# print np.shape(rank_index)[1]
-	rank_index = rank_index[:, -5:np.shape(rank_index)[1]]
+	rank_index = rank_index[:, -30:np.shape(rank_index)[1]]
 	# print "rank_index"
 	# print rank_index
 	for user in range(user_size):
-		count1=0
-		for j in range(item_size):
-			if test_matrix[user][j]>3:
-				count1+=1
-		top=
-		for i in range(5):
+		rank_index2 = []
+		t = 0
+		for i in range(30):
 			x = user
-			y = rank_index[user][i]
-			# print test_matrix[x][y]
+			y = rank_index[user][29-i]
+			if rating_matrix[x][y]<4:
+				t += 1
+				rank_index2.append(y)
+			if t > 4:
+				break
+		for y in rank_index2:
+			x = user
 			if test_matrix[x][y] > 3:
 				counter += 1
 	preat5 = counter/(5.0*user_size)
@@ -158,6 +161,17 @@ for i in range(100):
 	predict_matrix = predict(user_matrix, item_matrix)
 	preat5 = evaluate(predict_matrix, test_matrix)
 	print "pre@5 %f"%preat5
+
+
+# for i in range(user_size):
+# 	countpo=0
+# 	countneg=0
+# 	for j in range(item_size):
+# 		if rating_matrix[i][j]>3:
+# 			countpo += 1
+# 		if test_matrix[i][j]>3:
+# 			countneg += 1
+# 	print countpo, countneg
 
 
 # count3=0
