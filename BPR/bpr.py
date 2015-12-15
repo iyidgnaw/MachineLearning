@@ -2,9 +2,12 @@ __author__ = 'lizk'
 import numpy as np
 import random
 import math
+from collections import *
+
+
 user_size=943
 item_size=1682
-hidden_size=20
+hidden_size=10
 itemlamda = 2
 userlamda = 2
 itembiaslamda = 10
@@ -88,16 +91,27 @@ def item_bias(target,avg):
 		biaslist.append(itembias)
 	return biaslist
 
+def dataselect(rating_matrix):
+	nonezeroinfo=[]
+	for i in range (user_size):
+		list1=[]
+		for j in range(item_size):
+			if rating_matrix[i][j]>0:
+				list1.append(j)
+		nonezeroinfo.append(list1)
+	
+	return nonezeroinfo
 
 
-def train(user_matrix,item_matrix):
+def train(user_matrix,item_matrix,nonezeroinfo):
 	avg=overall_avg(rating_matrix,"Train")
 	userbias=user_bias(rating_matrix,avg)
 	itembias=item_bias(rating_matrix,avg)
 	for i in range(user_size):						#each user
 		for j in range(item_size):       			#each item in user
 			if rating_matrix[i][j]>3:
-				negy =  random.randint(0, item_size-1)
+				negy =  random.randint(0, len(nonezeroinfo[i])-1)
+				negy= nonezeroinfo[i][negy]
 				while not((negy != j)&(rating_matrix[i][negy]<4)):
 					negy =  random.randint(0, item_size-1)
 				minus_Xij = np.dot(user_matrix[i], item_matrix[negy]) +itembias[negy]- np.dot(user_matrix[i],item_matrix[j])-itembias[j]
@@ -155,9 +169,13 @@ def evaluate(predict_matrix, test_matrix):
 	print "prec%f"%preat5
 	return preat5
 
+
+
+
+nonezeroinfo=dataselect(rating_matrix)
 for i in range(100):
 	print "iter %i"%i
-	train(user_matrix,item_matrix)
+	train(user_matrix,item_matrix,nonezeroinfo)
 	predict_matrix = predict(user_matrix, item_matrix)
 	preat5 = evaluate(predict_matrix, test_matrix)
 	print "pre@5 %f"%preat5
