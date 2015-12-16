@@ -2,15 +2,11 @@ __author__ = 'lizk'
 import numpy as np
 import random
 import math
-from collections import *
-
-
 user_size=943
 item_size=1682
 hidden_size=10
-itemlamda = 2
-userlamda = 2
-itembiaslamda = 10
+
+lamda = 0.01
 # lamda=2                         #2 0.01
 learn_rate=0.01
 
@@ -91,53 +87,37 @@ def item_bias(target,avg):
 		biaslist.append(itembias)
 	return biaslist
 
-def dataselect(rating_matrix):
-	nonezeroinfo=[]
-	for i in range (user_size):
-		list1=[]
-		for j in range(item_size):
-			if rating_matrix[i][j]>0:
-				list1.append(j)
-		nonezeroinfo.append(list1)
-	
-	return nonezeroinfo
 
 
-def train(user_matrix,item_matrix,nonezeroinfo):
-	avg=overall_avg(rating_matrix,"Train")
-	userbias=user_bias(rating_matrix,avg)
-	itembias=item_bias(rating_matrix,avg)
+def train(user_matrix,item_matrix):
+	sumnumber=0
 	for i in range(user_size):						#each user
 		for j in range(item_size):       			#each item in user
 			if rating_matrix[i][j]>3:
-				negy =  random.randint(0, len(nonezeroinfo[i])-1)
-				negy= nonezeroinfo[i][negy]
+				negy =  random.randint(0, item_size-1)
 				while not((negy != j)&(rating_matrix[i][negy]<4)):
 					negy =  random.randint(0, item_size-1)
-				minus_Xij = np.dot(user_matrix[i], item_matrix[negy]) +itembias[negy]- np.dot(user_matrix[i],item_matrix[j])-itembias[j]
-				if (minus_Xij<-5):
-					minus_Xij=-5
-				if (minus_Xij>0):
-					minus_Xij=0
-				# print "minus"
+				Xij = np.dot(user_matrix[i],item_matrix[j])-np.dot(user_matrix[i], item_matrix[negy])
+				if (Xij>5):
+					Xij=5
+				if (Xij<0):
+					Xij=0
+				sumnumber+=Xij				# print "minus"
 				# print minus_Xij
+				mid=-np.exp(-Xij)/(1+np.exp(-Xij))
 				tmp_user = user_matrix[i]
-				user_matrix[i] += learn_rate*(item_matrix[negy]-item_matrix[j])*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*userlamda*user_matrix[i]
-				item_matrix[j] += -learn_rate*tmp_user*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*itemlamda*item_matrix[j]
-				item_matrix[negy] += learn_rate*tmp_user*np.exp(minus_Xij)/(1+np.exp(minus_Xij))+learn_rate*itemlamda*item_matrix[negy]
-				itembias[j] += learn_rate*itembiaslamda*itembias[j]
-				itembias[negy] += learn_rate*itembiaslamda*itembias[negy]
+				user_matrix[i] += -learn_rate*(mid*(item_matrix[j]-item_matrix[negy])+lamda*user_matrix[i])
+				item_matrix[j] += -learn_rate*(mid*user_matrix[i]+lamda*item_matrix[j])
+				item_matrix[negy] += -learn_rate*(-mid*user_matrix[i]+lamda*item_matrix[negy])
+	print sumnumber
 
 	return user_matrix, item_matrix
 
 def predict(user_matrix, item_matrix):
-	avg=overall_avg(test_matrix,"Test")
-	userbias=user_bias(test_matrix,avg)
-	itembias=item_bias(test_matrix,avg)
 	predict_matrix = np.zeros((user_size,item_size))
 	for i in range(user_size):
 		for j in range(item_size):
-			predict_matrix[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])+itembias[j]
+			predict_matrix[i][j] = np.dot(user_matrix[i][:],item_matrix[j][:])
 	return predict_matrix
 
 def evaluate(predict_matrix, test_matrix):
@@ -169,13 +149,9 @@ def evaluate(predict_matrix, test_matrix):
 	print "prec%f"%preat5
 	return preat5
 
-
-
-
-nonezeroinfo=dataselect(rating_matrix)
-for i in range(100):
+for i in range(1000):
 	print "iter %i"%i
-	train(user_matrix,item_matrix,nonezeroinfo)
+	train(user_matrix,item_matrix)
 	predict_matrix = predict(user_matrix, item_matrix)
 	preat5 = evaluate(predict_matrix, test_matrix)
 	print "pre@5 %f"%preat5
