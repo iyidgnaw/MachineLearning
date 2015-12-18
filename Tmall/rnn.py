@@ -3,23 +3,29 @@ import numpy as np
 import random
 import math
 import xlrd
+import json
 
-train_data = xlrd.open_workbook('train.xlsx')
-test_data = xlrd.open_workbook('test.xlsx')
-train_table = train_data.sheets()[0]
-test_table = train_data.sheets()[0]
-user_id = list(set(train_table.col_values(0)))
-product_id = list(set(train_table.col_values(1)))
+
+all_cart=[]
+data= open('user_cart.json', 'r')
+lines=data.readlines()
+for line in lines:
+	line1=json.loads(line)
+	all_cart.append(line1)
+data1 = xlrd.open_workbook('data.xlsx')
+data1 = data1.sheets()[0]
+user_id = list(set(data1.col_values(0)))
+product_id = list(set(data1.col_values(1)))
 user_size, product_size = len(user_id), len(product_id)
 
 learning_rate = 0.1
 lamda=0.01
 hidden_size = 10
 u=np.random.randn(hidden_size, hidden_size)*0.5
-v=np.random.randn(hidden_size, product_size)*0.5
+v=np.random.randn(product_size, hidden_size)*0.5
 w=np.random.randn(hidden_size, hidden_size)*0.5
 x=np.random.randn(product_size, hidden_size)*0.5
-hprev = np.zeros((hidden_size, 1))
+hprev = np.zeros((1, 10))
 
 def sigmoid(x):
 	output = 1/(1+np.exp(-x))
@@ -29,8 +35,8 @@ def sigmoid(x):
 def negative(user_cart):
 	negtargets = []
 	list2 = product_id
-	negtargets=random.sample(list2, 80)
-	for m in user_cart:
+	negtargets=random.sample(list2, 2*len(user_cart))
+	for m in list(set(user_cart)):
 		negtargets = filter(lambda a: a != m, negtargets)
 	negtargets = negtargets[0:len(user_cart)]
 	return negtargets
@@ -41,27 +47,27 @@ def train(user_cart,u ,v ,w):
 	i = 0
 	loss = 0
 	for item_id in user_cart:
-		item = x[item_id]
+		item = x[item_id-1,:].reshape(1,10)
 		hid_input = np.dot(item, u)+ np.dot(hl, w)
 		h = sigmoid(hid_input)
 		item_neg_id = user_neg[i]
 		i += 1
-		Vi_j = v[:, item_id] - v[:, item_neg_id]
+		Vi_j = v[item_id-1,:].reshape(1,10).T - v[item_neg_id-1,:].reshape(1,10).T
 		Xij = np.dot(h, Vi_j)
 		loss += Xij                                    #plus Regulation
 		dXij = -(1-sigmoid(Xij))
-		dh = dXij*Vi_j
-		db = dXij*dh*sigmoid(hid_input)*(1-sigmoid(hid_input))
+		dh = dXij*(v[item_id-1,:].reshape(1,10) - v[item_neg_id-1,:].reshape(1,10))
+		db = dh*sigmoid(hid_input)*(1-sigmoid(hid_input))
 
-		dx = np.dot(db,u)+lamda*np.abs(x[item_id])
-		dvi = np.dot(h, dXij) + lamda*np.abs(v[item_id])
-		dvj = -np.dot(h, dXij) + lamda*np.abs(v[item_neg_id])
-		du = np.dot(x[item_id], db) + lamda*np.abs(u)
-		dw = np.dot(h, db) + lamda*np.abs(w)
+		dx = np.dot(db,u.T)+lamda*np.abs(x[item_id-1,:].reshape(1,10))
+		dvi = dXij*h + lamda*np.abs(v[item_id-1,:].reshape(1,10))
+		dvj = -dXij*h  + lamda*np.abs(v[item_neg_id-1,:].reshape(1,10))
+		du = np.dot(x[item_id-1,:].reshape(1,10).T, db) + lamda*np.abs(u)
+		dw = np.dot(hl.T, db) + lamda*np.abs(w)
 
-		x[item_id] -= learning_rate * dx
-		v[item_id] -= learning_rate * dvi
-		v[item_neg_id] -= learning_rate * dvj
+		x[item_id-1] -= learning_rate * dx[0]
+		v[item_id-1] -= learning_rate * dvi[0]
+		v[item_neg_id-1] -= learning_rate * dvj[0]
 		u -= learning_rate * du
 		w -= learning_rate * dw
 		hl = h
@@ -69,25 +75,29 @@ def train(user_cart,u ,v ,w):
 
 
 def predict(all_cart):
-	reat1 = 0
-	reat2 = 0
-	reat5 = 0
-	reat10 = 0
-	relevant = 0
-	for user_cart in all_cart:
+	reat1 = 0.0
+	reat2 = 0.0
+	reat5 = 0.0
+	reat10 = 0.0
+	relevant = 0.0
+	for n in range(len(all_cart)):
+		user_cart=all_cart[n]
 		i = 0
 		hl = np.copy(hprev)
 		for item_id in user_cart:
-			item = x[item_id]
+			item = x[item_id-1]
 			hid_input = np.dot(item, u)+ np.dot(hl, w)
 			h = sigmoid(hid_input)
 			i += 1
 			hl = h
 			if i>int(len(user_cart)*0.8):
 				break
-		for j in range(i, len(user_cart)):
+		for j in range(i, len(user_cart)-1):
 			relevant += 1
-			predict_matrix = np.dot(h, v)
+			predict_matrix = np.dot(h, v.T)
+			item=x[user_cart[j]-1]
+			hid_input = np.dot(item, u)+ np.dot(h, w)
+			h = sigmoid(hid_input)
 			rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
 			rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
 			if rank_index[0][-1] == user_cart[j+1]:
@@ -101,13 +111,15 @@ def predict(all_cart):
 				reat5 += 1
 				reat10 += 1
 				continue
-			for i in rank_index[:,-5:-2]:
-				reat5 += 1
-				reat10 += 1
-				continue
-			if i in rank_index[:,-10:-5]:
-				reat10 += 1
-				continue
+			for k in rank_index[0,-5:-2]:
+				if k == user_cart[j+1]:
+					reat5 += 1
+					reat10 += 1
+				
+			for k in rank_index[0,-10:-5]:
+				if k == user_cart[j+1]:
+					reat10 += 1
+				
 	recall_1 = reat1/relevant
 	recall_2 = reat2/relevant
 	recall_5 = reat5/relevant
@@ -125,13 +137,17 @@ def predict(all_cart):
 for iter in range(1000):
 	print "Iter %d"%iter
 	print "Training..."
+	sumloss=0
 	hiddensave=[]
 	for i in range(len(all_cart)):
 		user_cart = all_cart[i]
-		user_cart = user_cart[0:int(0.8*len(user_cart))]
-		u,v,w,x,h,loss=train(user_cart,u ,v ,w)
-
-
+		try:
+			user_cart = user_cart[0:int(0.8*len(user_cart))]
+			u,v,w,x,h,loss=train(user_cart,u ,v ,w)
+			sumloss+=loss
+		except:
+			continue
+	print sumloss
 	predict(all_cart)
 
 
