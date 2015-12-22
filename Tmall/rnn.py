@@ -19,7 +19,7 @@ product_id = list(set(data1.col_values(1)))
 user_size, product_size = len(user_id), len(product_id)
 
 learning_rate = 0.01
-lamda=0.01
+lamda=0.1
 hidden_size = 10
 u=np.random.randn(hidden_size, hidden_size)*0.01
 v=np.random.randn(product_size, hidden_size)*0.01
@@ -127,22 +127,22 @@ def predict(all_cart,u ,v ,w):
 			item=x[user_cart[j]-1]
 			hid_input = np.dot(item, u)+ np.dot(h, w)
 			h = sigmoid(hid_input)
-			print "user_cart[j]-1 %d"%(user_cart[j]-1)
-			print "item"
-			print item
-			print "h"
-			print h
-			print "real_v"
-			print v[user_cart[j]]
-			print np.dot(h,v[user_cart[j+1]-1])
+			# print "user_cart[j]-1 %d"%(user_cart[j]-1)
+			# print "item"
+			# print item
+			# print "h"
+			# print h
+			# print "real_v"
+			# print v[user_cart[j]]
+			# print np.dot(h,v[user_cart[j+1]-1])
 
 			rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
 			rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
-			print "max_v"
-			print v[rank_index[0][-1]]
-			print np.dot(h, v[rank_index[0][-1]])
-			print "ranklist"
-			print rank_index
+			# print "max_v"
+			# print v[rank_index[0][-1]]
+			# print np.dot(h, v[rank_index[0][-1]])
+			# print "ranklist"
+			# print rank_index
 			if rank_index[0][-1] == user_cart[j+1]:
 				reat1 += 1
 				reat2 += 1
