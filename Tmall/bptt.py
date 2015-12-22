@@ -42,18 +42,18 @@ def negative(user_cart):
 
 def train(user_cart,u ,x ,w):
 	hl = np.copy(hprev)
-	dhnminus1=np.copy(hprev)
+	dhlist=[]
 	hiddenlist=[]
 	dxilist=[]
 	dxjlist=[]
 	dxilists=[]
 	midlist=[]
-	sumdu=0
-	sumdw=0
+	sumdu= 0
+	sumdw= 0
+	dh1= np.copy(hprev)
 	user_neg = negative(user_cart)
 	i = 0
 	loss = 0
-
 	for i in range(len(user_cart)-1):#for feedforward in bpr-opt
 		item = x[user_cart[i+1]-1,:].reshape(1,10)
 		item1= x[user_cart[i]-1,:].reshape(1,10)
@@ -90,15 +90,17 @@ def train(user_cart,u ,x ,w):
 		# u -= learning_rate * du
 		# w -= learning_rate * dw
 		hl = h
-		dhnminus1=-(1-sigmoid(Xij))*(item-neg_item)
+		dhlist.append(-(1-sigmoid(Xij))*(item-neg_item))
+	print len(dhlist),len(dxilist),len(dxjlist)
 	for i in range(len(user_cart)-1)[::-1]:
 		item= x[user_cart[i]-1,:].reshape(1,10)
 		hnminus2=hiddenlist[i]
-		sumdu+=np.dot(item.T,dhnminus1*midlist[i])
-		sumdw+=np.dot(hnminus2.T,dhnminus1*midlist[i])
-		dx=np.dot(dhnminus1*midlist[i],u.T)
+		dh=dhlist[i]+dh1
+		sumdu+=np.dot(item.T,dh*midlist[i])
+		sumdw+=np.dot(hnminus2.T,dh*midlist[i])
+		dx=np.dot(dh*midlist[i],u.T)
 		dxilists.append(dx)
-		dhnminus1=np.dot(dhnminus1*midlist[i],w.T)
+		dh1=np.dot(dh*midlist[i],w.T)
 
 
 	return u,w,x,h,loss
@@ -178,8 +180,6 @@ for iter in range(1000):
 		except:
 			continue
 	print sumloss
-	predict(all_cart)
-
 
 
 
