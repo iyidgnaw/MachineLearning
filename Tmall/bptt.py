@@ -46,7 +46,8 @@ def train(user_cart,u ,x ,w):
 	hiddenlist=[]
 	dxilist=[]
 	dxjlist=[]
-	dxilists=[]
+	dxilist.append(0)
+	dxjlist.append(0)
 	midlist=[]
 	sumdu= 0
 	sumdw= 0
@@ -58,7 +59,7 @@ def train(user_cart,u ,x ,w):
 		item = x[user_cart[i+1]-1,:].reshape(1,10)
 		item1= x[user_cart[i]-1,:].reshape(1,10)
 		neg_item = x[user_neg[i+1]-1,:].reshape(1,10)
-		hiddenlist.append(h)
+		hiddenlist.append(hl)
 
 		b = np.dot(item1, u)+ np.dot(hl, w)
 
@@ -68,8 +69,9 @@ def train(user_cart,u ,x ,w):
 		h = sigmoid(b)
 		Xi_j = item.T - neg_item.T
 		Xij = np.dot(h, Xi_j)
-		ditem=(1-sigmoid(Xij))*h
-		ditem_neg=-(1-sigmoid(Xij))*h
+		loss+=Xij
+		ditem=(1-sigmoid(Xij))*h+lamda*item
+		ditem_neg=-(1-sigmoid(Xij))*h+lamda*neg_item
 		dxilist.append(ditem)
 		dxjlist.append(ditem_neg)
 
@@ -91,19 +93,21 @@ def train(user_cart,u ,x ,w):
 		# w -= learning_rate * dw
 		hl = h
 		dhlist.append(-(1-sigmoid(Xij))*(item-neg_item))
-	print len(dhlist),len(dxilist),len(dxjlist)
 	for i in range(len(user_cart)-1)[::-1]:
 		item= x[user_cart[i]-1,:].reshape(1,10)
 		hnminus2=hiddenlist[i]
 		dh=dhlist[i]+dh1
-		sumdu+=np.dot(item.T,dh*midlist[i])
-		sumdw+=np.dot(hnminus2.T,dh*midlist[i])
+		sumdu+=np.dot(item.T,dh*midlist[i])+lamda*u
+		sumdw+=np.dot(hnminus2.T,dh*midlist[i])+lamda*w
 		dx=np.dot(dh*midlist[i],u.T)
-		dxilists.append(dx)
+		dxilist[i]+=dx
 		dh1=np.dot(dh*midlist[i],w.T)
-
-
-	return u,w,x,h,loss
+	u-=learning_rate*sumdu
+	w-=learning_rate*sumdw
+	for i in range(len(user_cart)):
+		x[user_cart[i]-1:]+=-learning_rate*dxilist[i]
+		x[user_neg[i]-1:]+=-learning_rate*dxjlist[i]
+	return u,w,x,loss
 
 
 def predict(all_cart):
@@ -173,12 +177,12 @@ for iter in range(1000):
 	hiddensave=[]
 	for i in range(len(all_cart)):
 		user_cart = all_cart[i]
-		try:
-			user_cart = user_cart[0:int(0.8*len(user_cart))]
-			u,w,x,h,loss=train(user_cart,u ,x ,w)
-			sumloss+=loss
-		except:
+		user_cart = user_cart[0:int(0.8*len(user_cart))]
+		if len(user_cart)<4:
 			continue
+		u,w,x,loss=train(user_cart,u ,x ,w)
+		sumloss+=loss
+
 	print sumloss
 
 
