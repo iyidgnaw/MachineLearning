@@ -69,30 +69,23 @@ def train(user_cart,u ,x ,w):
 		h = sigmoid(b)
 		Xi_j = item.T - neg_item.T
 		Xij = np.dot(h, Xi_j)
+
+
+		if Xij>10:
+			Xij = 10
+		elif Xij<-10:
+			Xij = -10
 		loss+=Xij
 		ditem=(1-sigmoid(Xij))*h+lamda*item
 		ditem_neg=-(1-sigmoid(Xij))*h+lamda*neg_item
+		for dparam in [ ditem, ditem_neg]:
+			np.clip(dparam, -5, 5, out=dparam)
 		dxilist.append(ditem)
 		dxjlist.append(ditem_neg)
-
-		# loss += Xij                                    #plus Regulation
-		#dXij = -(1-sigmoid(Xij))
-		# dh = dXij*(v[item_id-1,:].reshape(1,10) - v[item_neg_id-1,:].reshape(1,10))
-		# db = dh*sigmoid(b)*(1-sigmoid(b))
-        #
-		# dx = np.dot(db,u.T)+lamda*np.abs(x[item_id-1,:].reshape(1,10))
-		# dvi = dXij*h + lamda*np.abs(v[item_id-1,:].reshape(1,10))
-		# dvj = -dXij*h  + lamda*np.abs(v[item_neg_id-1,:].reshape(1,10))
-		# du = np.dot(x[item_id-1,:].reshape(1,10).T, db) + lamda*np.abs(u)
-		# dw = np.dot(hl.T, db) + lamda*np.abs(w)
-        #
-		# x[item_id-1] -= learning_rate * dx[0]
-		# v[item_id-1] -= learning_rate * dvi[0]
-		# v[item_neg_id-1] -= learning_rate * dvj[0]
-		# u -= learning_rate * du
-		# w -= learning_rate * dw
 		hl = h
 		dhlist.append(-(1-sigmoid(Xij))*(item-neg_item))
+
+
 	for i in range(len(user_cart)-1)[::-1]:
 		item= x[user_cart[i]-1,:].reshape(1,10)
 		hnminus2=hiddenlist[i]
@@ -100,8 +93,12 @@ def train(user_cart,u ,x ,w):
 		sumdu+=np.dot(item.T,dh*midlist[i])+lamda*u
 		sumdw+=np.dot(hnminus2.T,dh*midlist[i])+lamda*w
 		dx=np.dot(dh*midlist[i],u.T)
+		np.clip(dx, -5, 5, out=dx)
 		dxilist[i]+=dx
 		dh1=np.dot(dh*midlist[i],w.T)
+
+	for dparam in [ sumdu, sumdw]:
+		np.clip(dparam, -5, 5, out=dparam)
 	u-=learning_rate*sumdu
 	w-=learning_rate*sumdw
 	for i in range(len(user_cart)):
@@ -130,12 +127,13 @@ def predict(all_cart):
 				break
 		for j in range(i, len(user_cart)-1):
 			relevant += 1
-			predict_matrix = np.dot(h, v.T)
 			item=x[user_cart[j]-1]
 			hid_input = np.dot(item, u)+ np.dot(h, w)
 			h = sigmoid(hid_input)
+			predict_matrix = np.dot(h, x.T)
 			rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
 			rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
+			print rank_index
 			if rank_index[0][-1] == user_cart[j+1]:
 				reat1 += 1
 				reat2 += 1
@@ -184,7 +182,6 @@ for iter in range(1000):
 		sumloss+=loss
 
 	print sumloss
-
 
 
 
