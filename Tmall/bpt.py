@@ -27,8 +27,14 @@ x=np.random.randn(product_size, hidden_size)*0.5
 hprev = np.zeros((1, 10))
 
 def sigmoid(x):
-	output = 1/(1+np.exp(-x))
-	return output
+
+
+
+    output = 1/(1+np.exp(-x))
+
+    return output
+
+
 
 #return a list including len(user_cart) negative items
 def negative(user_cart):
@@ -62,10 +68,9 @@ def train(user_cart,u ,x ,w):
 		hiddenlist.append(hl)
 
 		b = np.dot(item1, u)+ np.dot(hl, w)
-
+		np.clip(b, -15,15, out=b)
 		mid=sigmoid(b)*(1-sigmoid(b))
 		midlist.append(mid)
-
 		h = sigmoid(b)
 		Xi_j = item.T - neg_item.T
 		Xij = np.dot(h, Xi_j)
@@ -115,6 +120,9 @@ def predict(all_cart):
 	relevant = 0.0
 	for n in range(len(all_cart)):
 		user_cart=all_cart[n]
+		if len(user_cart)<4:
+			continue
+
 		i = 0
 		hl = np.copy(hprev)
 		for item_id in user_cart:
@@ -133,25 +141,27 @@ def predict(all_cart):
 			predict_matrix = np.dot(h, x.T)
 			rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
 			rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
+			print user_cart[j+1]
 			print rank_index
-			if rank_index[0][-1] == user_cart[j+1]:
+
+			if rank_index[0][-1]+1 == user_cart[j+1]:
 				reat1 += 1
 				reat2 += 1
 				reat5 += 1
 				reat10 += 1
 				continue
-			if rank_index[0][-2] == user_cart[j+1]:
+			if rank_index[0][-2]+1 == user_cart[j+1]:
 				reat2 += 1
 				reat5 += 1
 				reat10 += 1
 				continue
 			for k in rank_index[0,-5:-2]:
-				if k == user_cart[j+1]:
+				if k+1 == user_cart[j+1]:
 					reat5 += 1
 					reat10 += 1
 
 			for k in rank_index[0,-10:-5]:
-				if k == user_cart[j+1]:
+				if k+1 == user_cart[j+1]:
 					reat10 += 1
 
 	recall_1 = reat1/relevant
@@ -172,7 +182,6 @@ for iter in range(1000):
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
-	hiddensave=[]
 	for i in range(len(all_cart)):
 		user_cart = all_cart[i]
 		user_cart = user_cart[0:int(0.8*len(user_cart))]
@@ -183,7 +192,6 @@ for iter in range(1000):
 
 	print sumloss
 
-
-
+	predict(all_cart)
 
 
