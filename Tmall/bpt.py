@@ -121,8 +121,8 @@ def train(user_cart,u ,x ,w):
 	u-=learning_rate*sumdu
 	w-=learning_rate*sumdw
 	for i in range(len(user_cart)):
-		x[user_cart[i]-1,:]+=-learning_rate*(dxilist[i].reshape(10,))
-		x[user_neg[i]-1,:]+=-learning_rate*(dxjlist[i].reshape(10,))
+		x[user_cart[i]-1,:]+=-learning_rate*(dxilist[i].reshape(10,)+lamda*x[user_cart[i]-1,:])
+		x[user_neg[i]-1,:]+=-learning_rate*(dxjlist[i].reshape(10,)+lamda*x[user_neg[i]-1,:])
 	return u,w,x,loss
 
 
