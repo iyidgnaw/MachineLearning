@@ -4,14 +4,14 @@ import random
 import math
 import xlrd
 import json
+from collections import Counter
 
-
-all_cart=[]
-data= open('user_cart.json', 'r')
-lines=data.readlines()
+all_cart = []
+data = open('user_cart.json', 'r')
+lines = data.readlines()
 for line in lines:
-	line1=json.loads(line)
-	all_cart.append(line1)
+    line1 = json.loads(line)
+    all_cart.append(line1)
 data1 = xlrd.open_workbook('data.xlsx')
 data1 = data1.sheets()[0]
 user_id = list(set(data1.col_values(0)))
@@ -19,11 +19,11 @@ product_id = list(set(data1.col_values(1)))
 user_size, product_size = len(user_id), len(product_id)
 
 learning_rate = 0.1
-lamda=0.01
+lamda = 0.01
 hidden_size = 10
-u=np.random.randn(hidden_size, hidden_size)*0.5
-w=np.random.randn(hidden_size, hidden_size)*0.5
-x=np.random.randn(product_size, hidden_size)*0.5
+u = np.random.randn(hidden_size, hidden_size)*0.5
+w = np.random.randn(hidden_size, hidden_size)*0.5
+x = np.random.randn(product_size, hidden_size)*0.5
 hprev = np.zeros((1, 10))
 
 def sigmoid(x):
@@ -46,14 +46,26 @@ def negative(user_cart):
 	negtargets = negtargets[0:len(user_cart)]
 	return negtargets
 
+def detchange(x,y):
+	suminx=len(x)*len(x[0])
+	sumchange=0
+	for i in range(len(x)):
+		for j in range(len(x[i])):
+			if x[i][j]!=y[i][j]:
+				sumchange+=1
+
+	print "changes:",sumchange
+	return
+
+
 def train(user_cart,u ,x ,w):
 	hl = np.copy(hprev)
 	dhlist=[]
 	hiddenlist=[]
 	dxilist=[]
 	dxjlist=[]
-	dxilist.append(0)
-	dxjlist.append(0)
+	dxilist.append(hprev)
+	dxjlist.append(hprev)
 	midlist=[]
 	sumdu= 0
 	sumdw= 0
@@ -82,6 +94,7 @@ def train(user_cart,u ,x ,w):
 			Xij = -10
 		loss+=Xij
 		ditem=(1-sigmoid(Xij))*h+lamda*item
+
 		ditem_neg=-(1-sigmoid(Xij))*h+lamda*neg_item
 		for dparam in [ ditem, ditem_neg]:
 			np.clip(dparam, -5, 5, out=dparam)
@@ -98,6 +111,7 @@ def train(user_cart,u ,x ,w):
 		sumdu+=np.dot(item.T,dh*midlist[i])+lamda*u
 		sumdw+=np.dot(hnminus2.T,dh*midlist[i])+lamda*w
 		dx=np.dot(dh*midlist[i],u.T)
+
 		np.clip(dx, -5, 5, out=dx)
 		dxilist[i]+=dx
 		dh1=np.dot(dh*midlist[i],w.T)
@@ -107,20 +121,17 @@ def train(user_cart,u ,x ,w):
 	u-=learning_rate*sumdu
 	w-=learning_rate*sumdw
 	for i in range(len(user_cart)):
-		x[user_cart[i]-1:]+=-learning_rate*dxilist[i]
-		x[user_neg[i]-1:]+=-learning_rate*dxjlist[i]
+		x[user_cart[i]-1,:]+=-learning_rate*(dxilist[i].reshape(10,))
+		x[user_neg[i]-1,:]+=-learning_rate*(dxjlist[i].reshape(10,))
 	return u,w,x,loss
 
 
-def predict(all_cart):
-	reat1 = 0.0
-	reat2 = 0.0
-	reat5 = 0.0
-	reat10 = 0.0
+def predict(all_cart,allresult):
 	relevant = 0.0
+	hit=0
 	for n in range(len(all_cart)):
 		user_cart=all_cart[n]
-		if len(user_cart)<4:
+		if len(user_cart)<10:
 			continue
 
 		i = 0
@@ -128,6 +139,7 @@ def predict(all_cart):
 		for item_id in user_cart:
 			item = x[item_id-1]
 			hid_input = np.dot(item, u)+ np.dot(hl, w)
+			np.clip(hid_input, -15, 15, out=hid_input)
 			h = sigmoid(hid_input)
 			i += 1
 			hl = h
@@ -141,35 +153,14 @@ def predict(all_cart):
 			predict_matrix = np.dot(h, x.T)
 			rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
 			rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
-			print user_cart[j+1]
-			print rank_index
+			for k in list(rank_index[0]):
+				allresult.append(k)
+			if user_cart[j+1]+1 in list(rank_index[0]):
+				hit+=1
 
-			if rank_index[0][-1]+1 == user_cart[j+1]:
-				reat1 += 1
-				reat2 += 1
-				reat5 += 1
-				reat10 += 1
-				continue
-			if rank_index[0][-2]+1 == user_cart[j+1]:
-				reat2 += 1
-				reat5 += 1
-				reat10 += 1
-				continue
-			for k in rank_index[0,-5:-2]:
-				if k+1 == user_cart[j+1]:
-					reat5 += 1
-					reat10 += 1
-
-			for k in rank_index[0,-10:-5]:
-				if k+1 == user_cart[j+1]:
-					reat10 += 1
-
-	recall_1 = reat1/relevant
-	recall_2 = reat2/relevant
-	recall_5 = reat5/relevant
-	recall_10 = reat10/relevant
-
-	print recall_1, recall_2, recall_5, recall_10
+	print relevant
+	print hit
+	return
 
 
 
@@ -178,20 +169,35 @@ def predict(all_cart):
 
 
 
-for iter in range(1000):
+for iter in range(100):
+	allresult=[]
+	allgoods=[]
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
 	for i in range(len(all_cart)):
 		user_cart = all_cart[i]
 		user_cart = user_cart[0:int(0.8*len(user_cart))]
-		if len(user_cart)<4:
+		if len(user_cart)<10:
 			continue
-		u,w,x,loss=train(user_cart,u ,x ,w)
+		u,w,x,loss=train(user_cart,u,x,w)
 		sumloss+=loss
 
 	print sumloss
 
-	predict(all_cart)
+
+	# for i in range(len(all_cart)):
+	# 	if len(all_cart[i])<10:
+	# 		continue
+	# 	else:
+	# 		sumlong+=1
+	# print sumlong
+	# for i in range(len(all_cart)):
+	# 	for j in range(len(all_cart[i])):
+	# 		allgoods.append(all_cart[i][j])
+    #
+	predict(all_cart,allresult)
+	print Counter(allresult)
+	# print Counter(allgoods)
 
 
