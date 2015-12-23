@@ -93,9 +93,9 @@ def train(user_cart,u ,x ,w):
 		elif Xij<-10:
 			Xij = -10
 		loss+=Xij
-		ditem=(1-sigmoid(Xij))*h+lamda*item
+		ditem=-(1-sigmoid(Xij))*h+lamda*item
 
-		ditem_neg=-(1-sigmoid(Xij))*h+lamda*neg_item
+		ditem_neg=(1-sigmoid(Xij))*h+lamda*neg_item
 		for dparam in [ ditem, ditem_neg]:
 			np.clip(dparam, -5, 5, out=dparam)
 		dxilist.append(ditem)
@@ -120,6 +120,7 @@ def train(user_cart,u ,x ,w):
 		np.clip(dparam, -5, 5, out=dparam)
 	u-=learning_rate*sumdu
 	w-=learning_rate*sumdw
+	x1=np.copy(x)
 	for i in range(len(user_cart)):
 		x[user_cart[i]-1,:]+=-learning_rate*(dxilist[i].reshape(10,)+lamda*x[user_cart[i]-1,:])
 		x[user_neg[i]-1,:]+=-learning_rate*(dxjlist[i].reshape(10,)+lamda*x[user_neg[i]-1,:])
@@ -129,6 +130,7 @@ def train(user_cart,u ,x ,w):
 def predict(all_cart,allresult):
 	relevant = 0.0
 	hit=0
+	difference=0
 	for n in range(len(all_cart)):
 		user_cart=all_cart[n]
 		if len(user_cart)<10:
@@ -151,16 +153,21 @@ def predict(all_cart,allresult):
 			hid_input = np.dot(item, u)+ np.dot(h, w)
 			h = sigmoid(hid_input)
 			predict_matrix = np.dot(h, x.T)
+			real=predict_matrix[0][user_cart[j+1]-1]
+			top1=np.sort(predict_matrix, axis=1)
+			top1=top1[0][-1]
+			difference+=real-top1
 			rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
 			rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
+			
 			for k in list(rank_index[0]):
 				allresult.append(k)
-			if user_cart[j+1]+1 in list(rank_index[0]):
+			if user_cart[j+1]-1 in list(rank_index[0]):
 				hit+=1
-
+	print difference
 	print relevant
 	print hit
-	return
+	return 
 
 
 
