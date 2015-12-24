@@ -20,6 +20,7 @@ product_id = list(set(data1.col_values(1)))
 user_size, product_size = len(user_id), len(product_id)
 print user_size, product_size
 learning_rate = 0.01
+lamda_pos = 0.01
 lamda = 0.01
 hidden_size = 10
 u = np.random.randn(hidden_size, hidden_size)*0.5
@@ -39,7 +40,7 @@ def negative(user_cart):
 	list2 = product_id
 	for item in user_cart:
 		negtarget=[]
-		negtarget=random.sample(list2, 5)
+		negtarget=random.sample(allrecord, 50)
 		negtargets[item] = negtarget
 	return negtargets
 
@@ -59,7 +60,7 @@ def avg_negitem(negitem):
 	for item in negitem:
 		# print np.shape(total),np.shape(x[item-1])
 		total += x[item-1].reshape(10,1)
-	avg = total/5
+	avg = total/50
 	avg = avg.reshape(1,10)
 	return avg
 
@@ -98,12 +99,12 @@ def train(user_cart,u ,x ,w):
 
 
 		for p in range(len(neglist)):#update the negative samples' vector
-			dneg=(1-sigmoid(Xij))*h*0.2
+			dneg=(1-sigmoid(Xij))*h*0.02
 			np.clip(dneg, -5, 5, out=dneg)
 			x[neglist[p]-1,:]+=-learning_rate*(dneg.reshape(10,)+lamda*x[neglist[p]-1,:])
 
 
-		ditem=-(1-sigmoid(Xij))*h+lamda*item
+		ditem=-(1-sigmoid(Xij))*h+lamda_pos*item
 		np.clip(ditem, -5, 5, out=ditem)
 		dxilist.append(ditem)
 		hl = h
@@ -127,9 +128,9 @@ def train(user_cart,u ,x ,w):
 	u-=learning_rate*sumdu
 	w-=learning_rate*sumdw
 	for i in xrange(len(user_cart)):
-		freq=fre[user_cart[i]]
-		learn=learning_rate/freq
-		x[user_cart[i]-1,:]+=-learn*(dxilist[i].reshape(10,)+lamda*50*x[user_cart[i]-1,:])
+		# freq=fre[user_cart[i]]
+		# learn=learning_rate/freq
+		x[user_cart[i]-1,:] += -learning_rate*(dxilist[i].reshape(10,)+lamda_pos*50*x[user_cart[i]-1,:])
 	return u,w,x,loss
 
 
