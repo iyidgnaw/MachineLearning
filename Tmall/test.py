@@ -39,12 +39,12 @@ def sigmoid(x):
 
 #return a list including len(user_cart) negative items
 def negative(user_cart):
-	negtargets = []
+	negtargets = {}
 	list2 = product_id
-	negtargets=random.sample(list2, 2*len(user_cart))
-	for m in list(set(user_cart)):
-		negtargets = filter(lambda a: a != m, negtargets)
-	negtargets = negtargets[0:len(user_cart)]
+	for item in user_cart:
+		negtarget=[]
+		negtarget=random.sample(list2, 50)
+		negtargets[item] = negtarget
 	return negtargets
 
 def detchange(x,y):
@@ -57,6 +57,7 @@ def detchange(x,y):
 
 	print "changes:",sumchange
 	return
+
 
 
 def train(user_cart,u ,x ,w):
@@ -195,5 +196,6 @@ for iter in xrange(100):
 
 	predict(all_cart,allresult)
 	print Counter(allresult)
+
 
 
