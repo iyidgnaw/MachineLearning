@@ -4,21 +4,22 @@ import random
 import math
 import xlrd
 import json
+import time
 from collections import Counter
 
 all_cart = []
 data = open('user_cart.json', 'r')
 lines = data.readlines()
 for line in lines:
-    line1 = json.loads(line)
-    all_cart.append(line1)
+	line1 = json.loads(line)
+	all_cart.append(line1)
 data1 = xlrd.open_workbook('data.xlsx')
 data1 = data1.sheets()[0]
 user_id = list(set(data1.col_values(0)))
 product_id = list(set(data1.col_values(1)))
 user_size, product_size = len(user_id), len(product_id)
-
-learning_rate = 0.1
+print user_size, product_size
+learning_rate = 0.001
 lamda = 0.01
 hidden_size = 10
 u = np.random.randn(hidden_size, hidden_size)*0.5
@@ -30,32 +31,33 @@ def sigmoid(x):
 
 
 
-    output = 1/(1+np.exp(-x))
+	output = 1/(1+np.exp(-x))
 
-    return output
+	return output
 
 
 
 #return a list including len(user_cart) negative items
 def negative(user_cart):
-	negtargets = []
+	negtargets = {}
 	list2 = product_id
-	negtargets=random.sample(list2, 2*len(user_cart))
-	for m in list(set(user_cart)):
-		negtargets = filter(lambda a: a != m, negtargets)
-	negtargets = negtargets[0:len(user_cart)]
+	for item in user_cart:
+		negtarget=[]
+		negtarget=random.sample(list2, 50)
+		negtargets[item] = negtarget
 	return negtargets
 
 def detchange(x,y):
 	suminx=len(x)*len(x[0])
 	sumchange=0
-	for i in range(len(x)):
-		for j in range(len(x[i])):
+	for i in xrange(len(x)):
+		for j in xrange(len(x[i])):
 			if x[i][j]!=y[i][j]:
 				sumchange+=1
 
 	print "changes:",sumchange
 	return
+
 
 
 def train(user_cart,u ,x ,w):
@@ -73,7 +75,7 @@ def train(user_cart,u ,x ,w):
 	user_neg = negative(user_cart)
 	i = 0
 	loss = 0
-	for i in range(len(user_cart)-1):#for feedforward in bpr-opt
+	for i in xrange(len(user_cart)-1):#for feedforward in bpr-opt
 		item = x[user_cart[i+1]-1,:].reshape(1,10)
 		item1= x[user_cart[i]-1,:].reshape(1,10)
 		neg_item = x[user_neg[i+1]-1,:].reshape(1,10)
@@ -121,7 +123,7 @@ def train(user_cart,u ,x ,w):
 	u-=learning_rate*sumdu
 	w-=learning_rate*sumdw
 	x1=np.copy(x)
-	for i in range(len(user_cart)):
+	for i in xrange(len(user_cart)):
 		x[user_cart[i]-1,:]+=-learning_rate*(dxilist[i].reshape(10,)+lamda*x[user_cart[i]-1,:])
 		x[user_neg[i]-1,:]+=-learning_rate*(dxjlist[i].reshape(10,)+lamda*x[user_neg[i]-1,:])
 	return u,w,x,loss
@@ -131,11 +133,10 @@ def predict(all_cart,allresult):
 	relevant = 0.0
 	hit=0
 	difference=0
-	for n in range(len(all_cart)):
+	for n in xrange(len(all_cart)):
 		user_cart=all_cart[n]
 		if len(user_cart)<10:
 			continue
-
 		i = 0
 		hl = np.copy(hprev)
 		for item_id in user_cart:
@@ -147,42 +148,41 @@ def predict(all_cart,allresult):
 			hl = h
 			if i>int(len(user_cart)*0.8):
 				break
-		for j in range(i, len(user_cart)-1):
+		for j in xrange(i,len(user_cart)-1):
+
 			relevant += 1
 			item=x[user_cart[j]-1]
 			hid_input = np.dot(item, u)+ np.dot(h, w)
 			h = sigmoid(hid_input)
 			predict_matrix = np.dot(h, x.T)
-			real=predict_matrix[0][user_cart[j+1]-1]
-			top1=np.sort(predict_matrix, axis=1)
-			top1=top1[0][-1]
-			difference+=real-top1
+			# real=predict_matrix[0][user_cart[j+1]-1]
+
+			# top1=np.sort(predict_matrix, axis=1)
+			# top1=top1[0][-1]
+			# difference+=real-top1
+			# rank=predict_matrix.tolist()[0]
+
 			rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
-			rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
-			
+			rank_index = rank_index[:, -5:np.shape(rank_index)[1]]
+			# print user_cart[j+1]
+			# print rank_index[0]
 			for k in list(rank_index[0]):
 				allresult.append(k)
 			if user_cart[j+1]-1 in list(rank_index[0]):
 				hit+=1
+
+
 	print difference
 	print relevant
 	print hit
-	return 
+	return
 
-
-
-
-
-
-
-
-for iter in range(100):
+for iter in xrange(100):
 	allresult=[]
-	allgoods=[]
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
-	for i in range(len(all_cart)):
+	for i in xrange(len(all_cart)):
 		user_cart = all_cart[i]
 		user_cart = user_cart[0:int(0.8*len(user_cart))]
 		if len(user_cart)<10:
@@ -193,18 +193,9 @@ for iter in range(100):
 	print sumloss
 
 
-	# for i in range(len(all_cart)):
-	# 	if len(all_cart[i])<10:
-	# 		continue
-	# 	else:
-	# 		sumlong+=1
-	# print sumlong
-	# for i in range(len(all_cart)):
-	# 	for j in range(len(all_cart[i])):
-	# 		allgoods.append(all_cart[i][j])
-    #
+
 	predict(all_cart,allresult)
 	print Counter(allresult)
-	# print Counter(allgoods)
+
 
 
