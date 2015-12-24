@@ -58,7 +58,15 @@ def detchange(x,y):
 	print "changes:",sumchange
 	return
 
-
+def avg_negitem(negitem):
+	total =np.zeros((10,1))
+	for item in negitem:
+		# print np.shape(total),np.shape(x[item-1])
+		total += x[item-1].reshape(10,1)
+	avg = total/50
+	avg = avg.reshape(1,10)
+	print avg
+	return avg
 
 def train(user_cart,u ,x ,w):
 	hl = np.copy(hprev)
