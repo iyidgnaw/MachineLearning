@@ -39,7 +39,7 @@ def negative(user_cart):
 	list2 = product_id
 	for item in user_cart:
 		negtarget=[]
-		negtarget=random.sample(list2, 50)
+		negtarget=random.sample(list2, 5)
 		negtargets[item] = negtarget
 	return negtargets
 
@@ -59,7 +59,7 @@ def avg_negitem(negitem):
 	for item in negitem:
 		# print np.shape(total),np.shape(x[item-1])
 		total += x[item-1].reshape(10,1)
-	avg = total/50
+	avg = total/5
 	avg = avg.reshape(1,10)
 	return avg
 
@@ -98,7 +98,7 @@ def train(user_cart,u ,x ,w):
 
 
 		for p in range(len(neglist)):#update the negative samples' vector
-			dneg=(1-sigmoid(Xij))*h*0.02
+			dneg=(1-sigmoid(Xij))*h*0.2
 			np.clip(dneg, -5, 5, out=dneg)
 			x[neglist[p]-1,:]+=-learning_rate*(dneg.reshape(10,)+lamda*x[neglist[p]-1,:])
 
@@ -127,7 +127,9 @@ def train(user_cart,u ,x ,w):
 	u-=learning_rate*sumdu
 	w-=learning_rate*sumdw
 	for i in xrange(len(user_cart)):
-		x[user_cart[i]-1,:]+=-learning_rate*(dxilist[i].reshape(10,)+lamda*x[user_cart[i]-1,:])
+		freq=fre[user_cart[i]]
+		learn=learning_rate/freq
+		x[user_cart[i]-1,:]+=-learn*(dxilist[i].reshape(10,)+lamda*50*x[user_cart[i]-1,:])
 	return u,w,x,loss
 
 
@@ -180,6 +182,13 @@ def predict(all_cart,allresult):
 	print hit
 	return
 
+allrecord=[]
+for i in xrange(len(all_cart)):
+	user_cart = all_cart[i]
+	for i in user_cart:
+		allrecord.append(i)
+fre=Counter(allrecord)
+print fre
 for iter in xrange(100):
 	allresult=[]
 	print "Iter %d"%iter
@@ -195,10 +204,12 @@ for iter in xrange(100):
 
 	print sumloss
 
-
-
 	predict(all_cart,allresult)
 	print Counter(allresult)
+	print x[38],x[8],x[100],x[200],x[300]
+
+
+
 
 
 
