@@ -6,7 +6,11 @@ import xlrd
 import json
 import time
 from collections import Counter
+from mail import *
+import sys
 
+f_handler=open('result.txt', 'w')
+sys.stdout=f_handler
 all_cart = []
 data = open('user_cart.json', 'r')
 lines = data.readlines()
@@ -29,10 +33,11 @@ w = np.random.randn(hidden_size, hidden_size)*0.5
 x = np.random.randn(product_size, hidden_size)*0.5
 hprev = np.zeros((1, 10))
 
+
+
 def sigmoid(x):
 	output = 1/(1+np.exp(-x))
 	return output
-
 
 
 #return a list including len(user_cart) negative items
@@ -148,17 +153,8 @@ def predict(all_cart,allresult):
 			b = np.dot(item, u)+ np.dot(h, w)
 			h = sigmoid(b)
 			predict_matrix = np.dot(h, x.T)
-			# real=predict_matrix[0][user_cart[j+1]-1]
-
-			# top1=np.sort(predict_matrix, axis=1)
-			# top1=top1[0][-1]
-			# difference+=real-top1
-			# rank=predict_matrix.tolist()[0]
-
 			rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
 			rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
-			# print user_cart[j+1]
-			# print rank_index[0]
 			for k in list(rank_index[0]):
 				allresult.append(k)
 			if user_cart[j+1]-1 in list(rank_index[0]):
@@ -170,13 +166,14 @@ def predict(all_cart,allresult):
 	print hit
 	return
 
+
+
 allrecord=[]
 for i in xrange(len(all_cart)):
 	user_cart = all_cart[i]
 	for i in user_cart:
 		allrecord.append(i)
-fre=Counter(allrecord)
-print fre
+
 for iter in xrange(300):
 	allresult=[]
 	print "Iter %d"%iter
@@ -194,7 +191,9 @@ for iter in xrange(300):
 
 	predict(all_cart,allresult)
 	print Counter(allresult)
-	print x[38],x[8],x[100],x[200],x[300]
+f_handler.close()
+mail('./result.txt')
+
 
 
 
