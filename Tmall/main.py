@@ -69,8 +69,6 @@ def train(user_cart,u ,x ,w):
 	hl = np.copy(hprev)
 	dhlist=[]
 	hiddenlist=[]
-	dxilist=[]
-	dxilist.append(hprev)
 	midlist=[]#sigmoid(bi)*(1-sigmoid(bi))
 	sumdu= 0
 	sumdw= 0
@@ -97,24 +95,15 @@ def train(user_cart,u ,x ,w):
 		elif Xij<-10:
 			Xij = -10
 		loss+=Xij
-
-
 		for p in range(len(neglist)):#update the negative samples' vector
 			dneg=(1-sigmoid(Xij))*h/neg_num
 			np.clip(dneg, -5, 5, out=dneg)
 			x[neglist[p]-1,:]+=-learning_rate*(dneg.reshape(10,)+lamda*x[neglist[p]-1,:])
 
-
 		ditem=-(1-sigmoid(Xij))*h+lamda_pos*item
 		x[user_cart[i+1]-1,:] += -learning_rate*(ditem.reshape(10,))
-
-
-		np.clip(ditem, -5, 5, out=ditem)
-		dxilist.append(ditem)
 		hl = h
 		dhlist.append(-(1-sigmoid(Xij))*(item-neg_item))#save the dh for each bpr step
-
-
 	for i in range(len(user_cart)-1)[::-1]:
 		item= x[user_cart[i]-1,:].reshape(1,10)
 		hnminus2=hiddenlist[i]
@@ -122,23 +111,13 @@ def train(user_cart,u ,x ,w):
 		sumdu+=np.dot(item.T,dh*midlist[i])+lamda*u
 		sumdw+=np.dot(hnminus2.T,dh*midlist[i])+lamda*w
 		dx=np.dot(dh*midlist[i],u.T)
-
 		np.clip(dx, -5, 5, out=dx)
-		dxilist[i]+=dx
 		dh1=np.dot(dh*midlist[i],w.T)
 		x[user_cart[i]-1,:] += -learning_rate*(dx.reshape(10,)+lamda_pos*x[user_cart[i]-1,:])
-
 	for dparam in [ sumdu, sumdw]:
 		np.clip(dparam, -5, 5, out=dparam)
 	u-=learning_rate*sumdu
 	w-=learning_rate*sumdw
-
-
-
-	# for i in xrange(len(user_cart)):
-	# 	# freq=fre[user_cart[i]]
-	# 	# learn=learning_rate/freq
-	# 	x[user_cart[i]-1,:] += -learning_rate*(dxilist[i].reshape(10,)+lamda_pos*x[user_cart[i]-1,:])
 	return u,w,x,loss
 
 
@@ -198,7 +177,7 @@ for i in xrange(len(all_cart)):
 		allrecord.append(i)
 fre=Counter(allrecord)
 print fre
-for iter in xrange(100):
+for iter in xrange(300):
 	allresult=[]
 	print "Iter %d"%iter
 	print "Training..."
