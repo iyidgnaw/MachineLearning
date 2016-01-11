@@ -209,7 +209,7 @@ def predict(all_cart,allresult):
 			rank_index = rank_index[:, -20:np.shape(rank_index)[1]]
 			# print user_cart[j+1]
 			# print rank_index[0]
-			rank_index_list = list(rank_index[0])
+			rank_index_list = list(reversed(list(rank_index[0])))
 			for k in list(rank_index[0]):
 				allresult.append(k)
 			if user_cart[j+1]-1 in rank_index_list:
