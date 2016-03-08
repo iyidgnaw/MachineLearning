@@ -23,3 +23,7 @@ onlinux.py 	最初上服务器版本
 11.4	others.py更新至11.4.1,修复了算法更新参数部分的bug，改进了predict函数的算法。  
 12.8	新增MF代码，在movielens数据集上实现。  
 12.24	新增RNN代码，位于Tmall文件夹中，pre.py进行数据预处理输出为user_cart.json文件，rnn.py包含了修改之前的bp-rnn，main.py是算法实现主体，test.py文件用于测试各项功能。12.24日增加了每个正样本对应的负样本个数。
+
+2016
+3.7	补充说明各个文件夹内容，在各个文件夹中添加了公式。
+3.8	目前的主要任务集中在mobile_time_2016文件夹中，工作内容是在小数据集上依次实现基本rnn，多转移矩阵rnn，以及tensor rnn
