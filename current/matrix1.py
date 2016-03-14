@@ -232,7 +232,8 @@ for i in xrange(len(all_cart)):
 	user_cart = all_cart[i]
 	for behavior in user_cart:
 		allrecord.append(behavior[0])
-print "learningrate = 0.01 lamda=0.001"
+print "learningrate = %f"%learning_rate
+print "lamda=%f"%lamda
 iter = 0
 while True:
 	allresult=[]

@@ -234,12 +234,12 @@ for i in xrange(len(all_cart)):
 	user_cart = all_cart[i]
 	for behavior in user_cart:
 		allrecord.append(behavior[0])
-print "learningrate = %d "%learning_rate
-print "lamda=%d"%lamda
+print "learningrate = %f "%learning_rate
+print "lamda=%f"%lamda
 iter = 0
 while True:
 	allresult=[]
-        f_handler=open('result_matrix.txt','a')
+        f_handler=open('result_matrix2.txt','a')
         sys.stdout=f_handler
 	print "Iter %d"%iter
 	print "Training..."
@@ -254,9 +254,9 @@ while True:
 		for behavior in behavior_list:
 			user_cart.append(behavior[0])
                         if behavior[1]>13:
-                            time_cart.append(1)
+                             time_cart.append(1)
                         else:
-			    time_cart.append(0)
+			                 time_cart.append(0)
 		u,x,loss, time_interval=train(user_cart, time_cart, u,x,time_interval)
 		sumloss+=loss
 	print "begin predict"
