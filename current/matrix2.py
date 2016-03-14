@@ -162,7 +162,7 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		dh1 = np.dot(dh*midlist[i],Wp.T)
 	u += -learning_rate*sumdu
 	for i in range(11):
-		time_interval[i]+=-sumdw[i]
+		time_interval[i]+=sumdw[i]
 	return u,x,loss, time_interval
 
 
