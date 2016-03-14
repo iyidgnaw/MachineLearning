@@ -2,13 +2,8 @@
 __author__ = 'lizk'
 import numpy as np
 import random
-import math
-
-import xlrd
 import json
 import pickle
-from collections import Counter
-from mail import *
 import sys
 # f_handler=open('resultmobile_10.txt', 'w')
 # sys.stdout=f_handler
@@ -349,13 +344,13 @@ for i in xrange(len(all_cart)):
 	user_cart = all_cart[i]
 	for behavior in user_cart:
 		allrecord.append(behavior[0])
-fre=Counter(allrecord)
-print fre
 print "learningrate = 0.01 lamda=0.001"
 iter = 0
 while True:
 	allresult=[]
-	print "Iter %d"%iter
+        f_handler = open('result_tensor.txt','a')
+        sys.stdout = f_handler
+        print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
 	print "len(all_cart)"
@@ -380,7 +375,8 @@ while True:
 	print sumloss
 
 	predict(all_cart,allresult)
-	# print Counter(allresult)
+        f_handler.close()
+    # print Counter(allresult)
 	iter += 1
 
 # mail('./resultmobile_10.txt')

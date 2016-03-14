@@ -16,7 +16,7 @@ timetointerval = pickle.load(f1)
 f1.close()
 
 all_cart = []
-data = open('subuser_cart.json', 'r')
+data = open('user_cart.json', 'r')
 lines = data.readlines()
 for line in lines:
 	line1 = json.loads(line)
@@ -35,7 +35,7 @@ for i in range(20):
 	hit[i+1] = 0
 	recall[i+1] = 0
 i=0
-for line in open("submobile_time.csv"):
+for line in open("mobile_time.csv"):
 	userid, artid, month, day, hour, time_sub = line.split(",")
 	userid = int(userid)
 	artid = int(artid)
@@ -123,7 +123,7 @@ def train(user_cart,time_cart,u ,x , time_interval):
 
 		h = sigmoid(b)
 		Xi_j = np.dot(Wk, item.T-neg_item.T)
-		
+
 		Xij = np.dot(h, Xi_j)
 
 
@@ -151,9 +151,9 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		item = x[user_cart[i]-1,:].reshape(1,hidden_size)
 		hnminus2=hiddenlist[i]
 		dh=dhlist[i]+dh1
-		
+
 		sumdu += np.dot(item.T,dh*midlist[i])+lamda*u
-		
+
 		dWp = np.dot(hnminus2.T,dh*midlist[i])
 		interval_typenow = timetointerval[time_cart[i]]
 		Wp = time_interval[interval_typenow]
@@ -241,6 +241,8 @@ print "learningrate = 0.01 lamda=0.001"
 iter = 0
 while True:
 	allresult=[]
+        f_handler=open('result_matrix.txt','a')
+        sys.stdout=f_handler
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
@@ -262,7 +264,7 @@ while True:
 	print sumloss
 
 	predict(all_cart,allresult)
-	
+        f_handler.close()
 	iter += 1
 
 
