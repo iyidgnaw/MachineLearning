@@ -2,16 +2,12 @@
 __author__ = 'lizk'
 import numpy as np
 import random
-import math
 import json
-import pickle
-from collections import Counter
 import sys
-
 old_settings = np.seterr(all='print')
 
 all_cart = []
-data = open('user_cart.json', 'r')
+data = open('subuser_cart.json', 'r')
 lines = data.readlines()
 for line in lines:
 	line1 = json.loads(line)
@@ -19,8 +15,8 @@ for line in lines:
 
 user_list=[]
 itemid_list = []
-behavior_list = []	
-for line in open("mobile_time.csv"):
+behavior_list = []
+for line in open("submobile_time.csv"):
 	userid, artid, month, day, hour, time_sub = line.split(",")
 	userid = int(userid)
 	artid = int(artid)
@@ -62,7 +58,6 @@ def sigmoid(x):
 
 def negative(user_cart):
 	negtargets = {}
-	list2 = product_id
 	for item in user_cart:
 		negtarget=[]
 		negtarget=random.sample(allrecord, neg_num)
@@ -82,7 +77,7 @@ def train(user_cart,u ,x ,w):
 	user_neg = negative(user_cart)#dictioanry/negative samples for each id in user_cart
 	loss = 0
 	for i in xrange(len(user_cart)-1):
-		neg=user_neg[user_cart[i]][0]#list for negative samples for the id
+		neg=user_neg[user_cart[i+1]][0]#list for negative samples for the id
 		item = x[user_cart[i+1]-1,:].reshape(1,10)#positive sample's vector
 		item1= x[user_cart[i]-1,:].reshape(1,10)#current input vector
 		neg_item =  x[neg-1,:].reshape(1,hidden_size)#the average vector for 50 negative sample
@@ -101,7 +96,7 @@ def train(user_cart,u ,x ,w):
 		elif Xij<-10:
 			Xij = -10
 		loss+=Xij
-		
+
 		dneg=(1-sigmoid(Xij))*h
 		np.clip(dneg, -5, 5, out=dneg)
 		x[neg-1,:]+=-learning_rate*(dneg.reshape(10,)+lamda*x[neg-1,:])
@@ -129,7 +124,6 @@ def train(user_cart,u ,x ,w):
 
 def predict(all_cart,allresult):
 	relevant = 0.0
-	difference=0
 
 	for i in xrange(20):
 		hit[i+1] = 0
@@ -189,6 +183,8 @@ for i in xrange(len(all_cart)):
 iter = 0
 while True:
 	allresult=[]
+        f_handler=open("resultbasic.txt",'a')
+        sys.stdout=f_handler
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
@@ -202,13 +198,11 @@ while True:
 			user_cart.append(behavior[0])
 		u,w,x,loss=train(user_cart,u,x,w)
 		sumloss+=loss
-		if i%500==0:
-			print i
 	print "begin predict"
 	print sumloss
 
 	predict(all_cart,allresult)
-	
+        f_handler.close()
 	iter += 1
 
 
