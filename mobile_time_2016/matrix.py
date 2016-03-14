@@ -2,12 +2,10 @@
 __author__ = 'lizk'
 import numpy as np
 import random
-import math
-#import xlrd
 import json
 import pickle
-from collections import Counter
 import sys
+import time
 
 old_settings = np.seterr(all='print')
 
@@ -16,7 +14,7 @@ timetointerval = pickle.load(f1)
 f1.close()
 
 all_cart = []
-data = open('user_cart.json', 'r')
+data = open('subuser_cart.json', 'r')
 lines = data.readlines()
 for line in lines:
 	line1 = json.loads(line)
@@ -35,7 +33,7 @@ for i in range(20):
 	hit[i+1] = 0
 	recall[i+1] = 0
 i=0
-for line in open("mobile_time.csv"):
+for line in open("submobile_time.csv"):
 	userid, artid, month, day, hour, time_sub = line.split(",")
 	userid = int(userid)
 	artid = int(artid)
@@ -47,7 +45,6 @@ for line in open("mobile_time.csv"):
 
 user_id = list(set(user_list))
 product_id = list(set(itemid_list))
-
 user_size = len(user_id)
 product_size = len(product_id)
 print user_size, product_size
@@ -63,7 +60,6 @@ time_size = 5
 interval_types = 11
 neg_num = 1
 u = np.random.randn(hidden_size, hidden_size)*0.5
-# w = np.random.randn(hidden_size, hidden_size)*0.5
 x = np.random.randn(product_size, hidden_size)*0.5
 hprev = np.zeros((1, hidden_size))
 time_interval = []
@@ -71,13 +67,13 @@ for i in range (interval_types):
 	w = np.random.randn(hidden_size, hidden_size)*0.5
 	time_interval.append(w)
 
+
 def sigmoid(x):
 	output = 1/(1+np.exp(-x))
 	return output
 
 def negative(user_cart):
 	negtargets = {}
-	list2 = product_id
 	for item in user_cart:
 		negtarget=[]
 		while True:
@@ -157,7 +153,7 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		dWp = np.dot(hnminus2.T,dh*midlist[i])
 		interval_typenow = timetointerval[time_cart[i]]
 		Wp = time_interval[interval_typenow]
-		time_interval[interval_typenow] += -learning_rate*(dWk+lamda*Wp)
+		time_interval[interval_typenow] += -learning_rate*(dWp+lamda*Wp)
 
 		dx=np.dot(dh*midlist[i],u.T)
 		x[user_cart[i]-1,:] += -learning_rate*(dx.reshape(hidden_size,)+lamda_pos*x[user_cart[i]-1,:])
@@ -171,12 +167,11 @@ def train(user_cart,time_cart,u ,x , time_interval):
 
 def predict(all_cart,allresult):
 	relevant = 0.0
-	difference=0
-
 	for i in range(20):
 		hit[i+1] = 0
 		recall[i+1] = 0
 	for n in xrange(len(all_cart)):
+		print n
 		behavior_list = all_cart[n]
 		user_cart = []
 		time_cart = []
@@ -209,8 +204,7 @@ def predict(all_cart,allresult):
 			interval_typenext = timetointerval[time_cart[j+1]]
 			Wk = time_interval[interval_typenext]
 			predict_matrix = np.dot(h, np.dot(Wk,x.T))
-
-			rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
+			rank_index = np.argsort(predict_matrix, axis=1)
 			rank_index = rank_index[:, -20:np.shape(rank_index)[1]]
 			rank_index_list = list(reversed(list(rank_index[0])))
 			for k in list(rank_index[0]):
@@ -241,8 +235,8 @@ print "learningrate = 0.01 lamda=0.001"
 iter = 0
 while True:
 	allresult=[]
-        f_handler=open('result_matrix.txt','a')
-        sys.stdout=f_handler
+	# f_handler=open('result_matrix.txt','a')
+	# sys.stdout=f_handler
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
@@ -258,13 +252,12 @@ while True:
 			time_cart.append(behavior[1])
 		u,x,loss, time_interval=train(user_cart, time_cart, u,x,time_interval)
 		sumloss+=loss
-		if i%500==0:
-			print i
+		print i
 	print "begin predict"
 	print sumloss
 
 	predict(all_cart,allresult)
-        f_handler.close()
+	# f_handler.close()
 	iter += 1
 
 
