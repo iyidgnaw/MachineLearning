@@ -90,6 +90,9 @@ def train(user_cart,time_cart,u ,x , time_interval):
 	hiddenlist=[]
 	midlist=[]#sigmoid(bi)*(1-sigmoid(bi))
 	sumdu= 0
+	sumdw=[]
+	for i in range(11):
+		sumdw.append(0)
 
 #BPR
 	dh1= np.copy(hprev)#dh for the back process
@@ -134,7 +137,8 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		x[user_cart[i+1]-1,:] += -learning_rate*(ditem.reshape(hidden_size,))
 
 		dWk = np.dot((-(1-sigmoid(Xij))*h.T),(item-neg_item))
-		time_interval[interval_typenext] += -learning_rate*(dWk+lamda*Wk)
+		sumdw[interval_typenext]+=-learning_rate*(dWk+lamda*Wk)
+		# time_interval[interval_typenext] += -learning_rate*(dWk+lamda*Wk)
 
 		hl = h
 		dhlist.append(np.dot(-(1-sigmoid(Xij))*(item-neg_item),Wk.T))#save the dh for each bpr step
@@ -150,14 +154,15 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		dWp = np.dot(hnminus2.T,dh*midlist[i])
 		interval_typenow = timetointerval[time_cart[i]]
 		Wp = time_interval[interval_typenow]
-		time_interval[interval_typenow] += -learning_rate*(dWp+lamda*Wp)
+		sumdw[interval_typenow] += -learning_rate*(dWp+lamda*Wp)
 
 		dx=np.dot(dh*midlist[i],u.T)
 		x[user_cart[i]-1,:] += -learning_rate*(dx.reshape(hidden_size,)+lamda_pos*x[user_cart[i]-1,:])
 
 		dh1 = np.dot(dh*midlist[i],Wp.T)
 	u += -learning_rate*sumdu
-
+	for i in range(11):
+		time_interval[i]+=-sumdw[i]
 	return u,x,loss, time_interval
 
 

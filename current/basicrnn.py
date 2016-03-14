@@ -183,8 +183,8 @@ for i in xrange(len(all_cart)):
 iter = 0
 while True:
 	allresult=[]
-        f_handler=open("resultbasic.txt",'a')
-        sys.stdout=f_handler
+	f_handler=open("resultbasic.txt",'a')
+	sys.stdout=f_handler
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
@@ -202,7 +202,7 @@ while True:
 	print sumloss
 
 	predict(all_cart,allresult)
-        f_handler.close()
+	f_handler.close()
 	iter += 1
 
 
