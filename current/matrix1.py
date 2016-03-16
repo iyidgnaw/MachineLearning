@@ -108,8 +108,6 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		hiddenlist.append(hl)
 
 		interval_typenow=timetointerval[time_cart[i]]
-		interval_typenext = timetointerval[time_cart[i+1]]
-		Wk = time_interval[interval_typenext]
 		Wp = time_interval[interval_typenow]
 
 		b = np.dot(item1, u)+ np.dot(hl, Wp)
@@ -118,7 +116,7 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		midlist.append(mid)
 
 		h = sigmoid(b)
-		Xi_j = np.dot(Wk, item.T-neg_item.T)
+		Xi_j = item.T-neg_item.T
 
 		Xij = np.dot(h, Xi_j)
 
@@ -129,19 +127,16 @@ def train(user_cart,time_cart,u ,x , time_interval):
 			Xij = -10
 		loss+=Xij
 
-		dneg=np.dot((1-sigmoid(Xij))*h,Wk)
+		dneg=(1-sigmoid(Xij))*h
 		np.clip(dneg, -5, 5, out=dneg)
 		x[neg-1,:] += -learning_rate*(dneg.reshape(hidden_size,)+lamda*x[neg-1,:])
 
-		ditem=np.dot(-(1-sigmoid(Xij))*h,Wk)+lamda_pos*item
+		ditem=-(1-sigmoid(Xij))*h+lamda_pos*item
 		x[user_cart[i+1]-1,:] += -learning_rate*(ditem.reshape(hidden_size,))
 
-		dWk = np.dot((-(1-sigmoid(Xij))*h.T),(item-neg_item))
-		sumdw[interval_typenext]+=-learning_rate*(dWk+lamda*Wk)
-		# time_interval[interval_typenext] += -learning_rate*(dWk+lamda*Wk)
 
 		hl = h
-		dhlist.append(np.dot(-(1-sigmoid(Xij))*(item-neg_item),Wk.T))#save the dh for each bpr step
+		dhlist.append(-(1-sigmoid(Xij))*(item-neg_item))#save the dh for each bpr step
 
 #BPTT
 	for i in range(len(user_cart)-1)[::-1]:
@@ -202,9 +197,7 @@ def predict(all_cart,allresult):
 			w = time_interval[interval_typenow]
 			b = np.dot(item, u)+ np.dot(h, w)
 			h = sigmoid(b)
-			interval_typenext = timetointerval[time_cart[j+1]]
-			Wk = time_interval[interval_typenext]
-			predict_matrix = np.dot(h, np.dot(Wk,x.T))
+			predict_matrix = np.dot(h,x.T)
 			rank_index = np.argsort(predict_matrix, axis=1)
 			rank_index = rank_index[:, -20:np.shape(rank_index)[1]]
 			rank_index_list = list(reversed(list(rank_index[0])))
@@ -236,7 +229,7 @@ print "lamda=%f"%lamda
 iter = 0
 while True:
 	allresult=[]
-        f_handler=open('result_matrix1.txt','a')
+        f_handler=open('result_withoutwk.txt','a')
         sys.stdout=f_handler
 	print "Iter %d"%iter
 	print "Training..."

@@ -120,7 +120,7 @@ def train(user_cart,time_cart,u ,x , time_interval):
 
 		h = sigmoid(b)
 
-		predict_matrix = np.dot(h, np.dot(Wp,x.T))
+		predict_matrix = np.dot(h, np.dot(Wk,x.T))
 		rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
 		rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
 		if user_cart[i+1]-1 in list(rank_index[0]):
@@ -248,8 +248,8 @@ while True:
 	sumlen = 0
 	allresult=[]
 
-		f_handler=open('result_matrix1.txt','a')
-		sys.stdout=f_handler
+	f_handler=open('result_matrix1.txt','a')
+	sys.stdout=f_handler
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
