@@ -53,8 +53,8 @@ learning_rate = 0.01
 lamda_pos = 0.001
 # lamda = 0.001
 # lamda_unique = 0.001
-lamda = 0.05
-lamda_unique = 0.05
+lamda = 0.001
+lamda_unique = 0.001
 hidden_size = 10
 #tensor:hidden_size*hidden_size*time_size
 time_size = 5

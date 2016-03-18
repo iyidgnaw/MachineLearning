@@ -1,0 +1,122 @@
+Iter 0
+Training...
+80997
+1028
+begin predict
+[[ 15798.01468143]]
+Iter 1
+Training...
+80997
+1759
+begin predict
+[[ 16508.06533888]]
+Iter 2
+Training...
+80997
+1504
+begin predict
+[[ 15339.00504013]]
+Iter 3
+Training...
+80997
+1495
+begin predict
+[[ 15217.16852199]]
+Iter 4
+Training...
+80997
+1369
+begin predict
+[[ 15409.99717282]]
+Iter 5
+Training...
+80997
+1277
+begin predict
+[[ 15504.86368694]]
+Iter 6
+Training...
+80997
+1437
+begin predict
+[[ 15854.68971572]]
+Iter 7
+Training...
+80997
+1176
+begin predict
+[[ 16797.66639812]]
+Iter 8
+Training...
+80997
+1254
+begin predict
+[[ 16922.86451804]]
+Iter 9
+Training...
+80997
+1145
+begin predict
+[[ 17445.88114134]]
+Iter 10
+Training...
+80997
+1215
+begin predict
+[[ 17400.61179714]]
+Iter 11
+Training...
+80997
+1189
+begin predict
+[[ 17780.65869361]]
+Iter 12
+Training...
+80997
+1236
+begin predict
+[[ 18107.52949155]]
+Iter 13
+Training...
+80997
+1257
+begin predict
+[[ 18156.67281384]]
+Iter 14
+Training...
+80997
+1406
+begin predict
+[[ 18525.59732304]]
+Iter 15
+Training...
+80997
+1355
+begin predict
+[[ 18517.93604271]]
+Iter 16
+Training...
+80997
+1280
+begin predict
+[[ 19052.67338121]]
+Iter 17
+Training...
+80997
+1259
+begin predict
+[[ 19214.3248494]]
+Iter 18
+Training...
+80997
+1195
+begin predict
+[[ 19567.91999563]]
+Iter 19
+Training...
+80997
+1436
+begin predict
+[[ 18770.68977601]]
+Iter 20
+Training...

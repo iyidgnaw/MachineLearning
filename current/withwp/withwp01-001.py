@@ -5,16 +5,15 @@ import random
 import json
 import pickle
 import sys
-from collections import Counter
 
 old_settings = np.seterr(all='print')
 
-f1 = open("timetointerval","r")     # 把时间间隔小时映射到人为分号的时间间隔
+f1 = open("../timetointerval","r")     # 把时间间隔小时映射到人为分号的时间间隔
 timetointerval = pickle.load(f1)
 f1.close()
 
 all_cart = []
-data = open('subuser_cart.json', 'r')
+data = open('../subuser_cart.json', 'r')
 lines = data.readlines()
 for line in lines:
 	line1 = json.loads(line)
@@ -31,7 +30,7 @@ for i in range(20):
 	hit[i+1] = 0
 	recall[i+1] = 0
 i=0
-for line in open("submobile_time.csv"):
+for line in open("../submobile_time.csv"):
 	userid, artid, month, day, hour, time_sub = line.split(",")
 	userid = int(userid)
 	artid = int(artid)
@@ -46,15 +45,14 @@ product_id = list(set(itemid_list))
 user_size = len(user_id)
 product_size = len(product_id)
 print user_size, product_size
-learning_rate = 0.01
-lamda_pos = 0.001
+learning_rate = 0.1
+lamda_pos = 0.01
 # lamda = 0.001
 # lamda_unique =0.001
-lamda = 0.001
-lamda_unique = 0.001
+lamda = 0.01
+lamda_unique = 0.01
 hidden_size = 10
 #tensor:hidden_size*hidden_size*time_size
-time_size = 5
 interval_types = 11
 neg_num = 1
 u = np.random.randn(hidden_size, hidden_size)*0.5
@@ -87,8 +85,8 @@ def negative(user_cart):
 def train(user_cart,time_cart,u ,x , time_interval):
 
 	hl = np.copy(hprev)
-	hits = 0
 	dhlist=[]
+        hits=0
 	hiddenlist=[]
 	midlist=[]#sigmoid(bi)*(1-sigmoid(bi))
 	sumdu= 0
@@ -108,28 +106,22 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		item1= x[user_cart[i]-1,:].reshape(1,hidden_size)#current input vector
 		neg_item =  x[neg-1,:].reshape(1,hidden_size)
 		hiddenlist.append(hl)
-
+                interval_typenext=timetointerval[time_cart[i+1]]
 		interval_typenow=timetointerval[time_cart[i]]
-		interval_typenext = timetointerval[time_cart[i+1]]
-		Wk = time_interval[interval_typenext]
 		Wp = time_interval[interval_typenow]
-
+                Wk = time_interval[interval_typenext]
 		b = np.dot(item1, u)+ np.dot(hl, Wp)
 		np.clip(b, -15,15, out=b)
 		mid=sigmoid(b)*(1-sigmoid(b))
 		midlist.append(mid)
 
 		h = sigmoid(b)
-
-		predict_matrix = np.dot(h, np.dot(Wk,x.T))
+		predict_matrix = np.dot(h ,np.dot(Wk,x.T))
 		rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
 		rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
 		if user_cart[i+1]-1 in list(rank_index[0]):
-			hits+=1
-
-
-		Xi_j = np.dot(Wk, item.T-neg_item.T)
-
+		    hits+=1
+                Xi_j = np.dot(Wk,item.T-neg_item.T)
 		Xij = np.dot(h, Xi_j)
 
 
@@ -146,9 +138,8 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		ditem=np.dot(-(1-sigmoid(Xij))*h,Wk)+lamda_pos*item
 		x[user_cart[i+1]-1,:] += -learning_rate*(ditem.reshape(hidden_size,))
 
-		dWk = np.dot((-(1-sigmoid(Xij))*h.T),(item-neg_item))
-		sumdw[interval_typenext]+=-learning_rate*(dWk+lamda*Wk)
-		# time_interval[interval_typenext] += -learning_rate*(dWk+lamda*Wk)
+                dWk = np.dot((-(1-sigmoid(Xij))*h.T),(item-neg_item))
+                sumdw[interval_typenext] +=-learning_rate*(dWk+lamda*Wk)
 
 		hl = h
 		dhlist.append(np.dot(-(1-sigmoid(Xij))*(item-neg_item),Wk.T))#save the dh for each bpr step
@@ -212,9 +203,9 @@ def predict(all_cart,allresult):
 			w = time_interval[interval_typenow]
 			b = np.dot(item, u)+ np.dot(h, w)
 			h = sigmoid(b)
-			interval_typenext = timetointerval[time_cart[j+1]]
-			Wk = time_interval[interval_typenext]
-			predict_matrix = np.dot(h, np.dot(Wk,x.T))
+                        interval_typenext = timetointerval[time_cart[j+1]]
+                        Wk = time_interval[interval_typenext]
+			predict_matrix = np.dot(h,np.dot(Wk,x.T))
 			rank_index = np.argsort(predict_matrix, axis=1)
 			rank_index = rank_index[:, -20:np.shape(rank_index)[1]]
 			rank_index_list = list(reversed(list(rank_index[0])))
@@ -224,14 +215,14 @@ def predict(all_cart,allresult):
 				index = rank_index_list.index(user_cart[j+1]-1)
 				hit[index+1] += 1
 
-        fre = Counter(allresult)
-        print fre
+
 	for i in range(20):
 		for j in range(20-i):
 			recall[20-j] += hit[i+1]
 	for i in range(20):
 		recallatx[i+1] = recall[i+1]/relevant
-        print relevant
+
+	print relevant
 	print recall
 	print recallatx
 	return
@@ -245,15 +236,14 @@ print "learningrate = %f"%learning_rate
 print "lamda=%f"%lamda
 iter = 0
 while True:
-	sumhit = 0
-	sumlen = 0
 	allresult=[]
-
-	f_handler=open('result_test.txt','a')
-	sys.stdout=f_handler
+        f_handler=open('result_01-001.txt','a')
+        sys.stdout=f_handler
+        sumhits = 0
+        sumlen=0
 	print "Iter %d"%iter
 	print "Training..."
-        sumloss=0
+	sumloss=0
 	for i in xrange(len(all_cart)):
 		user_cart = []
 		time_cart = []
@@ -266,11 +256,8 @@ while True:
 			time_cart.append(behavior[1])
 		u,x,loss, time_interval,hits=train(user_cart, time_cart, u,x,time_interval)
 		sumloss+=loss
-		sumhit +=hits
-		sumlen += len(user_cart)
-
-	print sumlen
-	print sumhit
+                sumhits+=hits
+                sumlen+=len(user_cart)
 	print "begin predict"
 	print sumloss
 
