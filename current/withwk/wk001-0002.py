@@ -45,12 +45,12 @@ product_id = list(set(itemid_list))
 user_size = len(user_id)
 product_size = len(product_id)
 print user_size, product_size
-learning_rate = 0.001
-lamda_pos = 0.0001
+learning_rate = 0.01
+lamda_pos = 0.002
 # lamda = 0.001
 # lamda_unique =0.001
-lamda = 0.0001
-lamda_unique = 0.0001
+lamda = 0.002
+lamda_unique = 0.002
 hidden_size = 10
 #tensor:hidden_size*hidden_size*time_size
 interval_types = 11
@@ -237,7 +237,7 @@ print "lamda=%f"%lamda
 iter = 0
 while True:
 	allresult=[]
-        f_handler=open('result_0001-00001.txt','a')
+        f_handler=open('result_001-0002.txt','a')
         sys.stdout=f_handler
         sumhits = 0
         sumlen=0
