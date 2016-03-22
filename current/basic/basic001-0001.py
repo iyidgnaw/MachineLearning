@@ -8,9 +8,7 @@ import sys
 
 old_settings = np.seterr(all='print')
 
-f1 = open("../timetointerval","r")     # 把时间间隔小时映射到人为分号的时间间隔
-timetointerval = pickle.load(f1)
-f1.close()
+
 
 all_cart = []
 data = open('../user_cart.json', 'r')
@@ -54,15 +52,12 @@ lamda = 0.001
 lamda_unique = 0.001
 hidden_size = 10
 #tensor:hidden_size*hidden_size*time_size
-interval_types = 11
 neg_num = 1
 u = np.random.randn(hidden_size, hidden_size)*0.5
 x = np.random.randn(product_size, hidden_size)*0.5
 hprev = np.zeros((1, hidden_size))
-time_interval = []
-for i in range (interval_types):
-	w = np.random.randn(hidden_size, hidden_size)*0.5
-	time_interval.append(w)
+w = np.random.randn(hidden_size, hidden_size)*0.5
+	
 
 
 def sigmoid(x):
@@ -80,20 +75,34 @@ def negative(user_cart):
 				break
 	return negtargets
 
+def pre(all_cart):
+	dictiontrain = {}
+	dictiontest = {}
+	for i in xrange(len(all_cart)):
+			user_cart_train = []
+			user_cart_test = []
+			behavior_list = all_cart[i]
+			if len(behavior_list)<10:
+				continue
+			behavior_train = behavior_list[0:int(0.8*len(behavior_list))]
+			behavior_test = behavior_list[int(0.8*len(behavior_list)):len(behavior_list)]
+			for behavior in behavior_train:
+				user_cart_train.append(behavior[0])
+			for behavior in behavior_test:
+				user_cart_test.append(behavior[0])
+			dictiontest[i]=user_cart_test
+			dictiontrain[i]=user_cart_train
+	return dictiontest,dictiontrain
 
 
-
-def train(user_cart,time_cart,u ,x , time_interval):
+def train(user_cart,u ,x ,w):
 
 	hl = np.copy(hprev)
 	dhlist=[]
-        hits=0
 	hiddenlist=[]
 	midlist=[]#sigmoid(bi)*(1-sigmoid(bi))
 	sumdu= 0
-	sumdw=[]
-	for i in range(11):
-		sumdw.append(0)
+	sumdw= 0 
 
 #BPR
 	dh1= np.copy(hprev)#dh for the back process
@@ -107,22 +116,14 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		item1= x[user_cart[i]-1,:].reshape(1,hidden_size)#current input vector
 		neg_item =  x[neg-1,:].reshape(1,hidden_size)
 		hiddenlist.append(hl)
-
-		interval_typenow=timetointerval[time_cart[i]]
-		Wp = time_interval[interval_typenow]
-
-		b = np.dot(item1, u)+ np.dot(hl, Wp)
+		b = np.dot(item1, u)+ np.dot(hl, w)
 		np.clip(b, -15,15, out=b)
 		mid=sigmoid(b)*(1-sigmoid(b))
 		midlist.append(mid)
 
 		h = sigmoid(b)
-		predict_matrix = np.dot(h ,x.T)
-		rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
-		rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
-		if user_cart[i+1]-1 in list(rank_index[0]):
-		    hits+=1
-                Xi_j = item.T-neg_item.T
+		
+		Xi_j = item.T-neg_item.T
 
 		Xij = np.dot(h, Xi_j)
 
@@ -152,67 +153,50 @@ def train(user_cart,time_cart,u ,x , time_interval):
 
 		sumdu += np.dot(item.T,dh*midlist[i])+lamda*u
 
-		dWp = np.dot(hnminus2.T,dh*midlist[i])
-		interval_typenow = timetointerval[time_cart[i]]
-		Wp = time_interval[interval_typenow]
-		sumdw[interval_typenow] += -learning_rate*(dWp+lamda*Wp)
+		sumdw += np.dot(hnminus2.T,dh*midlist[i])+lamda*w
 
 		dx=np.dot(dh*midlist[i],u.T)
 		x[user_cart[i]-1,:] += -learning_rate*(dx.reshape(hidden_size,)+lamda_pos*x[user_cart[i]-1,:])
 
-		dh1 = np.dot(dh*midlist[i],Wp.T)
+		dh1 = np.dot(dh*midlist[i],w.T)
 	u += -learning_rate*sumdu
-	for i in range(11):
-		time_interval[i]+=sumdw[i]
-	return u,x,loss, time_interval,hits
+	w += -learning_rate*sumdw
+	return u,x,loss,w
 
 
 
-def predict(all_cart,allresult):
+def predict(dictiontrain,dictiontest,allresult):
 	relevant = 0.0
 	for i in range(20):
 		hit[i+1] = 0
 		recall[i+1] = 0
-	for n in xrange(len(all_cart)):
-		behavior_list = all_cart[n]
-		user_cart = []
-		time_cart = []
-		for behavior in behavior_list:
-			user_cart.append(behavior[0])
-			time_cart.append(0)
-		if len(user_cart)<10:
-			continue
-		i = 0
+	# num = 0
+	for n in dictiontest.keys():
+		train = dictiontrain[n]
+		test = dictiontest[n]
 		hl = np.copy(hprev)
-		for item_id in user_cart:
-			interval_typenow = timetointerval[time_cart[i]]
+		for item_id in train:
 			item = x[item_id-1]
-			w =time_interval[interval_typenow]
 			b = np.dot(item, u)+ np.dot(hl, w)
 			np.clip(b, -15, 15, out=b)
 			h = sigmoid(b)
-			i += 1
 			hl = h
-			if i>int(len(user_cart)*0.8):
-				break
-		for j in xrange(i,len(user_cart)-1):
+		for j in xrange(len(test)-1):
 
 			relevant += 1
-			item=x[user_cart[j]-1]
-			interval_typenow = timetointerval[time_cart[j]]
-			w = time_interval[interval_typenow]
+			item=x[test[j]-1]
 			b = np.dot(item, u)+ np.dot(h, w)
 			h = sigmoid(b)
 			predict_matrix = np.dot(h,x.T)
-			rank_index = np.argsort(predict_matrix, axis=1)
-			rank_index = rank_index[:, -20:np.shape(rank_index)[1]]
-			rank_index_list = list(reversed(list(rank_index[0])))
-			for k in list(rank_index[0]):
-				allresult.append(k)
-			if user_cart[j+1]-1 in rank_index_list:
-				index = rank_index_list.index(user_cart[j+1]-1)
+			rank = np.argpartition(predict_matrix[0],-20)[-20:]
+			rank = rank[np.argsort(predict_matrix[0][rank])]
+			rank_index_list = list(reversed(list(rank)))
+			if test[j+1]-1 in rank_index_list:
+				index = rank_index_list.index(test[j+1]-1)
 				hit[index+1] += 1
-
+		# num +=1
+		# if num%100==0:
+		# 	print num
 
 	for i in range(20):
 		for j in range(20-i):
@@ -225,6 +209,7 @@ def predict(all_cart,allresult):
 	print recallatx
 	return
 
+
 allrecord=[]
 for i in xrange(len(all_cart)):
 	user_cart = all_cart[i]
@@ -233,34 +218,27 @@ for i in xrange(len(all_cart)):
 print "learningrate = %f"%learning_rate
 print "lamda=%f"%lamda
 iter = 0
+dictiontest,dictiontrain = pre(all_cart)
+
 while True:
 	allresult=[]
-        f_handler=open('result_001-0001.txt','a')
-        sys.stdout=f_handler
-        sumhits = 0
-        sumlen=0
+	f_handler = open('result001-0001.txt','a')
+	sys.stdout=f_handler	
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
-	for i in xrange(len(all_cart)):
-		user_cart = []
-		time_cart = []
-		behavior_list = all_cart[i]
-		if len(behavior_list)<10:
-			continue
-		behavior_list = behavior_list[0:int(0.8*len(behavior_list))]
-		for behavior in behavior_list:
-			user_cart.append(behavior[0])
-			time_cart.append(0)
-		u,x,loss, time_interval,hits=train(user_cart, time_cart, u,x,time_interval)
+	# num = 0
+	for i in dictiontrain.keys():
+		user_cart = dictiontrain[i]
+		u,x,loss,w=train(user_cart,u,x,w)
 		sumloss+=loss
-                sumhits+=hits
-                sumlen+=len(user_cart)
+		# num +=1
+		# if num%100==0:
+		# 	print num
 	print "begin predict"
 	print sumloss
 
-	predict(all_cart,allresult)
+	predict(dictiontrain,dictiontest,allresult)
 	f_handler.close()
 	iter += 1
-
 
