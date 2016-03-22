@@ -120,11 +120,6 @@ def train(user_cart, daytime_cart, weektime_cart, x, Udlist,Uwlist ,w):
 		midlist.append(mid)
 
 		h = sigmoid(b)
-		# predict_matrix = np.dot(h ,np.dot(Wk,x.T))
-		# rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
-		# rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
-		# if user_cart[i+1]-1 in list(rank_index[0]):
-		# 	hits+=1
 		Uid = Udlist[daytime_typenext]
 		Uiw = Uwlist[weektime_cart[i+1]]
 		Xi_j = np.dot(np.dot(Uid,Uiw),item.T-neg_item.T)
