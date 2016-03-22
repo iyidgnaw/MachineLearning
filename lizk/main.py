@@ -170,7 +170,7 @@ def train(user_cart, daytime_cart, weektime_cart, x, Udlist,Uwlist ,w):
 		sumdUd[daytime_typenow] += -learning_rate*(dUtd+lamda*Utd)
 
 		dUtw = np.dot(np.dot(item,Utd).T,dh*midlist[i])
-		sumdUw[daytime_typenow] += -learning_rate*(dUtw+lamda*Utw)
+		sumdUw[weektime_cart[i]] += -learning_rate*(dUtw+lamda*Utw)
 
 		dx=np.dot(dh*midlist[i],np.dot(Utd,Utw))
 		x[user_cart[i]-1,:] += -learning_rate*(dx.reshape(hidden_size,)+lamda_pos*x[user_cart[i]-1,:])
@@ -259,8 +259,8 @@ print "lamda=%f"%lamda
 iter = 0
 while True:
 	allresult=[]
-	f_handler=open('result_001-0001.txt','a')
-	sys.stdout=f_handler
+	# f_handler=open('result_001-0001.txt','a')
+	# sys.stdout=f_handler
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
@@ -282,7 +282,7 @@ while True:
 	print sumloss
 
 	predict(all_cart,allresult)
-	f_handler.close()
+	# f_handler.close()
 	iter += 1
 
 

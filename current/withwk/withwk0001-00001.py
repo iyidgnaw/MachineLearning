@@ -45,12 +45,12 @@ product_id = list(set(itemid_list))
 user_size = len(user_id)
 product_size = len(product_id)
 print user_size, product_size
-learning_rate = 0.05
-lamda_pos = 0.005
+learning_rate = 0.001
+lamda_pos = 0.0001
 # lamda = 0.001
 # lamda_unique =0.001
-lamda = 0.005
-lamda_unique = 0.005
+lamda = 0.0001
+lamda_unique = 0.0001
 hidden_size = 10
 #tensor:hidden_size*hidden_size*time_size
 interval_types = 11
@@ -106,23 +106,22 @@ def train(user_cart,time_cart,u ,x , time_interval):
 		item1= x[user_cart[i]-1,:].reshape(1,hidden_size)#current input vector
 		neg_item =  x[neg-1,:].reshape(1,hidden_size)
 		hiddenlist.append(hl)
-
+                interval_typenext=timetointerval[time_cart[i+1]]
 		interval_typenow=timetointerval[time_cart[i]]
 		Wp = time_interval[interval_typenow]
-
+                Wk = time_interval[interval_typenext]
 		b = np.dot(item1, u)+ np.dot(hl, Wp)
 		np.clip(b, -15,15, out=b)
 		mid=sigmoid(b)*(1-sigmoid(b))
 		midlist.append(mid)
 
 		h = sigmoid(b)
-		predict_matrix = np.dot(h ,x.T)
+		predict_matrix = np.dot(h ,np.dot(Wk,x.T))
 		rank_index = np.argsort(predict_matrix, axis=1) #ordered by row small->big return index
 		rank_index = rank_index[:, -10:np.shape(rank_index)[1]]
 		if user_cart[i+1]-1 in list(rank_index[0]):
 		    hits+=1
-                Xi_j = item.T-neg_item.T
-
+                Xi_j = np.dot(Wk,item.T-neg_item.T)
 		Xij = np.dot(h, Xi_j)
 
 
@@ -132,16 +131,18 @@ def train(user_cart,time_cart,u ,x , time_interval):
 			Xij = -10
 		loss+=Xij
 
-		dneg=(1-sigmoid(Xij))*h
+		dneg=np.dot((1-sigmoid(Xij))*h,Wk)
 		np.clip(dneg, -5, 5, out=dneg)
 		x[neg-1,:] += -learning_rate*(dneg.reshape(hidden_size,)+lamda*x[neg-1,:])
 
-		ditem=-(1-sigmoid(Xij))*h+lamda_pos*item
+		ditem=np.dot(-(1-sigmoid(Xij))*h,Wk)+lamda_pos*item
 		x[user_cart[i+1]-1,:] += -learning_rate*(ditem.reshape(hidden_size,))
 
+                dWk = np.dot((-(1-sigmoid(Xij))*h.T),(item-neg_item))
+                sumdw[interval_typenext] +=-learning_rate*(dWk+lamda*Wk)
 
 		hl = h
-		dhlist.append(-(1-sigmoid(Xij))*(item-neg_item))#save the dh for each bpr step
+		dhlist.append(np.dot(-(1-sigmoid(Xij))*(item-neg_item),Wk.T))#save the dh for each bpr step
 
 #BPTT
 	for i in range(len(user_cart)-1)[::-1]:
@@ -178,7 +179,7 @@ def predict(all_cart,allresult):
 		time_cart = []
 		for behavior in behavior_list:
 			user_cart.append(behavior[0])
-			time_cart.append(0)
+			time_cart.append(behavior[1])
 		if len(user_cart)<10:
 			continue
 		i = 0
@@ -202,7 +203,9 @@ def predict(all_cart,allresult):
 			w = time_interval[interval_typenow]
 			b = np.dot(item, u)+ np.dot(h, w)
 			h = sigmoid(b)
-			predict_matrix = np.dot(h,x.T)
+                        interval_typenext = timetointerval[time_cart[j+1]]
+                        Wk = time_interval[interval_typenext]
+			predict_matrix = np.dot(h,np.dot(Wk,x.T))
 			rank_index = np.argsort(predict_matrix, axis=1)
 			rank_index = rank_index[:, -20:np.shape(rank_index)[1]]
 			rank_index_list = list(reversed(list(rank_index[0])))
@@ -234,7 +237,7 @@ print "lamda=%f"%lamda
 iter = 0
 while True:
 	allresult=[]
-        f_handler=open('result_005-0005.txt','a')
+        f_handler=open('result_0001-00001.txt','a')
         sys.stdout=f_handler
         sumhits = 0
         sumlen=0
@@ -250,7 +253,7 @@ while True:
 		behavior_list = behavior_list[0:int(0.8*len(behavior_list))]
 		for behavior in behavior_list:
 			user_cart.append(behavior[0])
-			time_cart.append(0)
+			time_cart.append(behavior[1])
 		u,x,loss, time_interval,hits=train(user_cart, time_cart, u,x,time_interval)
 		sumloss+=loss
                 sumhits+=hits
