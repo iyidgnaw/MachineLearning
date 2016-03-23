@@ -5,6 +5,9 @@ import random
 import json
 import pickle
 import sys
+import multiprocessing
+from multiprocessing import Process, Value, Array
+import time
 
 old_settings = np.seterr(all='print')
 
@@ -184,13 +187,43 @@ def train(user_cart,time_cart,u ,x ,time_interval):
 	return u,x,loss, time_interval
 
 
-
-def predict(dictiontrain,dictiontest,allresult):
-	relevant = 0.0
+def predict(dictiontrain,dictiontest):
+	relevant = Value('d', 0.0)
+	processnum = 4
+	usernum = 3074/processnum
 	for i in range(20):
 		hit[i+1] = 0
 		recall[i+1] = 0
-	for n in dictiontest.keys():
+	userAll = dictiontest.keys()
+	userqueue =[]
+	for n in range(processnum):
+		start = n*usernum
+		end = (n+1)*usernum
+		list1 = userAll[start:end]
+		userqueue.append(list1)
+	userqueue.append(userAll[usernum*processnum:])
+	processqueue = []
+	for i in range(processnum+1):
+		p = multiprocessing.Process(target = predictProcess, args
+		= (userqueue[i], dictiontest, dictiontrain, hit, recall, relevant))
+		processqueue.append(p)
+	for i in range(processnum+1):
+		processqueue[i].start()
+	for i in range(processnum+1):
+		processqueue[i].join()
+
+	for i in range(20):
+		for j in range(20-i):
+			recall[20-j] += hit[i+1]
+	for i in range(20):
+		recallatx[i+1] = recall[i+1]/relevant.value
+
+	print relevant.value
+	print recall[:]
+	print recallatx
+	return
+def predictProcess(userpart, dictiontest, dictiontrain, hit, recall, relevant):
+	for n in userpart:
 		train_user_cart = dictiontrain[n][0]
 		train_time_cart = dictiontrain[n][1]
 		test_user_cart = dictiontest[n][0]
@@ -209,7 +242,7 @@ def predict(dictiontrain,dictiontest,allresult):
 			
 		for j in xrange(len(test_user_cart)-1):
 
-			relevant += 1
+			relevant.value += 1
 			item=x[test_user_cart[j]-1]
 			interval_typenow = timetointerval[test_time_cart[j]]
 			w = time_interval[interval_typenow]
@@ -226,16 +259,6 @@ def predict(dictiontrain,dictiontest,allresult):
 				hit[index+1] += 1
 
 
-	for i in range(20):
-		for j in range(20-i):
-			recall[20-j] += hit[i+1]
-	for i in range(20):
-		recallatx[i+1] = recall[i+1]/relevant
-
-	print relevant
-	print recall
-	print recallatx
-	return
 
 
 
@@ -250,24 +273,26 @@ iter = 0
 dictiontest,dictiontrain = pre(all_cart)
 
 while True:
-	allresult=[]	
-	f_handler = open('result001-0001.txt','a')
-	sys.stdout=f_handler	
-	print "Iter %d"%iter
-	print "Training..."
-	sumloss=0
-	for i in dictiontrain.keys():
-		user_cart = dictiontrain[i][0]
-		time_cart = dictiontrain[i][1]
-		u,x,loss, time_interval=train(user_cart, time_cart, u,x,time_interval)
-		sumloss+=loss
+	allresult=[]
+	t1 = time.clock()	
+	# f_handler = open('result001-0001.txt','a')
+	# sys.stdout=f_handler	
+	# print "Iter %d"%iter
+	# print "Training..."
+	# sumloss=0
+	# for i in dictiontrain.keys():
+	# 	user_cart = dictiontrain[i][0]
+	# 	time_cart = dictiontrain[i][1]
+	# 	u,x,loss, time_interval=train(user_cart, time_cart, u,x,time_interval)
+	# 	sumloss+=loss
 
-	print "begin predict"
-	print sumloss
+	# print "begin predict"
+	# print sumloss
 
-	predict(dictiontrain,dictiontest,allresult)
-	f_handler.close()
-
+	predict(dictiontrain,dictiontest)
+	# f_handler.close()
+	t2 = time.clock()
+	print t2 - t1
 	iter += 1
 
 
