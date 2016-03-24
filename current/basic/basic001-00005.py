@@ -44,7 +44,7 @@ product_id = list(set(itemid_list))
 user_size = len(user_id)
 product_size = len(product_id)
 print user_size, product_size
-learning_rate = 0.005
+learning_rate = 0.05
 lamda_pos = 0.001
 # lamda = 0.001
 # lamda_unique =0.001
@@ -207,7 +207,17 @@ def predict(dictiontrain,dictiontest,allresult):
 	print relevant
 	print recall
 	print recallatx
-	return
+	return recall,recallatx
+
+
+def savefunction(learning_rate,lamda,u,w,x,recall,recallatx):
+	result = open('result.txt','a')
+	hint1 = "learningrate = %f"%learning_rate
+	hint2 = "lamda=%f"%lamda
+	list1 = [hint1,hint2,recall,recallatx,u,w,x]
+	pickle.dump(list1,result)
+	result.close()
+	return 
 
 
 allrecord=[]
@@ -238,7 +248,9 @@ while (iter<150):
 	print "begin predict"
 	print sumloss
 
-	predict(dictiontrain,dictiontest,allresult)
+	recall,recallatx = predict(dictiontrain,dictiontest,allresult)
 	f_handler.close()
 	iter += 1
+	if iter%10==0:
+		savefunction(learning_rate,lamda,u,w,x,recall,recallatx)
 
