@@ -44,7 +44,7 @@ product_id = list(set(itemid_list))
 user_size = len(user_id)
 product_size = len(product_id)
 print user_size, product_size
-learning_rate = 0.01
+learning_rate = 0.005
 lamda_pos = 0.001
 # lamda = 0.001
 # lamda_unique =0.001
@@ -57,7 +57,7 @@ u = np.random.randn(hidden_size, hidden_size)*0.5
 x = np.random.randn(product_size, hidden_size)*0.5
 hprev = np.zeros((1, hidden_size))
 w = np.random.randn(hidden_size, hidden_size)*0.5
-	
+
 
 
 def sigmoid(x):
@@ -102,7 +102,7 @@ def train(user_cart,u ,x ,w):
 	hiddenlist=[]
 	midlist=[]#sigmoid(bi)*(1-sigmoid(bi))
 	sumdu= 0
-	sumdw= 0 
+	sumdw= 0
 
 #BPR
 	dh1= np.copy(hprev)#dh for the back process
@@ -122,7 +122,7 @@ def train(user_cart,u ,x ,w):
 		midlist.append(mid)
 
 		h = sigmoid(b)
-		
+
 		Xi_j = item.T-neg_item.T
 
 		Xij = np.dot(h, Xi_j)
@@ -220,10 +220,10 @@ print "lamda=%f"%lamda
 iter = 0
 dictiontest,dictiontrain = pre(all_cart)
 
-while True:
+while (iter<150):
 	allresult=[]
-	f_handler = open('result001-0001.txt','a')
-	sys.stdout=f_handler	
+	f_handler = open('result0005-0001.txt','a')
+	sys.stdout=f_handler
 	print "Iter %d"%iter
 	print "Training..."
 	sumloss=0
