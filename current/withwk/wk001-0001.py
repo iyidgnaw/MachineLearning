@@ -5,6 +5,8 @@ import random
 import json
 import pickle
 import sys
+
+
 old_settings = np.seterr(all='print')
 
 f1 = open("../timetointerval","r")     # 把时间间隔小时映射到人为分号的时间间隔
@@ -56,10 +58,14 @@ neg_num = 1
 u = np.random.randn(hidden_size, hidden_size)*0.5
 x = np.random.randn(product_size, hidden_size)*0.5
 hprev = np.zeros((1, hidden_size))
-time_interval = []
+wplist = []
 for i in range (interval_types):
 	w = np.random.randn(hidden_size, hidden_size)*0.5
-	time_interval.append(w)
+	wplist.append(w)
+wklist = []
+for i in range (interval_types):
+	w = np.random.randn(hidden_size, hidden_size)*0.5
+	wklist.append(w)
 
 
 def sigmoid(x):
@@ -102,16 +108,19 @@ def pre(all_cart):
 
 
 
-def train(user_cart,time_cart,u ,x ,time_interval):
+def train(user_cart,time_cart,u ,x ,wklist,wplist):
 
 	hl = np.copy(hprev)
 	dhlist=[]
 	hiddenlist=[]
 	midlist=[]#sigmoid(bi)*(1-sigmoid(bi))
 	sumdu= 0
-	sumdw=[]
+	sumdwp=[]
 	for i in range(11):
-		sumdw.append(0)
+		sumdwp.append(0)
+	sumdwk=[]
+	for i in range(11):
+		sumdwk.append(0)
 
 #BPR
 	dh1= np.copy(hprev)#dh for the back process
@@ -127,8 +136,8 @@ def train(user_cart,time_cart,u ,x ,time_interval):
 		hiddenlist.append(hl)
 		interval_typenext=timetointerval[time_cart[i+1]]
 		interval_typenow=timetointerval[time_cart[i]]
-		Wp = time_interval[interval_typenow]
-		Wk = time_interval[interval_typenext]
+		Wp = wplist[interval_typenow]
+		Wk = wklist[interval_typenext]
 		b = np.dot(item1, u)+ np.dot(hl, Wp)
 		np.clip(b, -15,15, out=b)
 		mid=sigmoid(b)*(1-sigmoid(b))
@@ -154,7 +163,7 @@ def train(user_cart,time_cart,u ,x ,time_interval):
 		x[user_cart[i+1]-1,:] += -learning_rate*(ditem.reshape(hidden_size,))
 
 		dWk = np.dot((-(1-sigmoid(Xij))*h.T),(item-neg_item))
-		sumdw[interval_typenext] +=-learning_rate*(dWk+lamda*Wk)
+		sumdwk[interval_typenext] +=-learning_rate*(dWk+lamda*Wk)
 
 		hl = h
 		dhlist.append(np.dot(-(1-sigmoid(Xij))*(item-neg_item),Wk.T))#save the dh for each bpr step
@@ -169,8 +178,8 @@ def train(user_cart,time_cart,u ,x ,time_interval):
 
 		dWp = np.dot(hnminus2.T,dh*midlist[i])
 		interval_typenow = timetointerval[time_cart[i]]
-		Wp = time_interval[interval_typenow]
-		sumdw[interval_typenow] += -learning_rate*(dWp+lamda*Wp)
+		Wp = wplist[interval_typenow]
+		sumdwp[interval_typenow] += -learning_rate*(dWp+lamda*Wp)
 
 		dx=np.dot(dh*midlist[i],u.T)
 		x[user_cart[i]-1,:] += -learning_rate*(dx.reshape(hidden_size,)+lamda_pos*x[user_cart[i]-1,:])
@@ -178,8 +187,10 @@ def train(user_cart,time_cart,u ,x ,time_interval):
 		dh1 = np.dot(dh*midlist[i],Wp.T)
 	u += -learning_rate*sumdu
 	for i in range(11):
-		time_interval[i]+=sumdw[i]
-	return u,x,loss, time_interval
+		wklist[i]+=sumdwk[i]
+		wplist[i]+=sumdwp[i]
+
+	return u,x,loss, wklist,wplist
 
 
 
@@ -198,7 +209,7 @@ def predict(dictiontrain,dictiontest,allresult):
 		for item_id in train_user_cart:
 			interval_typenow = timetointerval[train_time_cart[i]]
 			item = x[item_id-1]
-			w =time_interval[interval_typenow]
+			w =wplist[interval_typenow]
 			b = np.dot(item, u)+ np.dot(hl, w)
 			np.clip(b, -15, 15, out=b)
 			h = sigmoid(b)
@@ -235,11 +246,11 @@ def predict(dictiontrain,dictiontest,allresult):
 	print recallatx
 	return recall,recallatx
 
-def savefunction(learning_rate,lamda,u,time_interval,x,recall,recallatx):
+def savefunction(learning_rate,lamda,u,wklist,wplist,x,recall,recallatx):
 	result = open('result.txt','a')
 	hint1 = "learningrate = %f"%learning_rate
 	hint2 = "lamda=%f"%lamda
-	list1 = [hint1,hint2,recall,recallatx,u,time_interval,x]
+	list1 = [hint1,hint2,recall,recallatx,u,wklist,wplist,x]
 	pickle.dump(list1,result)
 	result.close()
 	return
@@ -265,7 +276,7 @@ while(iter<150):
 	for i in dictiontrain.keys():
 		user_cart = dictiontrain[i][0]
 		time_cart = dictiontrain[i][1]
-		u,x,loss, time_interval=train(user_cart, time_cart, u,x,time_interval)
+		u,x,loss, wklist,wplist=train(user_cart, time_cart, u,x,wklist,wplist)
 		sumloss+=loss
 
 	print "begin predict"
@@ -277,4 +288,4 @@ while(iter<150):
 
 	iter += 1
 	if iter%1==0:
-		savefunction(learning_rate,lamda,u,time_interval,x,recall,recallatx)
+		savefunction(learning_rate,lamda,u,wplist,x,recall,recallatx)
