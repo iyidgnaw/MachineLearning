@@ -230,8 +230,16 @@ def predict(dictiontrain,dictiontest,allresult):
 	print relevant
 	print recall
 	print recallatx
-	return
+	return recall,recallatx
 
+def savefunction(learning_rate,lamda,u,time_interval,x,recall,recallatx):
+	result = open('result.txt','a')
+	hint1 = "learningrate = %f"%learning_rate
+	hint2 = "lamda=%f"%lamda
+	list1 = [hint1,hint2,recall,recallatx,u,time_interval,x]
+	pickle.dump(list1,result)
+	result.close()
+	return
 
 
 allrecord=[]
@@ -244,7 +252,7 @@ print "lamda=%f"%lamda
 iter = 0
 dictiontest,dictiontrain = pre(all_cart)
 
-while True:
+while(iter<150):
 	allresult=[]	
 	f_handler = open('result001-0001.txt','a')
 	sys.stdout=f_handler	
@@ -260,8 +268,10 @@ while True:
 	print "begin predict"
 	print sumloss
 
-	predict(dictiontrain,dictiontest,allresult)
+	recall,recallatx = predict(dictiontrain,dictiontest,allresult)
 	f_handler.close()
 
 
 	iter += 1
+	if iter%1==0:
+		savefunction(learning_rate,lamda,u,time_interval,x,recall,recallatx)
