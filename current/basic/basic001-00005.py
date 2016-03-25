@@ -251,6 +251,6 @@ while (iter<150):
 	recall,recallatx = predict(dictiontrain,dictiontest,allresult)
 	f_handler.close()
 	iter += 1
-	if iter%10==0:
+	if iter%1==0:
 		savefunction(learning_rate,lamda,u,w,x,recall,recallatx)
 
