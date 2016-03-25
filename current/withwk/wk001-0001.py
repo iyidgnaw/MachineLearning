@@ -221,11 +221,11 @@ def predict(dictiontrain,dictiontest,allresult):
 			relevant += 1
 			item=x[test_user_cart[j]-1]
 			interval_typenow = timetointerval[test_time_cart[j]]
-			w = time_interval[interval_typenow]
+			w = wplist[interval_typenow]
 			b = np.dot(item, u)+ np.dot(h, w)
 			h = sigmoid(b)
 			interval_typenext = timetointerval[test_time_cart[j+1]]
-			Wk = time_interval[interval_typenext]
+			Wk = wklist[interval_typenext]
 			predict_matrix = np.dot(h,np.dot(Wk,x.T))
 			rank = np.argpartition(predict_matrix[0],-20)[-20:]
 			rank = rank[np.argsort(predict_matrix[0][rank])]
