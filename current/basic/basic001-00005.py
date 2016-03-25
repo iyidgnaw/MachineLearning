@@ -44,7 +44,7 @@ product_id = list(set(itemid_list))
 user_size = len(user_id)
 product_size = len(product_id)
 print user_size, product_size
-learning_rate = 0.05
+learning_rate = 0.005
 lamda_pos = 0.001
 # lamda = 0.001
 # lamda_unique =0.001
@@ -217,7 +217,7 @@ def savefunction(learning_rate,lamda,u,w,x,recall,recallatx):
 	list1 = [hint1,hint2,recall,recallatx,u,w,x]
 	pickle.dump(list1,result)
 	result.close()
-	return 
+	return
 
 
 allrecord=[]
