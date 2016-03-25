@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*
+__author__ = 'lizk'
+import numpy as np
+import random
 import json
 import pickle
 import sys
-
 old_settings = np.seterr(all='print')
 
 f1 = open("../timetointerval","r")     # 把时间间隔小时映射到人为分号的时间间隔
