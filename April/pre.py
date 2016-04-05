@@ -1,36 +1,45 @@
-import json
-all_cart = []
-itemid_list = []
-data = open('./data.json', 'r')
-
+from datetime import *
+from collections import Counter
+output = open('delta.csv','a')
+data = open('./clothes.csv', 'r')
 lines = data.readlines()
-for line in lines:
-	line1 = json.loads(line)
-	all_cart.append(line1)
-for i in all_cart:
-	itemid_list.extend(i)
-list1 = list(set(itemid_list))
-diction = {}
-for i in range(len(list1)):
-	diction[list1[i]] = i+1
-
-data1 = open('t_alibaba_data.csv','r')
-output = open('data1.txt','a')
-lines = data1.readlines()
-past_target = 0
-newlist = []
-for line in lines:
-	target = line.split(',')
-	if past_target!=int(target[0]):
-		output.write(str(newlist)+'\n')
-		newlist=[]
-		oldid = int(target[1])
-		newid = diction[oldid]
-
-		newlist.append(newid)
-		past_target = int(target[0])
+pastuserid = "0" 
+pastdate = 0
+deltalist = []
+def judge(delta):
+	if delta ==0:
+		return 0
+	elif delta ==1:
+		return 1
+	elif delta <4:
+		return 2
+	elif delta<9:
+		return 3
 	else:
-		oldid = int(target[1])
-		newid = diction[oldid]
-		newlist.append(newid)
-		past_target = int(target[0])		
+		return 4
+for line in lines:
+	splitlist = line.split(',')
+	userid = splitlist[0]
+	year = int(splitlist[2])
+	month = int(splitlist[3])
+	day = int(splitlist[4])
+	x = date(year,month,day)
+	if userid!=pastuserid:
+		pastuserid=userid
+		pastdate = x
+		newline = line.strip() +","+str(0)+"\n"
+		deltalist.append(0)
+		# output.write(newline)
+
+	else:
+		delta = x-pastdate
+		num = judge(delta.days)
+		deltalist.append(num)
+		newline = line.strip()+","+str(num)+"\n"
+		# output.write(newline)
+		pastuserid=userid
+		pastdate = x
+print Counter(deltalist)
+
+
+
