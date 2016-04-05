@@ -10,7 +10,8 @@ import sys
 USER_SIZE = 1904			# 总用户数
 ITEM_SIZE = 1157			# 总商品种数
 HIDDEN_SIZE = 10			# hidden layer的维度
-LEARNING_RATE = 0.01 		# 学习速率
+LEARNING_RATE = 0.1 		# 学习速率
+LEARNING_RATE_W = 0.01
 LAMBDA = 0.001 				# 惩罚系数
 TOP = 20 					# recall取前Top个
 U = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
@@ -27,6 +28,7 @@ H_ZERO = np.zeros((1, HIDDEN_SIZE))
 
 DATAFILE = 'user_cart_delta.json'
 
+NEG_NUM = 20
 ITEM_TRAIN = {}
 ITEM_TEST = {}
 SPLIT = 0.9
@@ -72,6 +74,14 @@ def pre_data():
 			ITEM_TRAIN[i] = [item_train,time_train]
 			ITEM_TEST[i] = [item_test,time_test]
 
+def avg_neg(neglist):
+	Sum = np.zeros((1, HIDDEN_SIZE))
+	for i in neglist:
+		Sum +=X[i-1, :].reshape(1, HIDDEN_SIZE)
+	return Sum/NEG_NUM
+
+
+
 
 def train(user_cart,time_cart):
 	global U, WKLIST,WPLIST, X
@@ -93,13 +103,15 @@ def train(user_cart,time_cart):
 	
 	for i in xrange(len(user_cart)-1):
 		# 对于要预测的item进行负采样
-		neg = random.randint(1, ITEM_SIZE)
-		while (i+1) == neg:
-			neg = random.randint(1, ITEM_SIZE)
+		itemlist = range(ITEM_SIZE)
+		neglist = random.sample(itemlist,NEG_NUM)
+		item_neg = avg_neg(neglist)
+		# while (i+1) == neg:
+		# 	neg = random.randint(1, ITEM_SIZE)
 
 		item_pos = X[user_cart[i+1]-1, :].reshape(1, HIDDEN_SIZE)		# positive sample's vector
 		item_curt = X[user_cart[i]-1, :].reshape(1, HIDDEN_SIZE)		# current input vector
-		item_neg = X[neg-1, :].reshape(1, HIDDEN_SIZE)			# negative sample's vector
+		# item_neg = X[neg-1, :].reshape(1, HIDDEN_SIZE)			# negative sample's vector
 		Wp=WPLIST[time_cart[i]]
 		Wk=WKLIST[time_cart[i+1]]
 
@@ -118,15 +130,20 @@ def train(user_cart,time_cart):
 		dhlist.append(np.dot(tmp * (item_pos - item_neg),Wk.T))		# save the dh for each bpr step
 
 		# 计算对于负样本的导数 并更新负样本的vector
-		dneg = np.dot(-tmp * h,Wk) + LAMBDA * item_neg
-		X[neg-1, :] += -LEARNING_RATE * (dneg.reshape(HIDDEN_SIZE, ))
+		for k in neglist:
+			dneg = np.dot(-tmp * h,Wk) /NEG_NUM+ LAMBDA * X[k-1, :].reshape(1, HIDDEN_SIZE)
+			X[k-1, :] += -LEARNING_RATE * (dneg.reshape(HIDDEN_SIZE, ))
+
+
+		# dneg = np.dot(-tmp * h,Wk) + LAMBDA * item_neg
+		# X[neg-1, :] += -LEARNING_RATE * (dneg.reshape(HIDDEN_SIZE, ))
 		# 计算对于正样本的导数 并更新正样本的vector
 		
 		ditem = np.dot(tmp * h,Wk) + LAMBDA * item_pos
 		X[user_cart[i+1]-1, :] += -LEARNING_RATE * (ditem.reshape(HIDDEN_SIZE,))
 
 		dWk = np.dot(tmp*h.T,(item_pos - item_neg))
-		WKLIST[time_cart[i+1]] += -LEARNING_RATE*(dWk+LAMBDA*Wk)	
+		WKLIST[time_cart[i+1]] += -LEARNING_RATE_W*(dWk+LAMBDA*Wk)	
 		# sumdwk[time_cart[i+1]] += -LEARNING_RATE*(dWk+LAMBDA*Wk)
 		# 更新last hidden layer
 		hl = h
@@ -140,7 +157,7 @@ def train(user_cart,time_cart):
 		sumdu += np.dot(item.T, dh * midlist[i])
 		dWp = np.dot(hnminus2.T,dh*midlist[i])
 		Wp = WPLIST[time_cart[i]]
-		sumdwp[time_cart[i]] += -LEARNING_RATE*(dWp+LAMBDA*Wp)
+		sumdwp[time_cart[i]] += -LEARNING_RATE_W*(dWp+LAMBDA*Wp)
 		# 更新输入的样本
 		dx = np.dot(dh * midlist[i], U.T)
 		X[user_cart[i]-1, :] += -LEARNING_RATE*(dx.reshape(HIDDEN_SIZE, ) + LAMBDA * X[user_cart[i]-1, :])
