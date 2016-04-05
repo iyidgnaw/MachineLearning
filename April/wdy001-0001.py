@@ -10,7 +10,7 @@ import sys
 USER_SIZE = 1904			# 总用户数
 ITEM_SIZE = 1157			# 总商品种数
 HIDDEN_SIZE = 10			# hidden layer的维度
-LEARNING_RATE = 0.1 		# 学习速率
+LEARNING_RATE = 0.01 		# 学习速率
 LAMBDA = 0.001 				# 惩罚系数
 TOP = 20 					# recall取前Top个
 U = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
