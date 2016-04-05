@@ -23,4 +23,8 @@
     14:10  :周末跑了三个程序，三个方法的调参基本结束，结果分别保存在basic，withwk，withoutwk三个目录下的3.21目录中。今天开始对有wk的情况进行系统调参，看一下准确率能不能超过basic的22%，如果不能就要讨论新的方法了。如果可以就开始针对tensor进行下一步改动。
 3.22
     16:00  :小数据集上basic方法准确率达到26%，其余方法均止步于20%。今天改到大数据集上实现withwk和basic方法。
-    21:07  :改进算法，第一：将user_cart time_cart的赋值部分写成单独的函数，避免了每轮都要重新赋值的问题。第二：改进了argsort方法，改为使用argpartition方法，该方法的效果详见current文件夹下的sort_partition.py文件。将basic和withwk迁移到大数据集开始运行。
+    21:07  :改进算法，第一：将user_cart time_cart的赋值部分写成单独的函数，避免了每轮都要重新赋值的问题。第二：改进了argsort方法，改为使用argpartition方法，该方法的效果详见current文件夹下的sort_partition.py文件。将basic和withwk迁移到大数据集开始运行。  
+
+
+4.5
+    11:00  :停止更新，此目录下的数据集均不能使用，新工作迁移到上一层目录中的April文件夹下。
