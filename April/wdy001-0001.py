@@ -126,7 +126,8 @@ def train(user_cart,time_cart):
 		X[user_cart[i+1]-1, :] += -LEARNING_RATE * (ditem.reshape(HIDDEN_SIZE,))
 
 		dWk = np.dot(tmp*h.T,(item_pos - item_neg))
-		sumdwk[time_cart[i+1]] += -LEARNING_RATE*(dWk+LAMBDA*Wk)
+		WKLIST[time_cart[i+1]] += -LEARNING_RATE*(dWk+LAMBDA*Wk)	
+		# sumdwk[time_cart[i+1]] += -LEARNING_RATE*(dWk+LAMBDA*Wk)
 		# 更新last hidden layer
 		hl = h
 
@@ -147,7 +148,7 @@ def train(user_cart,time_cart):
 		dh1 = np.dot(dh * midlist[i], Wp.T)
 	U += -LEARNING_RATE * (sumdu + LAMBDA * U)
 	for i in range(5):
-		WKLIST[i]+=sumdwk[i]
+		# WKLIST[i]+=sumdwk[i]
 		WPLIST[i]+=sumdwp[i]
 
 	return loss
