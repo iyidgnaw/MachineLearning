@@ -6,7 +6,8 @@ import json
 import pickle
 import sys
 
-
+Pastrecall = {}
+Pastrecall[10]=0
 USER_SIZE = 1904			# 总用户数
 ITEM_SIZE = 1157			# 总商品种数
 HIDDEN_SIZE = 10			# hidden layer的维度
@@ -172,7 +173,7 @@ def predict():
 	print relevant
 	print recall
 	print recallatx
-
+	return recall
 
 # allrecord=[]
 # for i in xrange(len(all_cart)):
@@ -185,10 +186,11 @@ def basic_info():
 
 
 def learn():
+	global Pastrecall
 	ite = 0
-	while True:
-		# f_handler = open('result001-0001.txt','a')
-		# sys.stdout=f_handler	
+	while (ite<=800):
+		f_handler = open('basic01-0001.txt','a')
+		sys.stdout=f_handler	
 		print "Iter %d" % ite
 		print "Training..."
 		sumloss = 0
@@ -198,9 +200,14 @@ def learn():
 			sumloss += loss
 		print "begin predict"
 		print sumloss
-
-		predict()
-		# f_handler.close()
+		recall = predict()
+		if recall[10]>Pastrecall[10]:
+			result = open('resultbasic.txt','w')
+			list1 = [recall,U,W,X]
+			pickle.dump(list1,result)
+			result.close()
+			Pastrecall = recall
+		f_handler.close()
 		ite += 1
 
 
