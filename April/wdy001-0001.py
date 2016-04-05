@@ -11,7 +11,6 @@ USER_SIZE = 1904			# 总用户数
 ITEM_SIZE = 1157			# 总商品种数
 HIDDEN_SIZE = 10			# hidden layer的维度
 LEARNING_RATE = 0.1 		# 学习速率
-LEARNING_RATE_W = 0.01
 LAMBDA = 0.001 				# 惩罚系数
 TOP = 20 					# recall取前Top个
 U = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
@@ -100,24 +99,50 @@ def train(user_cart,time_cart):
 	loss = 0
 	# BPR
 	dh1 = np.copy(H_ZERO)					# dh for the back process
+
+
+	# relevant = 0.0 			# 所预测的总次数
+	# hit = {}				# 第n个位置所命中的个数
+	# recall = {}				# 前n个位置所命中的总数
+	# recallatx = {}			# RecallAtN/relevant
+	
+	# for i in range(TOP):
+	# 	hit[i+1] = 0
+	# 	recall[i+1] = 0
+
+
+
 	
 	for i in xrange(len(user_cart)-1):
 		# 对于要预测的item进行负采样
-		itemlist = range(ITEM_SIZE)
-		neglist = random.sample(itemlist,NEG_NUM)
-		item_neg = avg_neg(neglist)
-		# while (i+1) == neg:
-		# 	neg = random.randint(1, ITEM_SIZE)
+		# itemlist = range(ITEM_SIZE)
+		# neglist = random.sample(itemlist,NEG_NUM)
+		# item_neg = avg_neg(neglist)
+		neg = random.randint(1, ITEM_SIZE)
+		while (i+1) == neg:
+			neg = random.randint(1, ITEM_SIZE)
 
 		item_pos = X[user_cart[i+1]-1, :].reshape(1, HIDDEN_SIZE)		# positive sample's vector
 		item_curt = X[user_cart[i]-1, :].reshape(1, HIDDEN_SIZE)		# current input vector
-		# item_neg = X[neg-1, :].reshape(1, HIDDEN_SIZE)			# negative sample's vector
+		item_neg = X[neg-1, :].reshape(1, HIDDEN_SIZE)			# negative sample's vector
 		Wp=WPLIST[time_cart[i]]
 		Wk=WKLIST[time_cart[i+1]]
 
 		# 计算状态t的h、dh
 		b = np.dot(item_curt, U) + np.dot(hl, Wp)
 		h = sigmoid(b)
+
+		#predict on train
+		# predict_matrix = np.dot(h,np.dot(Wk, X.T))
+		# rank = np.argpartition(predict_matrix[0], -TOP)[-TOP:]
+		# rank = rank[np.argsort(predict_matrix[0][rank])]
+		# rank_index_list = list(reversed(list(rank)))
+
+		# if test[j]-1 in rank_index_list:
+		# 	index = rank_index_list.index(test[j]-1)
+		# 	hit[index+1] += 1
+
+
 		xi_j = np.dot(Wk,item_pos.T - item_neg.T)
 		xij = np.dot(h, xi_j)
 		loss += xij
@@ -130,20 +155,18 @@ def train(user_cart,time_cart):
 		dhlist.append(np.dot(tmp * (item_pos - item_neg),Wk.T))		# save the dh for each bpr step
 
 		# 计算对于负样本的导数 并更新负样本的vector
-		for k in neglist:
-			dneg = np.dot(-tmp * h,Wk) /NEG_NUM+ LAMBDA * X[k-1, :].reshape(1, HIDDEN_SIZE)
-			X[k-1, :] += -LEARNING_RATE * (dneg.reshape(HIDDEN_SIZE, ))
-
-
-		# dneg = np.dot(-tmp * h,Wk) + LAMBDA * item_neg
-		# X[neg-1, :] += -LEARNING_RATE * (dneg.reshape(HIDDEN_SIZE, ))
-		# 计算对于正样本的导数 并更新正样本的vector
+		# for k in neglist:
+		# 	dneg = np.dot(-tmp * h,Wk) /NEG_NUM+ LAMBDA * X[k-1, :].reshape(1, HIDDEN_SIZE)
+		# 	X[k-1, :] += -LEARNING_RATE * (dneg.reshape(HIDDEN_SIZE, ))
+		dneg = np.dot(-tmp * h,Wk) + LAMBDA * item_neg
+		X[neg-1, :] += -LEARNING_RATE * (dneg.reshape(HIDDEN_SIZE, ))
 		
+		# 计算对于正样本的导数 并更新正样本的vector
 		ditem = np.dot(tmp * h,Wk) + LAMBDA * item_pos
 		X[user_cart[i+1]-1, :] += -LEARNING_RATE * (ditem.reshape(HIDDEN_SIZE,))
 
 		dWk = np.dot(tmp*h.T,(item_pos - item_neg))
-		WKLIST[time_cart[i+1]] += -LEARNING_RATE_W*(dWk+LAMBDA*Wk)	
+		WKLIST[time_cart[i+1]] += -LEARNING_RATE*(dWk+LAMBDA*Wk)	
 		# sumdwk[time_cart[i+1]] += -LEARNING_RATE*(dWk+LAMBDA*Wk)
 		# 更新last hidden layer
 		hl = h
@@ -156,8 +179,8 @@ def train(user_cart,time_cart):
 
 		sumdu += np.dot(item.T, dh * midlist[i])
 		dWp = np.dot(hnminus2.T,dh*midlist[i])
-		Wp = WPLIST[time_cart[i]]
-		sumdwp[time_cart[i]] += -LEARNING_RATE_W*(dWp+LAMBDA*Wp)
+		# Wp = WPLIST[time_cart[i]]
+		sumdwp[time_cart[i]] +=dWp
 		# 更新输入的样本
 		dx = np.dot(dh * midlist[i], U.T)
 		X[user_cart[i]-1, :] += -LEARNING_RATE*(dx.reshape(HIDDEN_SIZE, ) + LAMBDA * X[user_cart[i]-1, :])
@@ -166,7 +189,20 @@ def train(user_cart,time_cart):
 	U += -LEARNING_RATE * (sumdu + LAMBDA * U)
 	for i in range(5):
 		# WKLIST[i]+=sumdwk[i]
-		WPLIST[i]+=sumdwp[i]
+		WPLIST[i]+= -LEARNING_RATE*(sumdwp[i]+LAMBDA*WPLIST[i])
+	
+	#predict on train
+	# for i in range(20):
+	# 	for j in range(20-i):
+	# 		recall[20-j] += hit[i+1]
+	# for i in range(20):
+	# 	recallatx[i+1] = recall[i+1]/relevant
+
+	# print relevant
+	# print recall
+	# print recallatx
+
+
 
 	return loss
 
