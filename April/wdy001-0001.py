@@ -222,8 +222,8 @@ def basic_info():
 def learn():
 	ite = 0
 	while True:
-		# f_handler = open('result001-0001.txt','a')
-		# sys.stdout=f_handler	
+		f_handler = open('result001-0001.txt','a')
+		sys.stdout=f_handler	
 		print "Iter %d" % ite
 		print "Training..."
 		sumloss = 0
@@ -236,7 +236,7 @@ def learn():
 		print sumloss
 
 		predict()
-		# f_handler.close()
+		f_handler.close()
 		ite += 1
 
 
