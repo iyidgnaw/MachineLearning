@@ -44,7 +44,7 @@ product_id = list(set(itemid_list))
 user_size = len(user_id)
 product_size = len(product_id)
 print user_size, product_size
-learning_rate = 0.005
+learning_rate = 0.01
 lamda_pos = 0.001
 # lamda = 0.001
 # lamda_unique =0.001

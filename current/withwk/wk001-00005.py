@@ -47,11 +47,11 @@ user_size = len(user_id)
 product_size = len(product_id)
 print user_size, product_size
 learning_rate = 0.01
-lamda_pos = 0.0005
+lamda_pos = 0.05
 # lamda = 0.001
 # lamda_unique =0.001
-lamda = 0.0005
-lamda_unique = 0.0005
+lamda = 0.05
+lamda_unique = 0.05
 hidden_size = 10
 interval_types = 11
 neg_num = 1
@@ -69,7 +69,7 @@ for i in range (interval_types):
 
 
 def sigmoid(x):
-	output = 1/(1+np.exp(-x))
+	output = 1.0/(1.0+np.exp(-x))
 	return output
 
 def negative(user_cart):
@@ -287,5 +287,5 @@ while(iter<150):
 
 
 	iter += 1
-	if iter%1==0:
-		savefunction(learning_rate,lamda,u,wklist,wplist,x,recall,recallatx)
+	# if iter%1==0:
+	# 	savefunction(learning_rate,lamda,u,wklist,wplist,x,recall,recallatx)
