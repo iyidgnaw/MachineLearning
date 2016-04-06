@@ -19,7 +19,7 @@ X = np.random.randn(ITEM_SIZE, HIDDEN_SIZE)*0.5
 W = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
 H_ZERO = np.zeros((1, HIDDEN_SIZE))
 
-DATAFILE = 'user_cart_basic.json'
+DATAFILE = '../data/user_cart_basic.json'
 
 ITEM_TRAIN = {}
 ITEM_TEST = {}
@@ -189,7 +189,7 @@ def learn():
 	global Pastrecall
 	ite = 0
 	while (ite<=800):
-		f_handler = open('basic01-0001.txt','a')
+		f_handler = open('result_01-0001.txt','a')
 		sys.stdout=f_handler	
 		print "Iter %d" % ite
 		print "Training..."
@@ -202,7 +202,7 @@ def learn():
 		print sumloss
 		recall = predict()
 		if recall[10]>Pastrecall[10]:
-			result = open('resultbasic.txt','w')
+			result = open('bestparameter.txt','w')
 			list1 = [recall,U,W,X]
 			pickle.dump(list1,result)
 			result.close()

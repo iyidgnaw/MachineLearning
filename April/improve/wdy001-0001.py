@@ -10,22 +10,35 @@ import sys
 USER_SIZE = 1904			# 总用户数
 ITEM_SIZE = 1157			# 总商品种数
 HIDDEN_SIZE = 10			# hidden layer的维度
-LEARNING_RATE = 0.01 		# 学习速率
+LEARNING_RATE = 0.002 		# 学习速率
 LAMBDA = 0.001 				# 惩罚系数
 TOP = 20 					# recall取前Top个
-U = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
-X = np.random.randn(ITEM_SIZE, HIDDEN_SIZE)*0.5
-WPLIST = []
-for i in range(5):
-	w = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
-	WPLIST.append(w)
-WKLIST = []
-for i in range(5):
-	w = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
-	WKLIST.append(w)
+
+# Random Initiation
+# U = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
+# X = np.random.randn(ITEM_SIZE, HIDDEN_SIZE)*0.5
+# WPLIST = []
+# for i in range(5):
+# 	w = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
+# 	WPLIST.append(w)
+# WKLIST = []
+# for i in range(5):
+# 	w = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
+# 	WKLIST.append(w)
+
+# Initiate from files
+FILE = open('bestparameter.txt','rb')
+PARA = pickle.load(FILE)
+FILE.close()
+U = PARA[1]
+WKLIST = PARA[2]
+WPLIST = PARA[3]
+X = PARA[4]
+
+
 H_ZERO = np.zeros((1, HIDDEN_SIZE))
 
-DATAFILE = 'user_cart_delta.json'
+DATAFILE = '../data/user_cart_delta.json'
 Pastrecall = {}
 Pastrecall[10]=0
 NEG_NUM = 20
@@ -280,7 +293,7 @@ def learn():
 	global Pastrecall
 	ite = 0
 	while (ite<=400):
-		f_handler = open('wdy001-0001.txt','a')
+		f_handler = open('4_6_result_001-0001.txt','a')
 		sys.stdout=f_handler	
 		print "Iter %d" % ite
 		print "Training..."
@@ -294,7 +307,7 @@ def learn():
 		print sumloss
 		recall = predict()
 		if recall[10]>Pastrecall[10]:
-			result = open('resultwdy.txt','w')
+			result = open('bestparameter.txt','w')
 			list1 = [recall,U,WKLIST,WPLIST,X]
 			pickle.dump(list1,result)
 			result.close()
