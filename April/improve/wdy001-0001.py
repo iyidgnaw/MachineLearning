@@ -15,25 +15,25 @@ LAMBDA = 0.001 				# 惩罚系数
 TOP = 20 					# recall取前Top个
 
 # Random Initiation
-# U = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
-# X = np.random.randn(ITEM_SIZE, HIDDEN_SIZE)*0.5
-# WPLIST = []
-# for i in range(5):
-# 	w = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
-# 	WPLIST.append(w)
-# WKLIST = []
-# for i in range(5):
-# 	w = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
-# 	WKLIST.append(w)
+U = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
+X = np.random.randn(ITEM_SIZE, HIDDEN_SIZE)*0.5
+WPLIST = []
+for i in range(5):
+	w = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
+	WPLIST.append(w)
+WKLIST = []
+for i in range(5):
+	w = np.random.randn(HIDDEN_SIZE, HIDDEN_SIZE)*0.5
+	WKLIST.append(w)
 
-# Initiate from files
-FILE = open('bestparameter.txt','rb')
-PARA = pickle.load(FILE)
-FILE.close()
-U = PARA[1]
-WKLIST = PARA[2]
-WPLIST = PARA[3]
-X = PARA[4]
+# # Initiate from files
+# FILE = open('bestparameter.txt','rb')
+# PARA = pickle.load(FILE)
+# FILE.close()
+# U = PARA[1]
+# WKLIST = PARA[2]
+# WPLIST = PARA[3]
+# X = PARA[4]
 
 
 H_ZERO = np.zeros((1, HIDDEN_SIZE))
@@ -87,12 +87,6 @@ def pre_data():
 			ITEM_TRAIN[i] = [item_train,time_train]
 			ITEM_TEST[i] = [item_test,time_test]
 
-def avg_neg(neglist):
-	Sum = np.zeros((1, HIDDEN_SIZE))
-	for i in neglist:
-		Sum +=X[i-1, :].reshape(1, HIDDEN_SIZE)
-	return Sum/NEG_NUM
-
 
 
 
@@ -107,26 +101,9 @@ def train(user_cart,time_cart):
 	sumdwp = []
 	for i in range(5):
 		sumdwp.append(0)
-	sumdwk=[]
-	for i in range(5):
-		sumdwk.append(0)
 	loss = 0
 	# BPR
 	dh1 = np.copy(H_ZERO)					# dh for the back process
-
-
-	# relevant = 0.0 			# 所预测的总次数
-	# hit = {}				# 第n个位置所命中的个数
-	# recall = {}				# 前n个位置所命中的总数
-	# recallatx = {}			# RecallAtN/relevant
-	
-	# for i in range(TOP):
-	# 	hit[i+1] = 0
-	# 	recall[i+1] = 0
-
-
-
-	
 	for i in xrange(len(user_cart)-1):
 		# 对于要预测的item进行负采样
 		# itemlist = range(ITEM_SIZE)
@@ -146,15 +123,6 @@ def train(user_cart,time_cart):
 		b = np.dot(item_curt, U) + np.dot(hl, Wp)
 		h = sigmoid(b)
 
-		#predict on train
-		# predict_matrix = np.dot(h,np.dot(Wk, X.T))
-		# rank = np.argpartition(predict_matrix[0], -TOP)[-TOP:]
-		# rank = rank[np.argsort(predict_matrix[0][rank])]
-		# rank_index_list = list(reversed(list(rank)))
-
-		# if test[j]-1 in rank_index_list:
-		# 	index = rank_index_list.index(test[j]-1)
-		# 	hit[index+1] += 1
 
 
 		xi_j = np.dot(Wk,item_pos.T - item_neg.T)
@@ -169,9 +137,6 @@ def train(user_cart,time_cart):
 		dhlist.append(np.dot(tmp * (item_pos - item_neg),Wk.T))		# save the dh for each bpr step
 
 		# 计算对于负样本的导数 并更新负样本的vector
-		# for k in neglist:
-		# 	dneg = np.dot(-tmp * h,Wk) /NEG_NUM+ LAMBDA * X[k-1, :].reshape(1, HIDDEN_SIZE)
-		# 	X[k-1, :] += -LEARNING_RATE * (dneg.reshape(HIDDEN_SIZE, ))
 		dneg = np.dot(-tmp * h,Wk) + LAMBDA * item_neg
 		X[neg-1, :] += -LEARNING_RATE * (dneg.reshape(HIDDEN_SIZE, ))
 		
@@ -181,7 +146,6 @@ def train(user_cart,time_cart):
 
 		dWk = np.dot(tmp*h.T,(item_pos - item_neg))
 		WKLIST[time_cart[i+1]] += -LEARNING_RATE*(dWk+LAMBDA*Wk)	
-		# sumdwk[time_cart[i+1]] += -LEARNING_RATE*(dWk+LAMBDA*Wk)
 		# 更新last hidden layer
 		hl = h
 
@@ -193,7 +157,6 @@ def train(user_cart,time_cart):
 
 		sumdu += np.dot(item.T, dh * midlist[i])
 		dWp = np.dot(hnminus2.T,dh*midlist[i])
-		# Wp = WPLIST[time_cart[i]]
 		sumdwp[time_cart[i]] +=dWp
 		# 更新输入的样本
 		dx = np.dot(dh * midlist[i], U.T)
@@ -202,22 +165,7 @@ def train(user_cart,time_cart):
 		dh1 = np.dot(dh * midlist[i], Wp.T)
 	U += -LEARNING_RATE * (sumdu + LAMBDA * U)
 	for i in range(5):
-		# WKLIST[i]+=sumdwk[i]
 		WPLIST[i]+= -LEARNING_RATE*(sumdwp[i]+LAMBDA*WPLIST[i])
-	
-	#predict on train
-	# for i in range(20):
-	# 	for j in range(20-i):
-	# 		recall[20-j] += hit[i+1]
-	# for i in range(20):
-	# 	recallatx[i+1] = recall[i+1]/relevant
-
-	# print relevant
-	# print recall
-	# print recallatx
-
-
-
 	return loss
 
 
@@ -306,12 +254,12 @@ def learn():
 		print "begin predict"
 		print sumloss
 		recall = predict()
-		if recall[10]>Pastrecall[10]:
-			result = open('bestparameter.txt','w')
-			list1 = [recall,U,WKLIST,WPLIST,X]
-			pickle.dump(list1,result)
-			result.close()
-			Pastrecall = recall
+		# if recall[10]>Pastrecall[10]:
+		# 	result = open('bestparameter.txt','w')
+		# 	list1 = [recall,U,WKLIST,WPLIST,X]
+		# 	pickle.dump(list1,result)
+		# 	result.close()
+		# 	Pastrecall = recall
 		f_handler.close()
 		ite += 1
 
