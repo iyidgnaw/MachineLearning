@@ -189,13 +189,12 @@ def predict():
 		hl = np.copy(H_ZERO)
 		h = np.copy(H_ZERO)
 		# 计算需要预测的状态对应的hidden layer
-		i = 0
-		for item_id in train:
-			item = X[item_id-1]
+		
+		for i in range(len(train)):
+			item = X[train[i]-1]
 			w = WPLIST[train_time[i]]
 			b = np.dot(item, U) + np.dot(hl, w)
 			h = sigmoid(b)
-			i +=1
 			hl = h
 		# 预测
 		for j in xrange(len(test)):
@@ -238,9 +237,9 @@ def basic_info():
 def learn():
 	global Pastrecall
 	ite = 0
-	while (ite<=400):
-		# f_handler = open('4_6_result_001-0001.txt','a')
-		# sys.stdout=f_handler	
+	while (ite<=800):
+		f_handler = open('4_7_result_001-0001.txt','a')
+		sys.stdout=f_handler	
 		print "Iter %d" % ite
 		print "Training..."
 		sumloss = 0
@@ -251,14 +250,14 @@ def learn():
 			sumloss += loss
 		print "begin predict"
 		print sumloss
-		# recall = predict()
+		recall = predict()
 		# if recall[10]>Pastrecall[10]:
 		# 	result = open('bestparameter.txt','w')
 		# 	list1 = [recall,U,WKLIST,WPLIST,X]
 		# 	pickle.dump(list1,result)
 		# 	result.close()
 		# 	Pastrecall = recall
-		# f_handler.close()
+		f_handler.close()
 		ite += 1
 
 
