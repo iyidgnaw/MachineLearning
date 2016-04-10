@@ -5,12 +5,12 @@ import random
 import json
 import pickle
 import sys
-
+import time
 
 USER_SIZE = 1904			# 总用户数
 ITEM_SIZE = 1157			# 总商品种数
 HIDDEN_SIZE = 10			# hidden layer的维度
-LEARNING_RATE = 0.002 		# 学习速率
+LEARNING_RATE = 0.01 		# 学习速率
 LAMBDA = 0.001 				# 惩罚系数
 TOP = 20 					# recall取前Top个
 
@@ -110,7 +110,7 @@ def train(user_cart,time_cart):
 		# neglist = random.sample(itemlist,NEG_NUM)
 		# item_neg = avg_neg(neglist)
 		neg = random.randint(1, ITEM_SIZE)
-		while (i+1) == neg:
+		while user_cart[i+1] == neg:
 			neg = random.randint(1, ITEM_SIZE)
 
 		item_pos = X[user_cart[i+1]-1, :].reshape(1, HIDDEN_SIZE)		# positive sample's vector
@@ -122,10 +122,11 @@ def train(user_cart,time_cart):
 		# 计算状态t的h、dh
 		b = np.dot(item_curt, U) + np.dot(hl, Wp)
 		h = sigmoid(b)
+		
 
 
 
-		xi_j = np.dot(Wk,item_pos.T - item_neg.T)
+		xi_j = np.dot(Wk,(item_pos.T-item_neg.T))
 		xij = np.dot(h, xi_j)
 		loss += xij
 		# 若为tmp = sigmoid(-Xij) 则LEARNING_RATE和LAMBDA为负
@@ -154,6 +155,7 @@ def train(user_cart,time_cart):
 		item = X[user_cart[i] - 1, :].reshape(1, HIDDEN_SIZE)
 		hnminus2 = hiddenlist[i]
 		dh = dhlist[i] + dh1
+		Wp=WPLIST[time_cart[i]]
 
 		sumdu += np.dot(item.T, dh * midlist[i])
 		dWp = np.dot(hnminus2.T,dh*midlist[i])
@@ -187,13 +189,12 @@ def predict():
 		hl = np.copy(H_ZERO)
 		h = np.copy(H_ZERO)
 		# 计算需要预测的状态对应的hidden layer
-		i = 0
-		for item_id in train:
-			item = X[item_id-1]
+		
+		for i in range(len(train)):
+			item = X[train[i]-1]
 			w = WPLIST[train_time[i]]
 			b = np.dot(item, U) + np.dot(hl, w)
 			h = sigmoid(b)
-			i +=1
 			hl = h
 		# 预测
 		for j in xrange(len(test)):
@@ -227,11 +228,7 @@ def predict():
 
 
 
-# allrecord=[]
-# for i in xrange(len(all_cart)):
-# 	user_cart = all_cart[i]
-# 	for behavior in user_cart:
-# 		allrecord.append(behavior[0])
+
 def basic_info():
 	print "LEARNING_RATE = %f" % LEARNING_RATE
 	print "LAMBDA = %f" % LAMBDA
@@ -240,8 +237,8 @@ def basic_info():
 def learn():
 	global Pastrecall
 	ite = 0
-	while (ite<=400):
-		f_handler = open('4_6_result_001-0001.txt','a')
+	while (ite<=800):
+		f_handler = open('4_7_result_001-0001.txt','a')
 		sys.stdout=f_handler	
 		print "Iter %d" % ite
 		print "Training..."

@@ -10,7 +10,7 @@ Pastrecall = {}
 Pastrecall[10]=0
 USER_SIZE = 1904			# 总用户数
 ITEM_SIZE = 1157			# 总商品种数
-HIDDEN_SIZE = 10			# hidden layer的维度
+HIDDEN_SIZE = 30			# hidden layer的维度
 LEARNING_RATE = 0.1 		# 学习速率
 LAMBDA = 0.001 				# 惩罚系数
 TOP = 20 					# recall取前Top个
@@ -175,11 +175,6 @@ def predict():
 	print recallatx
 	return recall
 
-# allrecord=[]
-# for i in xrange(len(all_cart)):
-# 	user_cart = all_cart[i]
-# 	for behavior in user_cart:
-# 		allrecord.append(behavior[0])
 def basic_info():
 	print "LEARNING_RATE = %f" % LEARNING_RATE
 	print "LAMBDA = %f" % LAMBDA
@@ -189,7 +184,7 @@ def learn():
 	global Pastrecall
 	ite = 0
 	while (ite<=800):
-		f_handler = open('result_01-0001.txt','a')
+		f_handler = open('result_30.txt','a')
 		sys.stdout=f_handler	
 		print "Iter %d" % ite
 		print "Training..."
@@ -201,12 +196,6 @@ def learn():
 		print "begin predict"
 		print sumloss
 		recall = predict()
-		if recall[10]>Pastrecall[10]:
-			result = open('bestparameter.txt','w')
-			list1 = [recall,U,W,X]
-			pickle.dump(list1,result)
-			result.close()
-			Pastrecall = recall
 		f_handler.close()
 		ite += 1
 
