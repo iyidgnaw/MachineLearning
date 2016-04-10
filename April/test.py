@@ -1,7 +1,5 @@
 import pickle
-basic = open('resultbasic.txt','rb')
-wdy = open('resultwdy.txt','rb')
-basic = pickle.load(basic)
-print basic
+
+wdy = open('./data/his_5000.pkl','rb')
 wdy = pickle.load(wdy)
 print wdy
