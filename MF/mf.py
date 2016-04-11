@@ -91,7 +91,7 @@ def train(user_matrix,item_matrix):
 				count+=1
 				pr=avg+userbias[i]+itembias[j]+np.dot(user_matrix[i],item_matrix[j].T)
 
-				regular=fanshu(user_matrix[i])+fanshu(item_matrix[j])+userbias[i]*userbias[i]+itembias[j]*itembias[j]
+				# regular=fanshu(user_matrix[i])+fanshu(item_matrix[j])+userbias[i]*userbias[i]+itembias[j]*itembias[j]
 				eui=rating_matrix[i][j]-pr
 				if eui>5:
 					print "eui"
