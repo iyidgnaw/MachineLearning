@@ -1,13 +1,15 @@
 __author__ = 'lizk'
+# -*- coding: utf-8 -*
 import numpy as np
 import random
 import math
-USER_SIZE = 1904			# 总用户数
-ITEM_SIZE = 1157			# 总商品种数
+import json
+USER_SIZE = 1904			
+ITEM_SIZE = 1157			
 HIDDEN_SIZE = 10
 TOP = 20
-LEARNING_RATE = 0.1 			# 学习速率
-LAMBDA = 0.01 			# 惩罚系数
+LEARNING_RATE = 0.1 			
+LAMBDA = 0.01 			
 TEST_SET = []
 TRAIN_MATRIX=np.zeros((USER_SIZE,ITEM_SIZE))
 USER_MATRIX=np.random.randn(USER_SIZE, HIDDEN_SIZE)*0.5
@@ -16,14 +18,14 @@ ITEM_MATRIX=np.random.randn(ITEM_SIZE, HIDDEN_SIZE)*0.5
 
 def load_file():		#load data function
 	global TRAIN_MATRIX,TEST_SET
-	train=open('train.txt','r')
+	train=open('bpr_train.txt','r')
 	lines=train.readlines()
 	for line in lines:
 		record=line.split(' ')
 		row=int(record[0])
 		col=int (record[1])
 		TRAIN_MATRIX[row-1][col-1]=1
-	test = open('test.json','r')
+	test = open('bpr_test.json','r')
 	lines = test.readlines()
 	for line in lines:
 		line1 = json.loads(line)
@@ -41,7 +43,7 @@ def train():
 		for j in range(ITEM_SIZE):       			
 			if TRAIN_MATRIX[i][j]==1:
 				negy =  random.randint(0, ITEM_SIZE-1)
-				while ((negy == j):
+				while (negy == j):
 					negy =  random.randint(0, ITEM_SIZE-1)
 				Xij = np.dot(USER_MATRIX[i],(ITEM_MATRIX[j]- ITEM_MATRIX[negy]))
 				loss+=Xij				
@@ -58,9 +60,9 @@ def train():
 def predict():
 	global USER_MATRIX,ITEM_MATRIX,TEST_SET
 	print "Predicting..."
-	relevant = 0.0 			# 所预测的总次数
-	hit = {}				# 第n个位置所命中的个数
-	recall = {}				# 前n个位置所命中的总数
+	relevant = 0.0 			
+	hit = {}				
+	recall = {}				
 	recallatx = {}			# RecallAtN/relevant
 	
 	for i in range(TOP):
