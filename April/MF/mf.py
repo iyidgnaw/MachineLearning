@@ -4,10 +4,10 @@ import random
 import math
 USER_SIZE = 1904			# 总用户数
 ITEM_SIZE = 1157			# 总商品种数
-HIDDEN_SIZE = 30
+HIDDEN_SIZE = 10
 TOP = 20
 LEARNING_RATE = 0.1 			# 学习速率
-LAMBDA = 0.001 			# 惩罚系数
+LAMBDA = 0.01 			# 惩罚系数
 TEST_SET = []
 TRAIN_MATRIX=np.zeros((USER_SIZE,ITEM_SIZE))
 USER_MATRIX=np.random.randn(USER_SIZE, HIDDEN_SIZE)*0.5
