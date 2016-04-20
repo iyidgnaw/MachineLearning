@@ -1,0 +1,14 @@
+%basic rnn
+h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W} \right )
+
+%transition context
+h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{c_{t,k-k^{'}}^{u}} \right )
+
+%input context&transition context
+h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{c_{t,k-k^{'}}^{u}} \right )
+
+%sum of the Ci
+\textbf{M}_{c_{I,k}^{u}} = \sum_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} 
+
+
+
