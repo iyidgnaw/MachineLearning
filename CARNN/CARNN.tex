@@ -84,20 +84,25 @@ Context-aware recommender system (CARS) \cite{adomavicius2011context} generates 
 \end{figure*}
 
 \subsection{Problem Formulation}
-We have a set of users denoted as $U  = \{ u_1 ,u_2 ,...\}$, a set of items denoted as $V  = \{ v_1 ,v_2 ,...\}$. There are multiple input contexts denoted as $C^I = \{c_{i1} ,c_{i2} ,...\}$, such as weather, location, mood and so on. Meanwhile, each context contains several conditions. For example, mood context may consist of happy, sad and flat. The transition context $C_t$ accounts for the different time interval between two records of user. For each user $u$, the behavioral history is given as $V^u = \{v^u_{1}, v^u_{2}, ...\}$, where $v^u_{i}$ denotes the $i$ th selected item of user. And the history of all users is denoted as $V^U = \{V^u_{1}, V^u_{2}, ...\}$. The behavioral history is associated with corresponding timestamps $T^u = \{t^u_{1}, t^u_{2}, ...\}$. For each user $u$, at specific timestamp $k$, a combination of input contexts is denoted as $\{
-c_{i1,k}^{u},c_{i2,k}^{u},...\}$ and the transition context is denoted as $c_{t,k-k^{'}}^{u}$, where $k^{'}$ denotes the last timestamp before $k$.
+We have a set of users denoted as $U  = \{ u_1 ,u_2 ,...\}$, a set of items denoted as $V  = \{ v_1 ,v_2 ,...\}$. There are multiple input contexts denoted as $C^I = \{c_{i1} ,c_{i2} ,...\}$, such as weather, location, mood and so on. Meanwhile, each context contains several conditions. For example, mood context may consist of happy, sad and flat. The transition context $C_t$ accounts for the different time interval between two records of user. For each user $u$, the behavioral history is given as $V^u = \{v^u_{1}, v^u_{2}, ...\}$, where $v^u_{i}$ denotes the $i$ th selected item of user. And the history of all users is denoted as $V^U = \{V^u_{1}, V^u_{2}, ...\}$. The behavioral history is associated with corresponding timestamps $T^u = \{t^u_{1}, t^u_{2}, ...\}$ where $t_k$ denotes the $k$ th timestamp in one sequence. For each user $u$, at specific timestamp $t_k$, a combination of input contexts is denoted as $\{
+c_{i1,k}^{u},c_{i2,k}^{u},...\}$.
 \subsection{ Recurrent Neural Networks}
 \begin{equation}
 h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W} \right )~
 \end{equation}
 
 \subsection{ RNN with Transition Context}
+Since the shorter the time interval is, the more accurate the prediction will be. The length of time interval between two statues have different impact on the prediction, we incorporate time difference in the formula. All kinds of time intervals are continuously classified into several types according to their length. We suppose that each type should contain near the same quantity of different time intervals. Then we replace the transition matrix $\textbf{W}$ with type-specific transition matrices. Thus, Equation should be rewritten as: 
+
 \begin{equation}
-h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{c_{t,k-k^{'}}^{u}} \right )
+h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{t_k^u-t_{k-1}^u} \right )
 ~\end{equation}
+where $t_k^u$ and $t_{k-1}^u$ denotes the present and the previous statues respectively, $t_k^u-t_{k-1}^u$ is the time interval.  
+
+
 \subsection{ Context-aware Recurrent Neural Networks}
 \begin{equation}
-h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{c_{t,k-k^{'}}^{u}} \right )
+h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{t_k^u-t_{k-1}^u} \right )
 ~,
 \end{equation}
 \begin{equation}
