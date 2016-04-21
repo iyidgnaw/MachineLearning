@@ -91,15 +91,6 @@ c_{i1,k}^{u},c_{i2,k}^{u},...\}$.
 h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W} \right )~
 \end{equation}
 
-\subsection{ RNN with Transition Context}
-Since the shorter the time interval is, the more accurate the prediction will be. The length of time interval between two statues have different impact on the prediction, we incorporate Transition Context in the formula. All kinds of time intervals are continuously classified into several types according to their length. We suppose that each type should contain near the same quantity of different time intervals. Then we replace the transition matrix $\textbf{W}$ with type-specific transition matrices. Thus, Equation should be rewritten as: 
-
-\begin{equation}
-h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{t_k^u-t_{k-1}^u} \right )
-~\end{equation}
-where $t_k^u$ and $t_{k-1}^u$ denotes the present and the previous statues respectively, $t_k^u-t_{k-1}^u$ is the time interval.  
-
-
 \subsection{ Context-aware Recurrent Neural Networks}
 \begin{equation}
 h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{t_k^u-t_{k-1}^u} \right )
@@ -109,6 +100,18 @@ h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-
 \textbf{M}_{c_{I,k}^{u}} = \sum_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} 
 ~,
 \end{equation}
+
+
+\subsection{ Incorporating Transition Context}
+Since the shorter the time interval is, the more accurate the prediction will be. The length of time interval between two statues have different impact on the prediction, we incorporate Transition Context in the formula. All kinds of time intervals are continuously classified into several types according to their length. We suppose that each type should contain near the same quantity of different time intervals. Then we replace the transition matrix $\textbf{W}$ with type-specific transition matrices. Thus, Equation should be rewritten as: 
+
+\begin{equation}
+h_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{t_k^u-t_{k-1}^u} \right )
+~\end{equation}
+where $t_k^u$ and $t_{k-1}^u$ denotes the present and the previous statues respectively, $t_k^u-t_{k-1}^u$ is the time interval.  
+
+
+
 
 
 \subsection{Parameter Learning}
