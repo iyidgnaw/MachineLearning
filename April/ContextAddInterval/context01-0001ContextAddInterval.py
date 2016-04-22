@@ -9,7 +9,7 @@ import sys
 
 USER_SIZE = 1904			# 总用户数
 ITEM_SIZE = 1157			# 总商品种数
-HIDDEN_SIZE = 20			# hidden layer的维度
+HIDDEN_SIZE = 30			# hidden layer的维度
 LEARNING_RATE = 0.01 		# 学习速率
 LAMBDA = 0.001 				# 惩罚系数
 TOP = 20 					# recall取前Top个
@@ -317,7 +317,7 @@ def save_max(result, n, iter):
 def learn():
 	ite = 0
 	while True:
-		f_handler = open('h20.txt','a')
+		f_handler = open('h30.txt','a')
 		sys.stdout=f_handler
 		print "Iter %d" % ite
 		print "Training..."
