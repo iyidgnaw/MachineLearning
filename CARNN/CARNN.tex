@@ -119,6 +119,7 @@ Since context information is important in future predictions and conventional RN
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )
 ~
 \end{equation}
+
 where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix of correspondence context, denoting the aggregation of all contextual operating matrices for users and items under the context combination . 
 
 
@@ -166,11 +167,10 @@ Finally, the prediction of CA-RNN can be yielded via calculating inner product o
 \begin{equation}
 y_{u, k+1, c, v} = \mathbf{h}_{k}^{u}\mathbf{P}_{c, k+1}(\mathbf{r}_{v})^ \mathrm{ T }~
 \end{equation}
-where $\mathbf{P}_{c, k+1}$ is the representation of input context and transition context at status $k+1$. And it can be calculated by the addition or multiplication of $\mathbf{M}^{'}$ and $\mathbf{W}^{'}$ , the corresponding matrix of the two kinds context . Unlike $\mathbf{M}$ and $\mathbf{W}$ in equation 4, which are transition matrices, $\mathbf{M}^{'}$ and $\mathbf{W}^{'}$ are designed for incorporating context information to improve the predicting process. According to our experiments, addition performances better, so $\mathbf{P}_{c, k+1}$ can be calculated as:
+where $\mathbf{P}_{c, k+1}$ is the representation of input context and transition context at status $k+1$. And it can be calculated by the addition or multiplication of the corresponding matrix of the two kinds context. According to our experiments, addition performances better, so $\mathbf{P}_{c, k+1}$ can be calculated as:
 \begin{equation}   \label{eqPadd}
-\mathbf{P}_{c, k+1}=\mathbf{M}_{c_{I,k+1}^{u}}^{'} + \mathbf{W}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u}\right \rfloor}^{'}~
+\mathbf{P}_{c, k+1}=\mathbf{M}^{'}_{c_{I,k+1}^{u}} + \mathbf{W}^{'}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u}\right \rfloor}.~
 \end{equation}
-where $\mathbf{M}_{c_{I,k+1}^{u}}^{'}$ is the represntation of specific input contexts combination for user $u$ at time $k$ , and $\mathbf{W}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u}\right \rfloor}^{'}$ is the represntation of transition context for interval between the current and the next status. These matrices indicate the effect of current context to the following behavior.
 
 
 
@@ -218,12 +218,15 @@ Moreover, parameters in CA-RNN can be further learnt with the BPTT algorithm. Ac
 \frac{{\partial J}}{{\partial {\mathbf{M}_{c^u_{I,k+1}}} }} =  \left({\mathbf{r}_{v^u_k}}\right)^\mathrm{T}\left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right) ~.
 \end{displaymath}
 This process can be repeated iteratively in the whole behavioral sequence. 
-Then, according to Equation \eqref{eqMadd} and \eqref{eqPadd}, given ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{P}_{c,k+1} } }$, the gradients of $\mathbf{M}_{c^u_{i,k+1}}$ and $\mathbf{W}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}$ can be computed as: 
+Then, according to Equation \eqref{eqMadd} and \eqref{eqPadd}, given ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{P}_{c,k+1} } }$, the gradients of $\mathbf{M}^{'}_{c^u_{i,k+1}}$, $\mathbf{M}_{c^u_{i,k+1}}$ and $\mathbf{W}^{'}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}$ can be computed as: 
 \begin{displaymath}
-\frac{{\partial J}}{{\partial {\mathbf{M}_{c^u_{I,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
+\frac{{\partial J}}{{\partial {\mathbf{M}^{'}_{c^u_{I,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
 \end{displaymath}
 \begin{displaymath}
-\frac{{\partial J}}{{\partial {\mathbf{W}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
+\frac{{\partial J}}{{\partial {\mathbf{W}^{'}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
+\end{displaymath}
+\begin{displaymath}
+\frac{{\partial J}}{{\partial {\mathbf{M}^{'}_{c^u_{i,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{M}^{'}_{c^u_{I,k+1}}} ~.
 \end{displaymath}
 \begin{displaymath}
 \frac{{\partial J}}{{\partial {\mathbf{M}_{c^u_{i,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{M}_{c^u_{I,k+1}}} ~.
