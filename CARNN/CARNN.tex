@@ -80,12 +80,12 @@ Context-aware recommender system (CARS) \cite{adomavicius2011context} generates 
 
 \section{Proposed Model}
 
-% \begin{figure*}[htb]
-% \centering
-% \includegraphics[width=1\linewidth]{./model.pdf}
-% \caption{The model}
-% \label{fig:Model-overview}
-% \end{figure*}
+\begin{figure*}[htb]
+\centering
+\includegraphics[width=1\linewidth]{./model.pdf}
+\caption{The model}
+\label{fig:Model-overview}
+\end{figure*}
 
 \subsection{Problem Formulation}
 We have a set of users denoted as $U  = \{ u_1 ,u_2 ,...\}$, a set of items denoted as $V  = \{ v_1 ,v_2 ,...\}$. There are multiple input contexts denoted as $C^I = \{c_{i1} ,c_{i2} ,...\}$, such as weather, location, mood and so on. Meanwhile, each context contains several conditions. For example, mood context may consist of happy, sad and flat. The transition context $C_t$ accounts for the different time interval between two records of user. For each user $u$, the behavioral history is given as $V^u = \{v^u_{1}, v^u_{2}, ...\}$, where $v^u_{i}$ denotes the $i$ th selected item of user. And the history of all users is denoted as $V^U = \{V^u_{1}, V^u_{2}, ...\}$. The behavioral history is associated with corresponding timestamps $T^u = \{t^u_{1}, t^u_{2}, ...\}$ where $t_k$ denotes the $k$ th timestamp in one sequence. For each user $u$, at specific timestamp $t_k$, a combination of input contexts is denoted as $\{
