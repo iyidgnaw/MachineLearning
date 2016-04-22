@@ -101,7 +101,7 @@ where $\mathbf{h}^u_{k}$ is the $d$ dimensional representation of  user $u$ at t
 
 \subsection{ Incorporating Transition Context}
 Since the shorter the time interval is, the more accurate the prediction will be. The length of time interval between two statues have different impact on the prediction, we incorporate Transition Context in the formula. We replace the transition matrix $\textbf{W}$ with type-specific transition matrices. Thus, Equation should be rewritten as: 
-\begin{equation}
+\begin{equation}  \label{eqh}
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{ t_k^u-t_{k-1}^u  }\right )
 ~\end{equation}
  where $t_k^u$ and $t_{k-1}^u$ denotes the present and the previous statues respectively, $t_k^u-t_{k-1}^u$ is the time interval.  All kinds of time intervals are continuously classified into several types according to their length. We suppose that each type should contain near the same quantity of different time intervals. Then, Equation should be rewritten as: 
@@ -124,7 +124,7 @@ where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last statu
 
 
 Linear computation is another common method to calculate the aggregation of all contextual operating matrices, It treats the effect of each context seperately, the $\textbf{M}_{c_{I,k}^{u}}$ can be calculated as:
-\begin{equation}
+\begin{equation} \label{eqMadd}
 \textbf{M}_{c_{I,k}^{u}} = \sum_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} 
 ~
 \end{equation}
@@ -161,16 +161,74 @@ cloudy&$\textbf{M}_{31}$&$\textbf{M}_{32}$&$\textbf{M}_{33}$\\
 \end{table}
 
 
-Finally, the prediction of CA-RNN can be yielded via calculating inner product of user and item representations. The prediction of whether user $u$ purchase item $v_i$ under statues $k+1$ can be computed as: 
+\subsection{Context-aware Prediction}
+
+Finally, the prediction of CA-RNN can be yielded via calculating inner product of user and item representations. The prediction of whether user $u$ purchase item $v$  under context $c$ at status $k+1$ can be computed as:
 \begin{equation}
-\textbf{y}_{u,v_i,k+1} = \textbf{h}_{k}^{u}\left( \textbf{M}_{c_{I,k}^{u}} +\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right)\textbf{r}_{v_{i}}~
+y_{u, k+1, c, v} = \mathbf{h}_{k}^{u}\mathbf{P}_{c, k+1}(\mathbf{r}_{v})^ \mathrm{ T }~
 \end{equation}
-where 
+where $\mathbf{P}_{c, k+1}$ is the representation of input context and transition context at status $k+1$. And it can be calculated by the addition or multiplication of the corresponding matrix of the two kinds context. According to our experiments, addition performances better, so $\mathbf{P}_{c, k+1}$ can be calculated as:
+\begin{equation}   \label{eqPadd}
+\mathbf{P}_{c, k+1}=\mathbf{M}_{c_{I,k+1}^{u}} + \mathbf{W}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u}\right \rfloor}.~
+\end{equation}
 
 
 
 
 \subsection{Parameter Learning}
+
+In this subsection, we introduce the learning process of CA-RNN with Bayesian Personalized Ranking (BPR) \cite{rendle2009bpr} and Back Propagation Through Time (BPTT) \cite{rumelhart1988learning}.
+BPR is a state-of-the-art pairwise ranking framework for the implicit feedback data. The basic assumption of BPR is that a user prefers a selected item than a negative one. Thus, the training objective of CA-RNN in BPR framework is to maximize the following probability:
+\begin{equation}
+p(u, k+1, c, v\succ v') = g(y_{u, k+1, c, v} - y_{u, k+1, c, v'}),~
+\end{equation}
+where $v'$ denotes a negative item sample, and $g(x)$ is a nonlinear function which is selected as $g(x) = {1 \mathord{\left/ \right. \kern-\nulldelimiterspace} 1 + e^{ - x}}$. Incorporating the negative log likelihood, we can solve the following objective function equivalently:
+\begin{equation}
+J = \sum \ln(1+e^{-(y_{u,k+1,c,v} - y_{u,k+1,c,v'})})+\frac{\lambda }{2}\left \| \Theta  \right \|^{2}  ~,
+\end{equation}
+where $\lambda = {R, M ,W}$ denotes all the parameters to be estimated, $\lambda$ is a parameter to control the power of regularization. And the derivation of $J$ with respect to the parameters can be calculated as: 
+\begin{displaymath}
+\frac{\partial J}{\partial \mathbf{r}_{v}} = -\sum \frac{\mathbf{h}_{k}^{u}\mathbf{P}_{c,k+1}e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}{1+e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}+\lambda \mathbf{r}_{v}  ~,
+\end{displaymath}
+\begin{displaymath}
+\frac{\partial J}{\partial \mathbf{r}_{v'}} = \sum \frac{\mathbf{h}_{k}^{u}\mathbf{P}_{c,k+1}e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}{1+e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}+\lambda \mathbf{r}_{v'}  ~,
+\end{displaymath}
+\begin{displaymath}
+\frac{\partial J}{\partial \mathbf{h}_{k}^{u}} = -\sum \frac{\mathbf{r}_{v}(P_{c,k+1})^{\mathrm{ T }}e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}{1+e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}   ~,
+\end{displaymath}
+\begin{displaymath}
+\frac{\partial J}{\partial \mathbf{P}_{c,k+1}} = -\sum \frac{(h_{k}^{u})^{\mathrm T}r_{v}e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}
+}{e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}    ~.
+\end{displaymath}
+
+Moreover, parameters in CA-RNN can be further learnt with the BPTT algorithm. According to Equation \eqref{eqh}, given the derivation ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{h}_{k}^{u} } }$, the corresponding gradients of all parameters in the hidden layer can be calculated as: 
+\begin{displaymath}
+\frac{{\partial J}}{{\partial \mathbf{h}^u_{k-1} }} =  \left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right)\left({\mathbf{W}_{\left \lfloor t_{k}^{u} - t_{k-1}^{u} \right \rfloor}}\right)^\mathrm{T} ~,
+\end{displaymath}
+
+\begin{displaymath}
+\frac{{\partial J}}{{\partial {\mathbf{W}_{\left \lfloor t_{k}^{u} - t_{k-1}^{u} \right \rfloor}} }} =  \left({\mathbf{h}_{k-1}^u}\right)^\mathrm{T}\left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right) ~,
+\end{displaymath}
+
+\begin{displaymath}
+\frac{{\partial J}}{{\partial \mathbf{r}_{v_k^u} }} =  \left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right)\left({\mathbf{M}_{c^u_{I,k+1}}}\right)^\mathrm{T} ~,
+\end{displaymath}
+
+\begin{displaymath}
+\frac{{\partial J}}{{\partial {\mathbf{M}_{c^u_{I,k+1}}} }} =  \left({\mathbf{r}_{v^u_k}}\right)^\mathrm{T}\left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right) ~.
+\end{displaymath}
+This process can be repeated iteratively in the whole behavioral sequence. 
+Then, according to Equation \eqref{eqMadd} and \eqref{eqPadd}, given ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{P}_{c,k+1} } }$, the gradients of $\mathbf{M}_{c^u_{i,k+1}}$ and $\mathbf{W}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}$ can be computed as: 
+\begin{displaymath}
+\frac{{\partial J}}{{\partial {\mathbf{M}_{c^u_{I,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
+\end{displaymath}
+\begin{displaymath}
+\frac{{\partial J}}{{\partial {\mathbf{W}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
+\end{displaymath}
+\begin{displaymath}
+\frac{{\partial J}}{{\partial {\mathbf{M}_{c^u_{i,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{M}_{c^u_{I,k+1}}} ~.
+\end{displaymath}
+Now, after calculating all the gradients, we can employ stochastic gradient descent to estimate the model parameters. 
 
 \section{Experiments}
 
