@@ -252,21 +252,30 @@ In this section, we empirically analysis the performance of CA-RNN. First we int
 
 \subsection{Input Context Aggregation Computation}
 As mentioned above, there are several methods, such as Linear, Nonlinear, Multiplied and combination-specific, to compute the aggregation matrix for all contextual operating matrices. Here in this part, we will discuss the effect of each method on Tianchi dataset.
-\begin{table}[!htbp]
-\centering
-\caption{Performance of CA-RNN with different method of computing the $\textbf{M}_{c_{I,k}^{u}}$ evaluated by reall, MAP}\label{tab:aStrangeTable}
-\begin{tabular}{ccccc}
-\toprule
-Method& recall@1& recall@5& recall@10& MAP\\
-\midrule
-Linear& 0& 0& 0& 0\\
-Nonlinear& 0& 0& 0& 0\\
-Mutiplied& 0& 0& 0& 0\\
-Combination& 0& 0& 0& 0\\
-\bottomrule
-\end{tabular}
-\end{table}
 
+
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Performance of CA-RNN with different method of computing the $\textbf{M}_{c_{I,k}^{u}}$ evaluated by reall}
+    \begin{tabular}{cccccc}
+    \toprule
+          & Method& recall@1 & recall@5 & recall@10\\
+    \midrule
+    \multirow{4}[0]{*}{Tianchi} 
+         &Linear& 0& 0& 0\\
+        &Nonlinear& 0& 0& 0\\
+        &Mutiplied& 0& 0& 0\\
+        &Combination& 0& 0& 0\\
+    \midrule
+    \multirow{4}[0]{*}{Tamll} 
+         &Linear& 0& 0& 0\\
+        &Nonlinear& 0& 0& 0\\
+        &Mutiplied& 0& 0& 0\\
+        &Combination& 0& 0& 0\\
+    \bottomrule
+    \end{tabular}%
+\end{table}%
 
 As indicated in Table 2, on all evalution matrics, the Linear method is clearly the best one of integrating input contexts. The performance of combination-specific method seems to be close to that of the Linear method. However, the amount of parameters of combination-specific method is clearly larger than Linear method, especially when the number of conditions in each context is large.
 Thus, we suppose to utilize Linear method to compute the synthesized matrix for all contextual operating matrices in CA-RNN.
