@@ -106,7 +106,7 @@ The architecture of a recurrent neural network consists of an input layer $i$, a
 where $\mathbf{h}^u_{k}$ is the $d$ dimensional representation of  user $u$ at time $k$ in a behavior sequence, $\mathbf{r}_{v_{k}^{u}}$ denotes the $d$ dimensional latent vector of the corresponding item the user selects, $\mathbf{W}$ is the $d \times d$ dimensional recurrent connection of the previous status propagating sequential signals and $\mathbf{M}$ denotes the $d \times d$ dimensional transition matrix for input elements to capture the current behavior of the user. The activation function $f(x)$ is chosen as a $sigmoid$ function $f(x) = \exp \left( {1 \mathord{\left/ \right. \kern-\nulldelimiterspace} 1 + e^{ - x} } \right)$.
 
 \subsection{ Incorporating Transition Context}
-Since the shorter the time interval is, the more accurate the prediction will be. The length of time interval between two statues have different impact on the prediction, we incorporate Transition Context in the formula. We replace the transition matrix $\textbf{W}$ with type-specific transition matrices. Thus, Equation should be rewritten as: 
+Since the length of time interval between two statues has different impacts on prediction and short time interval seems to have significant effect in predicting next behavior compared with long ones. Therefore, the length of time interval is essential for predicting future behaviors and we incorporate Transition Context for time interval in the formula. We replace the transition matrix $\textbf{W}$ with type-specific transition matrices. Thus, Equation should be rewritten as: 
 \begin{equation}  \label{eqh}
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{ t_k^u-t_{k-1}^u  }\right )
 ~\end{equation}

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2015/dev/Debian) (preloaded format=pdflatex 2016.4.13)  26 APR 2016 09:47
+=======
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2016.4.12)  25 APR 2016 21:22
+>>>>>>> 6397d4b829a7cb3e1e227d8754f04d1ffe42d534
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -434,7 +438,7 @@ Overfull \hbox (3.87785pt too wide) in paragraph at lines 62--63
 []\T1/aer/m/n/9 Experiments con-ducted on two real-world datasets show
  []
 
-<./model.pdf, id=131, 1054.94125pt x 506.89375pt>
+<./model.pdf, id=134, 1054.94125pt x 506.89375pt>
 File: ./model.pdf Graphic file (type pdf)
  <use ./model.pdf>
 Package pdftex.def Info: ./model.pdf used on input line 91.
@@ -451,16 +455,25 @@ ochas-
  []
 
 
+<<<<<<< HEAD
 Overfull \hbox (1.41245pt too wide) in paragraph at lines 256--271
+=======
+Overfull \hbox (1.41245pt too wide) in paragraph at lines 261--278
+>>>>>>> 6397d4b829a7cb3e1e227d8754f04d1ffe42d534
  [][] 
  []
 
 
+<<<<<<< HEAD
 Overfull \hbox (13.99333pt too wide) in paragraph at lines 315--316
+=======
+Overfull \hbox (13.99333pt too wide) in paragraph at lines 322--323
+>>>>>>> 6397d4b829a7cb3e1e227d8754f04d1ffe42d534
 \T1/aer/m/n/9 aware se-quen-tial rec-om-men-da-tion and pro-posed a novel metho
 d,
  []
 
+<<<<<<< HEAD
 (/home/wangdiyi/Github/MachineLearning/CARNN/CARNN.bbl [6]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
@@ -499,6 +512,45 @@ s, 1522885 bytes).
 PDF statistics:
  259 PDF objects out of 1000 (max. 8388607)
  184 compressed objects within 2 object streams
+=======
+(./CARNN.bbl [6]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+) [7]
+(./CARNN.aux) ) 
+Here is how much of TeX's memory you used:
+ 3953 strings out of 493089
+ 49971 string characters out of 6134842
+ 141799 words of memory out of 5000000
+ 7283 multiletter control sequences out of 15000+600000
+ 63007 words of font info for 89 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 42i,15n,28p,2162b,309s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/base/8r.enc}
+</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb></
+usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></us
+r/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pfb><
+/usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></u
+sr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr
+/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/l
+ocal/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/loca
+l/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/t
+exlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texl
+ive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive
+/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/20
+15/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/local/texlive/2015
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2015/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2015/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmti8.pfb></usr/local/texlive/2015/texmf
+-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texlive/2015/texmf-dist/f
+onts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/ty
+pe1/urw/times/utmb8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/urw/ti
+mes/utmr8a.pfb>
+Output written on CARNN.pdf (7 pages, 1539728 bytes).
+PDF statistics:
+ 258 PDF objects out of 1000 (max. 8388607)
+ 183 compressed objects within 2 object streams
+>>>>>>> 6397d4b829a7cb3e1e227d8754f04d1ffe42d534
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
