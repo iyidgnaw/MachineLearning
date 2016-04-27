@@ -98,6 +98,11 @@ We have a set of users denoted as $U  = \{ u_1 ,u_2 ,...\}$, a set of items deno
 c_{i1,k}^{u},c_{i2,k}^{u},...\}$, and a synthesization of such aggregation is denoted as $c_{I,k}^{u}$.
 
 
+
+
+
+
+
 \subsection{ Recurrent Neural Networks}
 The architecture of a recurrent neural network consists of an input layer $i$, a hidden layer $h$, an output unit, as well as inner weight matrices \cite{zhang2014sequential}. RNN model the current output as the function of the previous output and a hidden layer. At each time steps, we can predict the output unit given the hidden layer, and then feed the new output back into the next hidden state. The vector representation of the hidden layer is:
 \begin{equation}  \label{eqHoriginal}
@@ -111,7 +116,7 @@ The length of time interval between two statues has different impacts on predict
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{ t_k^u-t_{k-1}^u  }\right )~,
 \end{equation}
  where $t_k^u$ and $t_{k-1}^u$ denotes the present and the previous statues respectively, $t_k^u-t_{k-1}^u$ is the time interval.  All kinds of time intervals are continuously classified into several types according to their length. We suppose that each type should contain near the same quantity of different time intervals. Then, Equation \eqref{eqh} should be rewritten as: 
-\begin{equation}  \label{eqHt}
+\begin{equation}  
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )~,
 \end{equation}
 where $\left\lfloor t_k^u-t_{k-1}^u \right\rfloor$ denotes for the type of the time interval between $t_k^u$ and $t_{k-1}^u$ .
@@ -121,7 +126,7 @@ where $\left\lfloor t_k^u-t_{k-1}^u \right\rfloor$ denotes for the type of the t
 
 \subsection{ Context-aware Recurrent Neural Networks}
 Since context information is important in future predictions and conventional RNN cannot model it, it is essential to involve context information in our model. Thus, we add the input context $c_{I,k}^{u}$ to the transition matrix $\textbf{M}$ in traditional RNN model. In CA-RNN model, given a user $u$, his or her vector representation at time $k$ can be calculated by using an integrated contextual operating matrix for a specific context aggregation. This matrix describe how a context aggregation affects the properties of entities and how context-specific latent vectors of users and items can be generated from their original ones. Here, we can calculate context-specific latent vectors as: 
-\begin{equation}
+\begin{equation}\label{eqHt}
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )~,
 \end{equation}
 where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix of correspondence context, denoting the aggregation of all contextual operating matrices for users and items. 
@@ -194,10 +199,10 @@ where $\lambda = {R, M ,W}$ denotes all the parameters to be estimated, $\lambda
 \frac{\partial J}{\partial \mathbf{r}_{v'}} = \sum \frac{\mathbf{h}_{k}^{u}\mathbf{P}_{c,k+1}e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}{1+e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}+\lambda \mathbf{r}_{v'}  ~,
 \end{displaymath}
 \begin{displaymath}
-\frac{\partial J}{\partial \mathbf{h}_{k}^{u}} = -\sum \frac{\mathbf{r}_{v}(P_{c,k+1})^{\mathrm{ T }}e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}{1+e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}   ~,
+\frac{\partial J}{\partial \mathbf{h}_{k}^{u}} = -\sum \frac{(\mathbf{r}_{v}-\mathbf{r}_{v}^{'})(\mathbf{P}_{c,k+1})^{\mathrm{ T }}e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}{1+e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}   ~,
 \end{displaymath}
 \begin{displaymath}
-\frac{\partial J}{\partial \mathbf{P}_{c,k+1}} = -\sum \frac{(h_{k}^{u})^{\mathrm T}r_{v}e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}
+\frac{\partial J}{\partial \mathbf{P}_{c,k+1}} = -\sum \frac{(\mathbf{h}_{k}^{u})^{\mathrm T}(\mathbf{r}_{v}-\mathbf{r}_{v}^{'})e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}
 }{e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}    ~.
 \end{displaymath}
 
@@ -303,6 +308,54 @@ Thus, we suppose to utilize Linear method to compute the synthesized matrix for 
 
 
 
+$\textbf{h}_{k}^{u}$
+
+
+$\textbf{h}_{k-1}^{u}$
+
+
+
+
+$\textbf{h}_{k+1}^{u}$
+
+
+
+
+$\textbf{h}_{k+2}^{u}$
+
+
+
+
+$\textbf{r}_{v_{k}^{u}}$
+
+
+$\textbf{r}_{v_{k+1}^{u}}$
+
+
+$\textbf{r}_{v_{k+2}^{u}}$
+
+
+$\textbf{M}_{c_{I,k}^{u}}$
+
+
+$\textbf{M}_{c_{I,k+1}^{u}}$
+
+
+$\textbf{M}_{c_{I,k+2}^{u}}$
+
+
+$\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }$
+
+
+$\textbf{W}_{\left\lfloor t_{k+1}^u-t_{k}^u \right\rfloor }$
+
+
+$\textbf{W}_{\left\lfloor t_{k+2}^u-t_{k+1}^u \right\rfloor }$
+
+
+
+
+
 
 
 
@@ -316,6 +369,8 @@ In the future, we can further investigate the following direction. In CA-RNN, pa
 \bibliographystyle{abbrv}
 \bibliography{sigproc}
 \vspace{2cm}
+
+
 
 \balancecolumns
 \end{document}
