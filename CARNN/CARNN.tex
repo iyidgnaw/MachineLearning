@@ -129,22 +129,23 @@ Since context information is important in future predictions and conventional RN
 \begin{equation}\label{eqHt}
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )~,
 \end{equation}
-where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix of corresponding contexts combination, denoting the aggregation of all input contextual operating matrices for users and items. 
 
-\paragraph{Linear Method}
-Linear computation is the most common method to calculate the aggregation of all contextual operating matrices, It treats the effects of each context separately, and the $\textbf{M}_{c_{I,k}^{u}}$ can be calculated as :
+where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix of corresponding contexts combination, denoting the aggregation of all input contextual operating matrices for users and items.  
+
+We can introduce various aggregation operations to model different interactions among multiple input contexts. In this work, we study three typical aggregation operations as follows.
+
+\begin{itemize}
+\item \textbf{Linear Method}: Linear computation is the most common method to calculate the aggregation of all contextual operating matrices, It treats the effects of each context separately, and the $\textbf{M}_{c_{I,k}^{u}}$ can be calculated as :
 \begin{equation} \label{eqMadd}
 \textbf{M}_{c_{I,k}^{u}} = \sum_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} ~.
 \end{equation}
 
-\paragraph{Multiplied Method}
-In STRNN  \cite{liu2016strnn} ,the author incorporates temporal and spatial contexts into conventional RNN by mutipling time-specific operating matrix and distance-specific operating matrix. Analogously, we can treat input contextual operating matrices in the same way :
+\item \textbf{Multiplied Method}: In STRNN  \cite{liu2016strnn} ,the author incorporates temporal and spatial contexts into conventional RNN by mutipling time-specific operating matrix and distance-specific operating matrix. Analogously, we can treat input contextual operating matrices in the same way :
 \begin{equation}
 \textbf{M}_{c_{I,k}^{u}} = \prod_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} ~.
 \end{equation}
 
-\paragraph{Combination-specific Method}
-Other than handling these input contexts matrices, the $\textbf{M}_{c_{I,k}^{u}}$ can also be a combination-specific matrix. It means that the $\textbf{M}_{c_{I,k}^{u}}$ is equal to a matrix representing a combination for some specific input contexts at time $k$. For example, if there are two input contexts: weather and mood, then each combination has its own matrix as shown in Table 1. In that case, when the weather is sunny and the mood is happy, the  $\textbf{M}_{c_{I,k}^{u}}$ will be $\textbf{M}_{11}$. 
+\item \textbf{Combination-specific Method}: Other than handling these input contexts matrices, the $\textbf{M}_{c_{I,k}^{u}}$ can also be a combination-specific matrix. It means that the $\textbf{M}_{c_{I,k}^{u}}$ is equal to a matrix representing a combination for some specific input contexts at time $k$. For example, if there are two input contexts: weather and mood, then each combination has its own matrix as shown in Table 1. In that case, when the weather is sunny and the mood is happy, the  $\textbf{M}_{c_{I,k}^{u}}$ will be $\textbf{M}_{11}$. 
 
 \begin{table}[!htbp]
 \caption{}
@@ -161,7 +162,7 @@ cloudy&$\textbf{M}_{31}$&$\textbf{M}_{32}$&$\textbf{M}_{33}$\\
 \hline
 \end{tabular}
 \end{table}
-
+\end{itemize}
 
 
 \subsection{Context-aware Prediction}
