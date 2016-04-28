@@ -129,7 +129,7 @@ Since context information is important in future predictions and conventional RN
 \begin{equation}\label{eqHt}
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )~,
 \end{equation}
-where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix of correspondence context, denoting the aggregation of all contextual operating matrices for users and items. 
+where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix of correspondence context, denoting the aggregation of all contextual operating matrices for users and items. We can introduce various aggregation operations to model different interactions among multiple input contexts. In this work, we study three typical aggregation operations as follows.
 
 \subsubsection{Linear Method}
 Linear computation is the most common method to calculate the aggregation of all contextual operating matrices, It treats the effects of each context separately, and the $\textbf{M}_{c_{I,k}^{u}}$ can be calculated as :
