@@ -96,7 +96,7 @@ Context-aware recommender system (CARS) \cite{adomavicius2011context} generates 
 
 %3.1
 \subsection{Problem Formulation}
-We have a set of users denoted as $U  = \{ u_1 ,u_2 ,...\}$, a set of items denoted as $V  = \{ v_1 ,v_2 ,...\}$. There are multiple input contexts denoted as $C_I = \{c_{i1} ,c_{i2} ,...\}$, such as weather, location, mood and so on. Meanwhile, each context contains several conditions. For example, mood context may consist of happy, sad and flat. The transition context $C_t$ accounts for the different time interval between two records of user. For each user $u$, the behavioral history is given as $V^u = \{v^u_{1}, v^u_{2}, ...\}$, where $v^u_{i}$ denotes the $i$ th selected item of user. And the history of all users is denoted as $V^U = \{V^u_{1}, V^u_{2}, ...\}$. The behavioral history is associated with corresponding timestamps $T^u = \{t^u_{1}, t^u_{2}, ...\}$ where $t_k$ denotes the $k$ th timestamp in one sequence. For each user $u$, at specific timestamp $t_k$, an aggregation of input contexts is denoted as $c_{I,k}^{u} = \{
+We have a set of users denoted as $U  = \{ u_1 ,u_2 ,...\}$, a set of items denoted as $V  = \{ v_1 ,v_2 ,...\}$. There are multiple input contexts denoted as $C_I = \{c_{i1} ,c_{i2} ,...\}$, such as weather, location, mood and so on. Meanwhile, each context contains several conditions. For example, mood context may consist of happy, sad and flat. The transition context $C_t$ accounts for the different time interval between two records of user. For each user $u$, the behavioral history is given as $V^u = \{v^u_{1}, v^u_{2}, ...\}$, where $v^u_{i}$ denotes the $i$ th selected item of user. And the history of all users is denoted as $V^U = \{V^u_{1}, V^u_{2}, ...\}$. The behavioral history is associated with corresponding timestamps $T^u = \{t^u_{1}, t^u_{2}, ...\}$ where $t_k$ denotes the $k$ th timestamp in one sequence. For each user $u$, at specific timestamp $t_k$, an combination of input contexts is denoted as $c_{I,k}^{u} = \{
 c_{i1,k}^{u},c_{i2,k}^{u},...\}$.
 
 
@@ -128,17 +128,17 @@ where $\left\lfloor t_k^u-t_{k-1}^u \right\rfloor$ denotes for the type of the t
 
 %3.4
 \subsection{ Context-aware Recurrent Neural Networks}
-Since context information is important in future predictions and conventional RNN cannot model it, it is essential to involve context information in our model. Thus, we add the input context $c_{I,k}^{u}$ to the transition matrix $\textbf{M}$ in traditional RNN model. In CA-RNN model, given a user $u$, his or her vector representation at time $k$ can be calculated by using an integrated contextual operating matrix for a specific context aggregation. This matrix describe how a context aggregation affects the properties of entities and how context-specific latent vectors of users and items can be generated from their original ones. Here, we can calculate context-specific latent vectors as: 
+Since context information is important in future predictions and conventional RNN cannot model it, it is essential to involve context information in our model. Thus, we add the input context $c_{I,k}^{u}$ to the transition matrix $\textbf{M}$ in traditional RNN model. In CA-RNN model, given a user $u$, his or her vector representation at time $k$ can be calculated by using an integrated contextual operating matrix for a specific context combination. This matrix describe how a contexts combination affects the properties of entities and how context-specific latent vectors of users and items can be generated from their original ones. Here, we can calculate context-specific latent vectors as: 
 \begin{equation}\label{eqHt}
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )~,
 \end{equation}
 
-where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix of corresponding contexts combination, denoting the aggregation of all input contextual operating matrices for users and items.  
+where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix denotes the combination of corresponding input contexts for users and items.  
 
-We can introduce various aggregation operations to model different interactions among multiple input contexts. In this work, we study three typical aggregation operations as follows.
+We can introduce various combination operations to model different interactions among multiple input contexts. In this work, we study three typical combination operations as follows.
 
 \begin{itemize}
-\item \textbf{Linear Method}: Linear computation is the most common method to calculate the aggregation of all contextual operating matrices, It treats the effects of each context separately, and the $\textbf{M}_{c_{I,k}^{u}}$ can be calculated as :
+\item \textbf{Linear Method}: Linear computation is the most common method to calculate the combination of all contextual operating matrices, It treats the effects of each context separately, and the $\textbf{M}_{c_{I,k}^{u}}$ can be calculated as :
 \begin{equation} \label{eqMadd}
 \textbf{M}_{c_{I,k}^{u}} = \sum_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} ~.
 \end{equation}
@@ -148,25 +148,8 @@ We can introduce various aggregation operations to model different interactions 
 \textbf{M}_{c_{I,k}^{u}} = \prod_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} ~.
 \end{equation}
 
-\item \textbf{Combination-specific Method}: Other than handling these input contexts matrices, the $\textbf{M}_{c_{I,k}^{u}}$ can also be a combination-specific matrix. It means that the $\textbf{M}_{c_{I,k}^{u}}$ is equal to a matrix representing a combination for some specific input contexts at time $k$. For example, if there are two input contexts: weather and mood, then each combination has its own matrix as shown in Table \ref{combination}. In that case, when the weather is sunny and the mood is happy, the  $\textbf{M}_{c_{I,k}^{u}}$ will be $\textbf{M}_{11}$. 
+\item \textbf{Condition-specific Method}: Other than handling these input contexts matrices, the $\textbf{M}_{c_{I,k}^{u}}$ can also be a condition-specific matrix. It means that each condition has its own matrix. For example, if there are two input contexts: weather ${w_1,w_2,w_3...}$ and mood ${m_1,m_2,m_3...}$. Each parameter above accounts for a specific condition, such as $w_1$ denotes for the sunny weather and $m_1$ denotes for the happy mood. Then, there will be a matrix $M_{w_1,m_1}$ for the sunny-happy condition. In that case, the $\textbf{M}_{c_{I,k}^{u}}$ equals to such a matrix $M_{w_1,m_1}$ representing a condition under specific input contexts at time $k$. 
 
-%table1
-\begin{table}[!htbp]
-\caption{}
-\centering
-\begin{tabular}{|l|r|l|r|}
-\hline
-\diagbox{Weather}{Mood}&happy&sad&plain\\
-\hline
-sunny&$\textbf{M}_{11}$&$\textbf{M}_{12}$&$\textbf{M}_{13}$\\
-\hline
-rainy&$\textbf{M}_{21}$&$\textbf{M}_{22}$&$\textbf{M}_{23}$\\
-\hline
-cloudy&$\textbf{M}_{31}$&$\textbf{M}_{32}$&$\textbf{M}_{33}$\\
-\hline
-\end{tabular}
-\label{combination}
-\end{table} 
 \end{itemize}
 
 %3.5
@@ -252,8 +235,8 @@ In this section, we empirically analyse the performance of CA-RNN. First we intr
 
 \subsection{Compared Methods}
 
-\subsection{Input Context Aggregation Computation}
-As mentioned above, there are several methods, such as Linear, Nonlinear, Multiplied and combination-specific, to compute the aggregation matrix for all contextual operating matrices. Here in this part, we will discuss the effect of each method on Tianchi dataset.
+\subsection{Input Context Combination Computation}
+As mentioned above, there are several methods, such as Linear, Nonlinear, Multiplied and combination-specific, to compute the combination matrix for all contextual operating matrices. Here in this part, we will discuss the effect of each method on Tianchi dataset.
 
 
 %table2
