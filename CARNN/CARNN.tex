@@ -27,6 +27,7 @@ Sequential information ia becoming a significant factor in modeling user behavio
 \end{abstract}
 
 \keywords{Sequential recommendation, context-awareness, recurrent neural networks} % NOT required for Proceedings
+%figure1
 \begin{figure*}[htb]
 \centering
 \includegraphics[width=1\linewidth]{./introModel.pdf}
@@ -69,7 +70,7 @@ The rest of the paper is organized as follows. In section 2, we review some rela
 
 \section{Related Works}
 In this section, we review some related works on sequential recommendation and context-aware recommendation.
-
+%2.1
 \subsection{Sequential Recommendation}
 
 Time-aware neighbourhood models \cite{ding2005time,lathia2009temporal,liu2010online} may be the most natural methods for modeling sequences, which employ neighbourhood based algorithms to capture temporal effects via giving more relevance to recent observations and less to past observations. Using frequent pattern mining, sequential pattern based methods \cite{mobasher2002using,hariri2012context} seek sequential patterns that occur most frequently to predict the future. However, both neighbourhood based and sequential pattern based methods are unable to reveal the underlying properties in users' historical sequences. And sequential pattern based methods are time consuming in large scale datasets.
@@ -80,19 +81,20 @@ The MC based methods are widely used models for sequential applications \cite{ya
 
 Recently, a few prediction models, especially language models, are proposed based on neural networks. The most classical language model is proposed via a single layer neural network \cite{bengio2003neural}. And models based on RNN have been successfully used in modeling sentences \cite{mikolov2010recurrent,mikolov2011extensions,mikolov2011rnnlm}. RNN also brings satisfying results for sequential click prediction for sponsored search \cite{zhang2014sequential}, location prediction \cite{liu2016strnn} and next basket recommendation \cite{yu2016dream}. RNN is showing its great performances in sequential modeling.
 
+%2.2
 \subsection{Context-aware Recommendation}
-
 Context-aware recommender system (CARS) \cite{adomavicius2011context} generates more relevant recommendations by adapting them to the specific contextual situation of the user, and it built based on the knowledge of contextual user preferences and typically deal with data records of user, item and context. Recent works on contextual modeling approaches extend the user-item preference relations with contextual information and incorporate factorization models to compute recommendations. Multi-verse recommendation \cite{karatzoglou2010multiverse} uses tensor factorization to model n-dimensional contextual information. The social network aided context-aware recommender system \cite{liu2013soco} splits contexts and performs general matrix factorization on each leaf of decision trees. As a extended model of tensor factorization, Factorization Machine (FM) \cite{rendle2011fast} can model a wide variety of contextual information by specifying contextual information as the input dimensions and provide context-aware predictions. The work on Heterogeneous Matrix Factorization (HeteroMF) \cite{jamali2013heteromf} generates context-specific latent vectors of entities using a context-dependent transfer matrix and the original latent vectors of entities. The Tensor Factorization for MAP maximization (TFMAP) model \cite{shi2012tfmap} uses tensor factorization and Mean Average Precision (MAP) objective to model implicit feedback data with contextual information. The newly CARS2 \cite{shi2014cars} and Contextual Operating Tensor (COT) \cite{liu2015cot} models represent the common semantic effects of contexts as contextual operating tensor and represents contexts as latent vectors. And the Hierarchical Interaction Representation (HIR) model \cite{liu2015collaborative} generates the interaction representation via tensor multiplication which can be applied in context-aware recommender system.
 
 \section{Proposed Model}
-
+%figure2
 \begin{figure*}[htb]
 \centering
 \includegraphics[width=1\linewidth]{./model.pdf}
-\caption{The model}
+\caption{Overview of proposed CA-RNN model}
 \label{fig:Model-overview}
 \end{figure*}
 
+%3.1
 \subsection{Problem Formulation}
 We have a set of users denoted as $U  = \{ u_1 ,u_2 ,...\}$, a set of items denoted as $V  = \{ v_1 ,v_2 ,...\}$. There are multiple input contexts denoted as $C_I = \{c_{i1} ,c_{i2} ,...\}$, such as weather, location, mood and so on. Meanwhile, each context contains several conditions. For example, mood context may consist of happy, sad and flat. The transition context $C_t$ accounts for the different time interval between two records of user. For each user $u$, the behavioral history is given as $V^u = \{v^u_{1}, v^u_{2}, ...\}$, where $v^u_{i}$ denotes the $i$ th selected item of user. And the history of all users is denoted as $V^U = \{V^u_{1}, V^u_{2}, ...\}$. The behavioral history is associated with corresponding timestamps $T^u = \{t^u_{1}, t^u_{2}, ...\}$ where $t_k$ denotes the $k$ th timestamp in one sequence. For each user $u$, at specific timestamp $t_k$, an aggregation of input contexts is denoted as $c_{I,k}^{u} = \{
 c_{i1,k}^{u},c_{i2,k}^{u},...\}$.
@@ -102,7 +104,7 @@ c_{i1,k}^{u},c_{i2,k}^{u},...\}$.
 
 
 
-
+%3.2
 \subsection{ Recurrent Neural Networks}
 The architecture of a recurrent neural network consists of an input layer $i$, a hidden layer $h$, an output unit, as well as inner weight matrices \cite{zhang2014sequential}. RNN model the current output as the function of the previous output and a hidden layer. At each time steps, we can predict the output unit given the hidden layer, and then feed the new output back into the next hidden state. The vector representation of the hidden layer is:
 \begin{equation}  \label{eqHoriginal}
@@ -110,6 +112,7 @@ The architecture of a recurrent neural network consists of an input layer $i$, a
 \end{equation}
 where $\mathbf{h}^u_{k}$ is the $d$ dimensional representation of  user $u$ at time $k$ in a behavior sequence, $\mathbf{r}_{v_{k}^{u}}$ denotes the $d$ dimensional latent vector of the corresponding item the user selects, $\mathbf{W}$ is the $d \times d$ dimensional recurrent connection of the previous status propagating sequential signals and $\mathbf{M}$ denotes the $d \times d$ dimensional transition matrix for input elements to capture the current behavior of the user. The activation function $f(x)$ is chosen as a $sigmoid$ function $f(x) = \exp \left( {1 \mathord{\left/ \right. \kern-\nulldelimiterspace} 1 + e^{ - x} } \right)$.
 
+%3.3
 \subsection{ Incorporating Transition Context}
 The length of time interval between two statues has different impacts on prediction and long time interval seems to have limited effect in predicting next behavior compared with short ones. Therefore, the length of time interval is essential for predicting future behaviors. We incorporate Transition Context for time interval in the formula. The transition matrix $\textbf{W}$ is replaced with type-specific transition matrices based on transition context. Thus, Equation \eqref{eqHoriginal} should be rewritten as: 
 \begin{equation}  \label{eqh}
@@ -123,7 +126,7 @@ where $\left\lfloor t_k^u-t_{k-1}^u \right\rfloor$ denotes for the type of the t
 
 
 
-
+%3.4
 \subsection{ Context-aware Recurrent Neural Networks}
 Since context information is important in future predictions and conventional RNN cannot model it, it is essential to involve context information in our model. Thus, we add the input context $c_{I,k}^{u}$ to the transition matrix $\textbf{M}$ in traditional RNN model. In CA-RNN model, given a user $u$, his or her vector representation at time $k$ can be calculated by using an integrated contextual operating matrix for a specific context aggregation. This matrix describe how a context aggregation affects the properties of entities and how context-specific latent vectors of users and items can be generated from their original ones. Here, we can calculate context-specific latent vectors as: 
 \begin{equation}\label{eqHt}
@@ -145,8 +148,9 @@ We can introduce various aggregation operations to model different interactions 
 \textbf{M}_{c_{I,k}^{u}} = \prod_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} ~.
 \end{equation}
 
-\item \textbf{Combination-specific Method}: Other than handling these input contexts matrices, the $\textbf{M}_{c_{I,k}^{u}}$ can also be a combination-specific matrix. It means that the $\textbf{M}_{c_{I,k}^{u}}$ is equal to a matrix representing a combination for some specific input contexts at time $k$. For example, if there are two input contexts: weather and mood, then each combination has its own matrix as shown in Table 1. In that case, when the weather is sunny and the mood is happy, the  $\textbf{M}_{c_{I,k}^{u}}$ will be $\textbf{M}_{11}$. 
+\item \textbf{Combination-specific Method}: Other than handling these input contexts matrices, the $\textbf{M}_{c_{I,k}^{u}}$ can also be a combination-specific matrix. It means that the $\textbf{M}_{c_{I,k}^{u}}$ is equal to a matrix representing a combination for some specific input contexts at time $k$. For example, if there are two input contexts: weather and mood, then each combination has its own matrix as shown in Table \ref{combination}. In that case, when the weather is sunny and the mood is happy, the  $\textbf{M}_{c_{I,k}^{u}}$ will be $\textbf{M}_{11}$. 
 
+%table1
 \begin{table}[!htbp]
 \caption{}
 \centering
@@ -161,10 +165,11 @@ rainy&$\textbf{M}_{21}$&$\textbf{M}_{22}$&$\textbf{M}_{23}$\\
 cloudy&$\textbf{M}_{31}$&$\textbf{M}_{32}$&$\textbf{M}_{33}$\\
 \hline
 \end{tabular}
-\end{table}
+\label{combination}
+\end{table} 
 \end{itemize}
 
-
+%3.5
 \subsection{Context-aware Prediction}
 
 Finally, the prediction of CA-RNN can be yielded via calculating inner product of user and item representations. The prediction of whether user $u$ purchase item $v$  under context $c$ at status $k+1$ can be computed as:
@@ -180,7 +185,7 @@ where $\mathbf{M}_{c_{I,k+1}^{u}}^{'}$ is the represntation of specific input co
 
 
 
-
+%3.6
 \subsection{Parameter Learning}
 
 In this subsection, we introduce the learning process of CA-RNN with Bayesian Personalized Ranking (BPR) \cite{rendle2009bpr} and Back Propagation Through Time (BPTT) \cite{rumelhart1988learning}.
@@ -251,7 +256,7 @@ In this section, we empirically analyse the performance of CA-RNN. First we intr
 As mentioned above, there are several methods, such as Linear, Nonlinear, Multiplied and combination-specific, to compute the aggregation matrix for all contextual operating matrices. Here in this part, we will discuss the effect of each method on Tianchi dataset.
 
 
-
+%table2
 \begin{table}[!htbp]
   \centering
   \caption{Performance of CA-RNN with different method of computing the $\textbf{M}_{c_{I,k}^{u}}$ evaluated by reall}
@@ -278,6 +283,7 @@ Thus, we suppose to utilize Linear method to compute the synthesized matrix for 
 
 \subsection{Performance Comparison}
 %1 table.
+%table3
 \begin{table*}[htbp]
   \centering\scriptsize
   \caption{Performance comparison on two datasets evaluated by recall, F1-score, MAP and AUC.}
