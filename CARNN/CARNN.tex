@@ -234,6 +234,28 @@ In this section, we empirically analyse the performance of CA-RNN. First we intr
 \subsection{Evaluation Metrics}
 
 \subsection{Compared Methods}
+We compare CA-RNN with several state-of-the-art models.
+\begin{itemize}
+\item \textbf{Top}: 
+The most frequently bought items are selected as prediction for each user.
+\item \textbf{MF}: 
+The state-of-the-art method of collaborative filtering, analyzes relationships between users and interdependencies among items.
+\item \textbf{FM}: 
+FMs are easily applicable to a wide variety of contexts. It has a linear complexity and empirically provide a better prediction quality in much less time.
+\item \textbf{CARS2}: 
+Utilizing an appropriate model that aims to represent the type of interactions between context variables, users and items.
+\item \textbf{FPMC}: 
+A method brings matrix factorization (MF) and Markov chains (MC) together. It can capture
+both sequential effects and long term user-taste.
+\item \textbf{HRM}: 
+It utilizies both sequential behavior and users$'$ general taste by involving transaction and user representations in prediction. Applying different aggregation operations to model complicated interactions among different factors.
+\item \textbf{RNN}: 
+Typical method for temporal prediction, which was originally applied in word embedding. It has been successfully extended to sequential modeling. 
+
+\end{itemize}
+To find out the best method among different aggregation operations, we aggregate the combination through Linear, Multiplied and Condition-specific method respectively. Meanwhile, in order to discuss the consecutive effect of input contexts and transition context, we incorporate each context to our model separately on both data set. 
+
+
 
 \subsection{Input Context Combination Computation}
 As mentioned above, there are several methods, such as Linear, Nonlinear, Multiplied and combination-specific, to compute the combination matrix for all contextual operating matrices. Here in this part, we will discuss the effect of each method on Tianchi dataset.
