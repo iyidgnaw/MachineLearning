@@ -232,6 +232,8 @@ In this section, we empirically analyse the performance of CA-RNN. First we intr
 \subsection{Experiment Datasets}
 
 \subsection{Evaluation Metrics}
+The output of our model is a ranked list in which items are ranked according to the value representing the preference of each user. Thus, we evaluate the performance of each method through \textbf{Recall@k} and \textbf{F1-score@k} , which are two popular metrics for ranking tasks. The Mean Average Precision (\textbf{MAP}) is applied to evalute the quality of the whole ranked lists. The larger the value, the better the performance.
+
 
 \subsection{Compared Methods}
 We compare CA-RNN with several state-of-the-art models.
