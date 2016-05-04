@@ -277,12 +277,12 @@ def save_max(result, n, iter):
 
 	print "Best Result At Iter %i" %ITER_MAX
 	print RECALL_MAX
-	print
+	
 
 def learn():
 	ite = 0
-	while True:
-		f_handler = open('./result/MonthAddWeek001-0001.txt','a')
+	while (ite<=800):
+		f_handler = open('h10.txt','a')
 		sys.stdout=f_handler
 		print "Iter %d" % ite
 		print "Training..."

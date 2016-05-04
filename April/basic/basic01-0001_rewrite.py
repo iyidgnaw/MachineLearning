@@ -10,7 +10,7 @@ Pastrecall = {}
 Pastrecall[10]=0
 USER_SIZE = 1904			# 总用户数
 ITEM_SIZE = 1157			# 总商品种数
-HIDDEN_SIZE = 30			# hidden layer的维度
+HIDDEN_SIZE = 10			# hidden layer的维度
 LEARNING_RATE = 0.1 		# 学习速率
 LAMBDA = 0.001 				# 惩罚系数
 TOP = 20 					# recall取前Top个
@@ -179,12 +179,24 @@ def basic_info():
 	print "LEARNING_RATE = %f" % LEARNING_RATE
 	print "LAMBDA = %f" % LAMBDA
 
+def save_max(result, n, iter):
+	'''
+	result:list
+	保存result[n]最大的result
+	'''
+	global  RECALL_MAX, ITER_MAX
+	if(result[n] > RECALL_MAX[n]):
+		RECALL_MAX = result
+		ITER_MAX = iter
+
+	print "Best Result At Iter %i" %ITER_MAX
+	print RECALL_MAX
 
 def learn():
 	global Pastrecall
 	ite = 0
 	while (ite<=800):
-		f_handler = open('result_30.txt','a')
+		f_handler = open('basic_10.txt','a')
 		sys.stdout=f_handler	
 		print "Iter %d" % ite
 		print "Training..."
@@ -195,7 +207,9 @@ def learn():
 			sumloss += loss
 		print "begin predict"
 		print sumloss
-		recall = predict()
+		
+		recall, recallatx = predict()
+		save_max(recallatx, 10, ite)
 		f_handler.close()
 		ite += 1
 
