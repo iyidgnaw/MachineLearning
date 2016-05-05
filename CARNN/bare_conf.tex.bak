@@ -1,6 +1,5 @@
 \documentclass[conference]{IEEEtran}
 \usepackage{multirow}
-\usepackage{graphicx}
 \usepackage{epstopdf}
 \usepackage{subfigure}
 \usepackage{booktabs}
@@ -95,12 +94,6 @@ Sequential information ia becoming a significant factor in modeling user behavio
 \IEEEpeerreviewmaketitle
 
 
-\begin{figure*}[htb]
-\centering
-\includegraphics[width=1\linewidth]{./introModel.pdf}
-\caption{The scenario of online purchase as an example of CA-RNN sequential prediction. This example shows how the input context and transition context are used in recurrent neural networks to predict user's next prefered item.}
-\label{fig:Model-intro}
-\end{figure*}
 
 \section{Introduction}
 Nowadays, people are overwhelmed by huge amount of information, the exposure to information made people tired of extracting useful and valuable information that they are interested in. This phenomenon turns out to facilitate the development of recommender systems in social networking, e-commerce, online movie and reading websites. Recommender system has now been an important tool for helping people to filter information and locate their preference. Conventional recommendation methods focus on modeling users' preference based on their historical choices of items and always ignore the sequential information. However, user preferences always change with time. Historical behaviors in different time periods have different effects on users' next choice. Accordingly, sequential recommendation is a crucial task for predicting users' next behaviors in recommender sysytems.
@@ -151,15 +144,6 @@ Recently, a few prediction models, especially language models, are proposed base
 \subsection{Context-aware Recommendation}
 Context-aware recommender system (CARS) \cite{adomavicius2011context} generates more relevant recommendations by adapting them to the specific contextual situation of the user, and it built based on the knowledge of contextual user preferences and typically deal with data records of user, item and context. Recent works on contextual modeling approaches extend the user-item preference relations with contextual information and incorporate factorization models to compute recommendations. Multi-verse recommendation \cite{karatzoglou2010multiverse} uses tensor factorization to model n-dimensional contextual information. The social network aided context-aware recommender system \cite{liu2013soco} splits contexts and performs general matrix factorization on each leaf of decision trees. As a extended model of tensor factorization, Factorization Machine (FM) \cite{rendle2011fast} can model a wide variety of contextual information by specifying contextual information as the input dimensions and provide context-aware predictions. The work on Heterogeneous Matrix Factorization (HeteroMF) \cite{jamali2013heteromf} generates context-specific latent vectors of entities using a context-dependent transfer matrix and the original latent vectors of entities. The Tensor Factorization for MAP maximization (TFMAP) model \cite{shi2012tfmap} uses tensor factorization and Mean Average Precision (MAP) objective to model implicit feedback data with contextual information. The newly CARS2 \cite{shi2014cars} and Contextual Operating Tensor (COT) \cite{liu2015cot} models represent the common semantic effects of contexts as contextual operating tensor and represents contexts as latent vectors. And the Hierarchical Interaction Representation (HIR) model \cite{liu2015collaborative} generates the interaction representation via tensor multiplication which can be applied in context-aware recommender system.
 
-\section{Proposed Model}
-%figure2
-\begin{figure*}[htb]
-\centering
-\includegraphics[width=1\linewidth]{./model.pdf}
-\caption{Overview of proposed CA-RNN model}
-\label{fig:Model-overview}
-\end{figure*}
-
 %3.1
 \subsection{Problem Formulation}
 We have a set of users denoted as $U  = \{ u_1 ,u_2 ,...\}$, a set of items denoted as $V  = \{ v_1 ,v_2 ,...\}$. There are multiple input contexts denoted as $C_I = \{c_{i1} ,c_{i2} ,...\}$, such as weather, location, mood and so on. Meanwhile, each context contains several conditions. For example, mood context may consist of happy, sad and flat. The transition context $C_t$ accounts for the different time interval between two records of user. For each user $u$, the behavioral history is given as $V^u = \{v^u_{1}, v^u_{2}, ...\}$, where $v^u_{i}$ denotes the $i$ th selected item of user. And the history of all users is denoted as $V^U = \{V^u_{1}, V^u_{2}, ...\}$. The behavioral history is associated with corresponding timestamps $T^u = \{t^u_{1}, t^u_{2}, ...\}$ where $t_k$ denotes the $k$ th timestamp in one sequence. For each user $u$, at specific timestamp $t_k$, an combination of input contexts is denoted as $c_{I,k}^{u} = \{
@@ -180,12 +164,12 @@ where $\mathbf{h}^u_{k}$ is the $d$ dimensional representation of  user $u$ at t
 
 %3.3
 \subsection{ Incorporating Transition Context}
-The length of time interval between two statues has different impacts on prediction and long time interval seems to have limited effect in predicting next behavior compared with short ones. Therefore, the length of time interval is essential for predicting future behaviors. We incorporate Transition Context for time interval in the formula. The transition matrix $\textbf{W}$ is replaced with type-specific transition matrices based on transition context. Thus, Equation \ref{eqHoriginal} should be rewritten as: 
+The length of time interval between two statues has different impacts on prediction and long time interval seems to have limited effect in predicting next behavior compared with short ones. Therefore, the length of time interval is essential for predicting future behaviors. We incorporate Transition Context for time interval in the formula. The transition matrix $\textbf{W}$ is replaced with type-specific transition matrices based on transition context. Thus, Equation \ref{eqHoriginal} should be rewritten as:
 \begin{equation}  \label{eqh}
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{ t_k^u-t_{k-1}^u  }\right )~,
 \end{equation}
- where $t_k^u$ and $t_{k-1}^u$ denotes the present and the previous statues respectively, $t_k^u-t_{k-1}^u$ is the time interval.  All kinds of time intervals are continuously classified into several types according to their length. We suppose that each type should contain near the same quantity of different time intervals. Then, Equation \ref{eqh} should be rewritten as: 
-\begin{equation}  
+ where $t_k^u$ and $t_{k-1}^u$ denotes the present and the previous statues respectively, $t_k^u-t_{k-1}^u$ is the time interval.  All kinds of time intervals are continuously classified into several types according to their length. We suppose that each type should contain near the same quantity of different time intervals. Then, Equation \ref{eqh} should be rewritten as:
+\begin{equation}
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )~,
 \end{equation}
 where $\left\lfloor t_k^u-t_{k-1}^u \right\rfloor$ denotes for the type of the time interval between $t_k^u$ and $t_{k-1}^u$ .
@@ -194,30 +178,27 @@ where $\left\lfloor t_k^u-t_{k-1}^u \right\rfloor$ denotes for the type of the t
 
 %3.4
 \subsection{ Context-aware Recurrent Neural Networks}
-Since context information is important in future predictions and conventional RNN cannot model it, it is essential to involve context information in our model. Thus, we add the input context $c_{I,k}^{u}$ to the transition matrix $\textbf{M}$ in traditional RNN model. In CA-RNN model, given a user $u$, his or her vector representation at time $k$ can be calculated by using an integrated contextual operating matrix for a specific context combination. This matrix describe how a contexts combination affects the properties of entities and how context-specific latent vectors of users and items can be generated from their original ones. Here, we can calculate context-specific latent vectors as: 
+Since context information is important in future predictions and conventional RNN cannot model it, it is essential to involve context information in our model. Thus, we add the input context $c_{I,k}^{u}$ to the transition matrix $\textbf{M}$ in traditional RNN model. In CA-RNN model, given a user $u$, his or her vector representation at time $k$ can be calculated by using an integrated contextual operating matrix for a specific context combination. This matrix describe how a contexts combination affects the properties of entities and how context-specific latent vectors of users and items can be generated from their original ones. Here, we can calculate context-specific latent vectors as:
 \begin{equation}\label{eqHt}
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )~,
 \end{equation}
 
-where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix denotes the combination of corresponding input contexts for users and items.  
+where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix denotes the combination of corresponding input contexts for users and items.
 
 We can introduce various combination operations to model different interactions among multiple input contexts. In this work, we study three typical combination operations as follows.
 
 \begin{itemize}
-\item Linear Method: Linear computation is the most common method to calculate the combination of all contextual operating matrices, It treats the effects of each context separately, and the $\textbf{M}_{c_{I,k}^{u}}$ can be calculated as :
+\item \textbf{Linear Method}: Linear computation is the most common method to calculate the combination of all contextual operating matrices, It treats the effects of each context separately, and the $\textbf{M}_{c_{I,k}^{u}}$ can be calculated as :
 \begin{equation} \label{eqMadd}
 \textbf{M}_{c_{I,k}^{u}} = \sum_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} ~.
 \end{equation}
 
-\item Multiplied Method: In STRNN  \cite{liu2016strnn} ,the author incorporates temporal and spatial contexts into conventional RNN by mutipling time-specific operating matrix and distance-specific operating matrix. Analogously, we can treat input contextual operating matrices in the same way :
-
+\item \textbf{Multiplied Method}: In STRNN  \cite{liu2016strnn} ,the author incorporates temporal and spatial contexts into conventional RNN by mutipling time-specific operating matrix and distance-specific operating matrix. Analogously, we can treat input contextual operating matrices in the same way :
 \begin{equation}
 \textbf{M}_{c_{I,k}^{u}} = \prod_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} ~.
 \end{equation}
 
-
-\item Condition-specific Method: Other than handling these input contexts matrices, the $\textbf{M}_{c_{I,k}^{u}}$ can also be a condition-specific matrix. It means that each condition has its own matrix. For example, if there are two input contexts: weather ${w_1,w_2,w_3...}$ and mood ${m_1,m_2,m_3...}$. Each parameter above accounts for a specific condition, such as $w_1$ denotes for the sunny weather and $m_1$ denotes for the happy mood. Then, there will be a matrix $M_{w_1,m_1}$ for the sunny-happy condition. In that case, the $\textbf{M}_{c_{I,k}^{u}}$ equals to such a matrix $M_{w_1,m_1}$ representing a condition under specific input contexts at time $k$. 
-
+\item \textbf{Condition-specific Method}: Other than handling these input contexts matrices, the $\textbf{M}_{c_{I,k}^{u}}$ can also be a condition-specific matrix. It means that each condition has its own matrix. For example, if there are two input contexts: weather ${w_1,w_2,w_3...}$ and mood ${m_1,m_2,m_3...}$. Each parameter above accounts for a specific condition, such as $w_1$ denotes for the sunny weather and $m_1$ denotes for the happy mood. Then, there will be a matrix $M_{w_1,m_1}$ for the sunny-happy condition. In that case, the $\textbf{M}_{c_{I,k}^{u}}$ equals to such a matrix $M_{w_1,m_1}$ representing a condition under specific input contexts at time $k$.
 
 \end{itemize}
 
@@ -249,7 +230,7 @@ where $v'$ denotes a negative item sample, and $g(x)$ is a nonlinear function wh
 \begin{equation}
 J = \sum \ln(1+e^{-(y_{u,k+1,c,v} - y_{u,k+1,c,v'})})+\frac{\lambda }{2}\left \| \Theta  \right \|^{2}  ~,
 \end{equation}
-where $\lambda = {R, M ,W}$ denotes all the parameters to be estimated, $\lambda$ is a parameter to control the power of regularization. And the derivation of $J$ with respect to the parameters can be calculated as: 
+where $\lambda = {R, M ,W}$ denotes all the parameters to be estimated, $\lambda$ is a parameter to control the power of regularization. And the derivation of $J$ with respect to the parameters can be calculated as:
 \begin{displaymath}
 \frac{\partial J}{\partial \mathbf{r}_{v}} = -\sum \frac{\mathbf{h}_{k}^{u}\mathbf{P}_{c,k+1}e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}{1+e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}+\lambda \mathbf{r}_{v}  ~,
 \end{displaymath}
@@ -264,7 +245,7 @@ where $\lambda = {R, M ,W}$ denotes all the parameters to be estimated, $\lambda
 }{e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}    ~.
 \end{displaymath}
 
-Moreover, parameters in CA-RNN can be further learnt with the BPTT algorithm. According to Equation \ref{eqHt}, given the derivation ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{h}_{k}^{u} } }$, the corresponding gradients of all parameters in the hidden layer can be calculated as: 
+Moreover, parameters in CA-RNN can be further learnt with the BPTT algorithm. According to Equation \ref{eqHt}, given the derivation ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{h}_{k}^{u} } }$, the corresponding gradients of all parameters in the hidden layer can be calculated as:
 \begin{displaymath}
 \frac{{\partial J}}{{\partial \mathbf{h}^u_{k-1} }} =  \left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right)\left({\mathbf{W}_{\left \lfloor t_{k}^{u} - t_{k-1}^{u} \right \rfloor}}\right)^\mathrm{T} ~,
 \end{displaymath}
@@ -280,10 +261,8 @@ Moreover, parameters in CA-RNN can be further learnt with the BPTT algorithm. Ac
 \begin{displaymath}
 \frac{{\partial J}}{{\partial {\mathbf{M}_{c^u_{I,k+1}}} }} =  \left({\mathbf{r}_{v^u_k}}\right)^\mathrm{T}\left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right) ~.
 \end{displaymath}
-This process can be repeated iteratively in the whole behavioral sequence. 
-
-Then, according to Equation \ref{eqMadd} and \ref{eqPadd}, given ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{P}_{c,k+1} } }$, the gradients of $\mathbf{M}^{'}_{c^u_{i,k+1}}$, $\mathbf{M}_{c^u_{i,k+1}}$ and $\mathbf{W}^{'}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}$ can be computed as: 
-
+This process can be repeated iteratively in the whole behavioral sequence.
+Then, according to Equation \ref{eqMadd} and \ref{eqPadd}, given ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{P}_{c,k+1} } }$, the gradients of $\mathbf{M}^{'}_{c^u_{i,k+1}}$, $\mathbf{M}_{c^u_{i,k+1}}$ and $\mathbf{W}^{'}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}$ can be computed as:
 \begin{displaymath}
 \frac{{\partial J}}{{\partial {\mathbf{M}^{'}_{c^u_{I,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
 \end{displaymath}
@@ -296,67 +275,34 @@ Then, according to Equation \ref{eqMadd} and \ref{eqPadd}, given ${\partial J \m
 \begin{displaymath}
 \frac{{\partial J}}{{\partial {\mathbf{M}_{c^u_{i,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{M}_{c^u_{I,k+1}}} ~.
 \end{displaymath}
-Now, after calculating all the gradients, we can employ stochastic gradient descent to estimate the model parameters. 
+Now, after calculating all the gradients, we can employ stochastic gradient descent to estimate the model parameters.
 
 \section{Experiments}
-In this section, we conduct empirical experiments to demonstrate the effectiveness of CA-RNN on sequential recommendation. First we introduce the datasets, baseline methods and evaluation metrics of our experiments. Then we compared our CA-RNN to the state-of-the-art methods. Finally, we analyse the impact of parameters, especially the length of hidden layer.
+In this section, we empirically analyse the performance of CA-RNN. First we introduce the settings of our experiments. Then we compared our CA-RNN to the state-of-the-art methods. Finally, we analysis the impact of parameters, especially the length of hidden layer.
 \subsection{Experiment Datasets}
-Our experiments are conducted on two real datasets with various contexts:
-\begin{itemize}
-\item \textbf{Fashion}\footnote{https://tianchi.shuju.aliyun.com/competition/index.htm} is a public online e-commerce dataset released by TIANCHI\footnote{https://tianchi.shuju.aliyun.com/}, which records clothes purchase behaviors. It contains 13, 611, 038 transactions belonging to 1, 103, 702 users and 462, 008 items. The time information is collected based on the day level.
 
-\item \textbf{Tmall}\footnote{https://102.alibaba.com/competition/addDiscovery/index.htm} is a public dataset from Tmall\footnote{https://www.tmall.com/}, one of the biggest online shopping websites in China. It covers products from food, clothes to electrical appliance and records the online transactions in terms of brands. It contains 182, 881 transactions belonging to 885 users and 9, 532 brands.The temporal information in the dataset is extracted based on day level.
-\end{itemize}
-We conduct some pre-process on these transaction datasets. For Fashion dataset, firstly we remove all the users that have bought in total less than 10 items. Second, we iteratively remove items bought by less than 3 times and users who have purchased the removed items. The second step is to make sure that each item is bought greater than or equal to 3 times and the transition in each user's purchase sequence is not changed. For Tmall dataset, xxxxxx.
-
-The transition context matrix $\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }$ is determined by the type of time interval between $t_k^u$ and $t_{k-1}^u$. The time interval is continuously classified with the prerequisite that number of transactions is balanced in each type, as shown in Figure \ref{fig:comparision}. Such division of time interval is reasonable because on one hand short time interval is divided carefully and long time interval is treated as similar, on the other hand the balanced number of transactions can ensure the effective training process.
-\begin{figure}[!tb]
-\centering
-\subfigure[Fashion dataset.]{
-\begin{minipage}[b]{0.4\textwidth}
-\includegraphics[width=1\textwidth]{./TimeInterval1.eps}
-\label{fashion_interval}
-\end{minipage}
-}
-\hspace{-1mm}
-\subfigure[Tmall dataset.]{
-\begin{minipage}[b]{0.4\textwidth}
-\includegraphics[width=1\textwidth]{./TimeInterval2.eps}
-\label{tmall_interval}
-\end{minipage}
-}
-\caption{Division of Time Interval.}
-\label{fig:comparision}
-\end{figure}
-
-The input context consists of week context and month context. Week context represents the day of a transaction in week and month context represents that the time of a transaction is in the first, second, or the third ten-day periods of a month. These contexts have significant effects on user's next purchase behavior because people will tend to buy similar items in the beginning of the month when receiving salary and a large amount of household items are usually bought on weekend.
-
-For each purchase sequence of the two datasets, we use first 90\% of the items in the sequence for training, the remaining 10\% data for testing. 
 \subsection{Evaluation Metrics}
-The output of our model is a ranked list in which items are ranked according to the value representing the preference of each user. Thus, we evaluate the performance of each method through \textbf{Recall@k} and \textbf{F1-score@k} , which are two popular metrics for ranking tasks. The Mean Average Precision (\textbf{MAP}) is applied to evalute the quality of the whole ranked lists. The larger the value, the better the performance.
-
 
 \subsection{Compared Methods}
 We compare CA-RNN with several state-of-the-art models.
 \begin{itemize}
-\item \textbf{Top}: 
-The most frequently bought items are selected as prediction for each user.
-\item \textbf{MF}: 
-The state-of-the-art method of collaborative filtering, analyzes relationships between users and interdependencies among items.
-\item \textbf{FM}: 
-FMs are easily applicable to a wide variety of contexts. It has a linear complexity and empirically provide a better prediction quality in much less time.
-\item \textbf{CARS2}: 
-Utilizing an appropriate model that aims to represent the type of interactions between context variables, users and items.
-\item \textbf{FPMC}: 
-A method brings matrix factorization (MF) and Markov chains (MC) together. It can capture
-both sequential effects and long term user-taste.
-\item \textbf{HRM}: 
-It utilizies both sequential behavior and users$'$ general taste by involving transaction and user representations in prediction. Applying different aggregation operations to model complicated interactions among different factors.
-\item \textbf{RNN}: 
-Typical method for temporal prediction, which was originally applied in word embedding. It has been successfully extended to sequential modeling. 
+\item \textbf{Top}:
+
+\item \textbf{MF}:
+
+\item \textbf{FM}:
+
+\item \textbf{CARS2}:
+
+\item \textbf{FPMC}\cite{rendle2010factorizing}:
+
+\item \textbf{HRM}:
+
+\item \textbf{RNN}:
+
 
 \end{itemize}
-To find out the best method among different aggregation operations, we aggregate the combination through Linear, Multiplied and Condition-specific method respectively. Meanwhile, in order to discuss the consecutive effect of input contexts and transition context, we incorporate each context to our model separately on both data set. 
+
 
 
 
@@ -372,12 +318,12 @@ As mentioned above, there are several methods, such as Linear, Nonlinear, Multip
     \toprule
           & Method& recall@1 & recall@5 & recall@10\\
     \midrule
-    \multirow{2}[0]{*}{Tianchi} 
+    \multirow{2}[0]{*}{Tianchi}
          &Linear& 0& 0& 0\\
         &Mutiplied& 0& 0& 0\\
         &Combination& 0& 0& 0\\
     \midrule
-    \multirow{2}[0]{*}{Tmall} 
+    \multirow{2}[0]{*}{Tmall}
          &Linear& 0& 0& 0\\
         &Mutiplied& 0& 0& 0\\
         &Combination& 0& 0& 0\\
@@ -399,13 +345,13 @@ Thus, we suppose to utilize Linear method to compute the synthesized matrix for 
     \toprule
           &       & recall@1 & recall@5 & recall@10 & F1-score@1 & F1-score@5 & F1-score@10 & MAP   & AUC \\
     \midrule
-    \multirow{4}[0]{*}{Tianchi} 
+    \multirow{4}[0]{*}{Tianchi}
           & TOP   & 0  & 0  & 0  & 0  & 0  & 0  & 0  & 0  \\
           & MF    & 0  & 0  & 0  & 0  & 0  & 0  & 0  & 0  \\
           & RNN   & 0  & 0  & 0  & 0  & 0  & 0  & 0  & 0  \\
           & CA-RNN & \textbf{0.0304} & \textbf{0.1524} & \textbf{0.2714} & \textbf{0.0304} & \textbf{0.0508} & \textbf{0.0493} & \textbf{0.1038} & \textbf{0.8115} \\
     \midrule
-    \multirow{4}[0]{*}{Tmall} 
+    \multirow{4}[0]{*}{Tmall}
           & TOP   & 0  & 0  & 0  & 0  & 0  & 0  & 0  & 0  \\
           & MF    & 0  & 0  & 0  & 0  & 0  & 0  & 0  & 0  \\
           & RNN   & 0  & 0  & 0  & 0  & 0  & 0  & 0  & 0  \\
@@ -418,8 +364,56 @@ Thus, we suppose to utilize Linear method to compute the synthesized matrix for 
 
 
 \subsection{Impact of Parameters}
-%1 table 
+%1 table
 %1 figure of the performance comparison for RNN and CA-RNN in different length of hidden layer
+
+
+
+% $\textbf{h}_{k}^{u}$
+
+
+% $\textbf{h}_{k-1}^{u}$
+
+
+
+
+% $\textbf{h}_{k+1}^{u}$
+
+
+
+
+% $\textbf{h}_{k+2}^{u}$
+
+
+
+
+% $\textbf{r}_{v_{k}^{u}}$
+
+
+% $\textbf{r}_{v_{k+1}^{u}}$
+
+
+% $\textbf{r}_{v_{k+2}^{u}}$
+
+
+% $\textbf{M}_{c_{I,k}^{u}}$
+
+
+% $\textbf{M}_{c_{I,k+1}^{u}}$
+
+
+% $\textbf{M}_{c_{I,k+2}^{u}}$
+
+
+% $\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }$
+
+
+% $\textbf{W}_{\left\lfloor t_{k+1}^u-t_{k}^u \right\rfloor }$
+
+
+% $\textbf{W}_{\left\lfloor t_{k+2}^u-t_{k+1}^u \right\rfloor }$
+
+
 
 
 
