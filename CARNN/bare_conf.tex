@@ -1,6 +1,7 @@
 \documentclass[conference]{IEEEtran}
 \usepackage{multirow}
-\usepackage{epstopdf}
+% \usepackage{epstopdf}
+\usepackage{graphicx}
 \usepackage{subfigure}
 \usepackage{booktabs}
 \usepackage{diagbox}
@@ -179,11 +180,11 @@ where $\mathbf{h}^u_{k}$ is the $d$ dimensional representation of  user $u$ at t
 
 %3.3
 \subsection{ Incorporating Transition Context}
-The length of time interval between two statues has different impacts on prediction and long time interval seems to have limited effect in predicting next behavior compared with short ones. Therefore, the length of time interval is essential for predicting future behaviors. We incorporate Transition Context for time interval in the formula. The transition matrix $\textbf{W}$ is replaced with type-specific transition matrices based on transition context. Thus, Equation \eqref{eqHoriginal} should be rewritten as: 
+The length of time interval between two statues has different impacts on prediction and long time interval seems to have limited effect in predicting next behavior compared with short ones. Therefore, the length of time interval is essential for predicting future behaviors. We incorporate Transition Context for time interval in the formula. The transition matrix $\textbf{W}$ is replaced with type-specific transition matrices based on transition context. Thus, Equation \ref{eqHoriginal} should be rewritten as: 
 \begin{equation}  \label{eqh}
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{ t_k^u-t_{k-1}^u  }\right )~,
 \end{equation}
- where $t_k^u$ and $t_{k-1}^u$ denotes the present and the previous statues respectively, $t_k^u-t_{k-1}^u$ is the time interval.  All kinds of time intervals are continuously classified into several types according to their length. We suppose that each type should contain near the same quantity of different time intervals. Then, Equation \eqref{eqh} should be rewritten as: 
+ where $t_k^u$ and $t_{k-1}^u$ denotes the present and the previous statues respectively, $t_k^u-t_{k-1}^u$ is the time interval.  All kinds of time intervals are continuously classified into several types according to their length. We suppose that each type should contain near the same quantity of different time intervals. Then, Equation \ref{eqh} should be rewritten as: 
 \begin{equation}  
 \textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )~,
 \end{equation}
@@ -203,17 +204,17 @@ where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last statu
 We can introduce various combination operations to model different interactions among multiple input contexts. In this work, we study three typical combination operations as follows.
 
 \begin{itemize}
-\item \textbf{Linear Method}: Linear computation is the most common method to calculate the combination of all contextual operating matrices, It treats the effects of each context separately, and the $\textbf{M}_{c_{I,k}^{u}}$ can be calculated as :
+\item Linear Method: Linear computation is the most common method to calculate the combination of all contextual operating matrices, It treats the effects of each context separately, and the $\textbf{M}_{c_{I,k}^{u}}$ can be calculated as :
 \begin{equation} \label{eqMadd}
 \textbf{M}_{c_{I,k}^{u}} = \sum_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} ~.
 \end{equation}
 
-\item \textbf{Multiplied Method}: In STRNN  \cite{liu2016strnn} ,the author incorporates temporal and spatial contexts into conventional RNN by mutipling time-specific operating matrix and distance-specific operating matrix. Analogously, we can treat input contextual operating matrices in the same way :
+\item Multiplied Method: In STRNN  \cite{liu2016strnn} ,the author incorporates temporal and spatial contexts into conventional RNN by mutipling time-specific operating matrix and distance-specific operating matrix. Analogously, we can treat input contextual operating matrices in the same way :
 \begin{equation}
 \textbf{M}_{c_{I,k}^{u}} = \prod_{c_{i,k}^{u}\in C^I} \textbf{M}_{c_{i,k}^{u}} ~.
 \end{equation}
 
-\item \textbf{Condition-specific Method}: Other than handling these input contexts matrices, the $\textbf{M}_{c_{I,k}^{u}}$ can also be a condition-specific matrix. It means that each condition has its own matrix. For example, if there are two input contexts: weather ${w_1,w_2,w_3...}$ and mood ${m_1,m_2,m_3...}$. Each parameter above accounts for a specific condition, such as $w_1$ denotes for the sunny weather and $m_1$ denotes for the happy mood. Then, there will be a matrix $M_{w_1,m_1}$ for the sunny-happy condition. In that case, the $\textbf{M}_{c_{I,k}^{u}}$ equals to such a matrix $M_{w_1,m_1}$ representing a condition under specific input contexts at time $k$. 
+\item Condition-specific Method: Other than handling these input contexts matrices, the $\textbf{M}_{c_{I,k}^{u}}$ can also be a condition-specific matrix. It means that each condition has its own matrix. For example, if there are two input contexts: weather ${w_1,w_2,w_3...}$ and mood ${m_1,m_2,m_3...}$. Each parameter above accounts for a specific condition, such as $w_1$ denotes for the sunny weather and $m_1$ denotes for the happy mood. Then, there will be a matrix $M_{w_1,m_1}$ for the sunny-happy condition. In that case, the $\textbf{M}_{c_{I,k}^{u}}$ equals to such a matrix $M_{w_1,m_1}$ representing a condition under specific input contexts at time $k$. 
 
 \end{itemize}
 
@@ -260,7 +261,7 @@ where $\lambda = {R, M ,W}$ denotes all the parameters to be estimated, $\lambda
 }{e^{-(y_{u, k+1, c, v} - y_{u, k+1, c, v'})}}    ~.
 \end{displaymath}
 
-Moreover, parameters in CA-RNN can be further learnt with the BPTT algorithm. According to Equation \eqref{eqHt}, given the derivation ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{h}_{k}^{u} } }$, the corresponding gradients of all parameters in the hidden layer can be calculated as: 
+Moreover, parameters in CA-RNN can be further learnt with the BPTT algorithm. According to Equation \ref{eqHt}, given the derivation ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{h}_{k}^{u} } }$, the corresponding gradients of all parameters in the hidden layer can be calculated as: 
 \begin{displaymath}
 \frac{{\partial J}}{{\partial \mathbf{h}^u_{k-1} }} =  \left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right)\left({\mathbf{W}_{\left \lfloor t_{k}^{u} - t_{k-1}^{u} \right \rfloor}}\right)^\mathrm{T} ~,
 \end{displaymath}
@@ -277,7 +278,7 @@ Moreover, parameters in CA-RNN can be further learnt with the BPTT algorithm. Ac
 \frac{{\partial J}}{{\partial {\mathbf{M}_{c^u_{I,k+1}}} }} =  \left({\mathbf{r}_{v^u_k}}\right)^\mathrm{T}\left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right) ~.
 \end{displaymath}
 This process can be repeated iteratively in the whole behavioral sequence. 
-Then, according to Equation \eqref{eqMadd} and \eqref{eqPadd}, given ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{P}_{c,k+1} } }$, the gradients of $\mathbf{M}^{'}_{c^u_{i,k+1}}$, $\mathbf{M}_{c^u_{i,k+1}}$ and $\mathbf{W}^{'}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}$ can be computed as: 
+Then, according to Equation \ref{eqMadd} and \ref{eqPadd}, given ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{P}_{c,k+1} } }$, the gradients of $\mathbf{M}^{'}_{c^u_{i,k+1}}$, $\mathbf{M}_{c^u_{i,k+1}}$ and $\mathbf{W}^{'}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}$ can be computed as: 
 \begin{displaymath}
 \frac{{\partial J}}{{\partial {\mathbf{M}^{'}_{c^u_{I,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
 \end{displaymath}
@@ -293,9 +294,39 @@ Then, according to Equation \eqref{eqMadd} and \eqref{eqPadd}, given ${\partial 
 Now, after calculating all the gradients, we can employ stochastic gradient descent to estimate the model parameters. 
 
 \section{Experiments}
-In this section, we empirically analyse the performance of CA-RNN. First we introduce the settings of our experiments. Then we compared our CA-RNN to the state-of-the-art methods. Finally, we analysis the impact of parameters, especially the length of hidden layer.
+In this section, we conduct empirical experiments to demonstrate the effectiveness of CA-RNN on sequential recommendation. First we introduce the datasets, baseline methods and evaluation metrics of our experiments. Then we compared our CA-RNN to the state-of-the-art methods. Finally, we analyse the impact of parameters, especially the length of hidden layer.
 \subsection{Experiment Datasets}
+Our experiments are conducted on two real datasets with various contexts:
+\begin{itemize}
+\item \textbf{Fashion}\footnote{https://tianchi.shuju.aliyun.com/competition/index.htm} is a public online e-commerce dataset released by TIANCHI\footnote{https://tianchi.shuju.aliyun.com/}, which records clothes purchase behaviors. It contains 13, 611, 038 transactions belonging to 1, 103, 702 users and 462, 008 items. The time information is collected based on the day level.
 
+\item \textbf{Tmall}\footnote{https://102.alibaba.com/competition/addDiscovery/index.htm} is a public dataset from Tmall\footnote{https://www.tmall.com/}, one of the biggest online shopping websites in China. It covers products from food, clothes to electrical appliance and records the online transactions in terms of brands. It contains 182, 881 transactions belonging to 885 users and 9, 532 brands.The temporal information in the dataset is extracted based on day level.
+\end{itemize}
+We conduct some pre-process on these transaction datasets. For Fashion dataset, firstly we remove all the users that have bought in total less than 10 items. Second, we iteratively remove items bought by less than 3 times and users who have purchased the removed items. The second step is to make sure that each item is bought greater than or equal to 3 times and the transition in each user's purchase sequence is not changed. For Tmall dataset, xxxxxx.
+
+The transition context matrix $\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }$ is determined by the type of time interval between $t_k^u$ and $t_{k-1}^u$. The time interval is continuously classified with the prerequisite that number of transactions is balanced in each type, as shown in Figure \ref{fig:comparision}. Such division of time interval is reasonable because on one hand short time interval is divided carefully and long time interval is treated as similar, on the other hand the balanced number of transactions can ensure the effective training process.
+\begin{figure}[!tb]
+\centering
+\subfigure[Fashion dataset.]{
+\begin{minipage}[b]{0.4\textwidth}
+\includegraphics[width=1\textwidth]{./TimeInterval1.eps}
+\label{fashion_interval}
+\end{minipage}
+}
+\hspace{-1mm}
+\subfigure[Tmall dataset.]{
+\begin{minipage}[b]{0.4\textwidth}
+\includegraphics[width=1\textwidth]{./TimeInterval2.eps}
+\label{tmall_interval}
+\end{minipage}
+}
+\caption{Division of Time Interval.}
+\label{fig:comparision}
+\end{figure}
+
+The input context consists of week context and month context. Week context represents the day of a transaction in week and month context represents that the time of a transaction is in the first, second, or the third ten-day periods of a month. These contexts have significant effects on user's next purchase behavior because people will tend to buy similar items in the beginning of the month when receiving salary and a large amount of household items are usually bought on weekend.
+
+For each purchase sequence of the two datasets, we use first 90\% of the items in the sequence for training, the remaining 10\% data for testing. 
 \subsection{Evaluation Metrics}
 The output of our model is a ranked list in which items are ranked according to the value representing the preference of each user. Thus, we evaluate the performance of each method through \textbf{Recall@k} and \textbf{F1-score@k} , which are two popular metrics for ranking tasks. The Mean Average Precision (\textbf{MAP}) is applied to evalute the quality of the whole ranked lists. The larger the value, the better the performance.
 
