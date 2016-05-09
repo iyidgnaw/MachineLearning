@@ -1,5 +1,5 @@
-__author__ = 'lizk'
 # -*- coding: utf-8 -*
+__author__ = 'lizk'
 import numpy as np
 import random
 import math
@@ -14,7 +14,9 @@ TEST_SET = []
 TRAIN_MATRIX=np.zeros((USER_SIZE,ITEM_SIZE))
 USER_MATRIX=np.random.randn(USER_SIZE, HIDDEN_SIZE)*0.5
 ITEM_MATRIX=np.random.randn(ITEM_SIZE, HIDDEN_SIZE)*0.5
-
+RECALL_MAX = {}		
+for i in range(1, 21):
+	RECALL_MAX[i] = 0
 
 def load_file():		#load data function
 	global TRAIN_MATRIX,TEST_SET
@@ -88,14 +90,27 @@ def predict():
 	print relevant
 	print recall
 	print recallatx
-	return 
+	return recall, recallatx
 
+def save_max(result):
+	'''
+	result:list
+	保存result[n]最大的result
+	'''
+	global  RECALL_MAX
+	for i in range(1, 21) :
+		RECALL_MAX[i] = max(RECALL_MAX[i], result[i])
+
+	print "Best Result"
+	print RECALL_MAX
+	print
 
 load_file()
 for i in range(100):
 	print "iter %i"%i
 	train()
-	predict()
+	recall, recallatx = predict()
+	save_max(recallatx)
 	
 	
 
