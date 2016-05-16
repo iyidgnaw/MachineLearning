@@ -352,7 +352,7 @@ The output of our model is a ranked list in which items are ranked according to 
         &Mutiply& 0.1713& 0.4068& 0.5222& 0.1713& 0.1356& 0.0950&0.2901\\
         &Combination& 0.1765& 0.3934& 0.5068& 0.1765& 0.1312& 0.0921&0.2865\\
     \midrule
-    \multirow{5}[0]{*}{Tianchi} 
+    \multirow{5}[0]{*}{Fashion} 
         &Week& 0.1087& 0.3325& 0.4713& 0.1087& 0.1108& 0.0857&0.2237\\
         &Month& 0.0839& 0.2793& 0.4125& 0.0839& 0.0931& 0.0750&0.1858\\
         &Plus& \textbf{0.1324}& \textbf{0.3720}& \textbf{0.5281}& \textbf{0.1324}& \textbf{0.1240}& \textbf{0.0960}& \textbf{0.2556}\\
@@ -374,7 +374,7 @@ The output of our model is a ranked list in which items are ranked according to 
         &Transition  &0.1887 & 0.4134  &0.5158&  0.1887& 0.1378  &0.0938&  0.3020   \\
         &All &0.2028  &0.4171  &0.5216  &0.2028  &0.1390  &0.0948 & 0.3074\\
     \midrule
-    \multirow{3}[0]{*}{Tianchi} 
+    \multirow{3}[0]{*}{Fashion} 
         &Input   &0.1324  &0.3720  &0.5281  &0.1324  &0.1240 & 0.0960  &0.2556   \\
         &Transition  &0.1129  &0.3284  &0.4392  &0.1129  &0.1095  &0.0799  &0.2186   \\
         &All &0.1648  &0.4305  &0.5804  &0.1648 & 0.1435&  0.1055  &0.2932\\
@@ -412,14 +412,17 @@ Typical method for temporal prediction, which was originally applied in word emb
 \subsection{Analysis of Contexts}
 As mentioned above, there are several methods, such as Plus, Multiply and Combination-specific, to compute the aggregation matrix for all contextual operating matrices. Here in this part, we will discuss the effect of each method.
 
-As indicated in Table 1, no matter in which method, the model aggregates input contexts outperforms the model incorporating each input context respectively. On all evalution matrics, the Plus method is clearly the best one of integrating input contexts. Especially on Tianchi dataset, compared with utilizing week information only, the Plus method improves the MAP value by 6.98\%. The performance of Combination-specific method seems to be close to that of the Plus method. However, the amount of parameters of Combination-specific method is larger than Plus method, this shortcut will get worse when the amount of conditions in each context is large. 
+As indicated in Table 1, no matter in which method, the model aggregates input contexts outperforms the model incorporating each input context respectively. On all evalution matrics, the Plus method is clearly the best one of integrating input contexts. Especially on Fashion dataset, compared with utilizing week information only, the Plus method improves the MAP value by 6.98\%. The performance of Combination-specific method seems to be close to that of the Plus method. However, the amount of parameters of Combination-specific method is larger than Plus method, this shortcut will get worse when the amount of conditions in each context is large. 
 
 Thus, we suppose to utilize Plus method to compute the aggregation matrix for all contextual operating matrices in CA-RNN.
 
-As discussed in the section of CARNN model, we suppose to utilize both Input context and Transition contexts simultaneously. Table 2  illustrates the comparision among incorporating different contexts seperately and put them together. The result indicates that CARNN consists of both Input and Transition contexts works on Tmall and Tianchi dataset. 
+As discussed in the section of CARNN model, we suppose to utilize both Input context and Transition contexts simultaneously. Table 2  illustrates the comparision among incorporating different contexts seperately and put them together. The result indicates that CARNN consists of both Input and Transition contexts works on Tmall and Fashion dataset. 
 
 
 \subsection{Performance Comparison}
+The performance comparsion on the Tmall dataset and the Fashion dataset evaluated by recall, F1-score and MAP is illustrated in table \ref{tab:result}. Compared to the baseline performance of POP, MF, FM and CARS2 have similar performance improvement on the two datasets. Jointly modeling sequential information and collaborative information, FPMC and HRM achieve great improvement by combining both sequential behavior and users’ general taste. Learning latent representations of recent behaviors, HRM further improves the performance of FPMC. Another great improvement is brought by RNN, and it is the best one among the compared methods. Moreover, we can observe that, our proposed CARNN achieve the best performance on the Tmall dataset and the Fashion dataset in terms of all the metrics. Using the best scores of each method, comparing with RNN, the MAP improvements of CARNN are 6.74\% and 11.04\% on Tmall and Fashion respectively. These great improvements indicate the superiority of our method brought by modeling sequential information and contextual information.
+
+
 \begin{table*}[htbp]
 \centering\scriptsize
 \caption{Performance comparison on two datasets evaluated by recall, F1-score, MAP.}
@@ -437,7 +440,7 @@ As discussed in the section of CARNN model, we suppose to utilize both Input con
         & RNN   &0.1282  &0.3412&  0.4392&  0.1282 & 0.1138 &0.0798 & 0.2400 \\
         & CARNN    &\textbf{0.2028}  &\textbf{0.4171}  &\textbf{0.5216}&  \textbf{0.2028}&  \textbf{0.1390}&\textbf{ 0.0948}  &\textbf{0.3074} \\
     \midrule
-    \multirow{8}[0]{*}{Tianchi} 
+    \multirow{8}[0]{*}{Fashion} 
         & POP   &0.0024  &0.0246  & 0.0272  & 0.0024   &0.0082  & 0.0049   &0.0314 \\
         & MF    & 0.0145  & 0.0462  & 0.0783  &0.0145   &0.0154   &0.0142   &0.0510 \\
         & FM   & 0.0241  &0.0660  & 0.1070   &0.0241   &0.0220  & 0.0195  & 0.0732 \\
@@ -454,6 +457,24 @@ As discussed in the section of CARNN model, we suppose to utilize both Input con
 
 
 \subsection{Impact of Parameters}
+
+Performance of CARNN, RNN, RNN with input context, RNN with transition context on Tmall dataset and Fashion dataset with varying dimensionality is shown in Figure \ref{fig:dimension}. As shown in Figure \ref{fig:dimension} (a), for Tmall dataset RNN with context achieve better performance than conventional RNN consistently with all dimensions. And even not with the best dimensionality, our methods can still outperform RNN. RNN with input context performs better than CARNN when evaluated by Recall@5 while CARNN performs best when evaluated by MAP. For Fashion dataset, the curves in Figure \ref{fig:dimension} (b) show the great advantages of CARNN comparing with other compared methods with different dimensionality evaluated by different metrics. And with increasing dimension, the value of Recall@5 and MAP incraese at first, then decrease after $d = 20$, which means that 20 is the best parameter for CARNN on Fashion dataset. We can also observe that the impact of dimensionality for Tmall dataset is smaller than that for Fashion dataset.
+
+
+\begin{figure}[!tb]
+\centering
+{
+\begin{minipage}[b]{0.5\textwidth}
+\includegraphics[width=1\textwidth]{./dimension.eps}
+\label{dimension}
+\end{minipage}
+}
+
+\caption{Performance comparison of CARNN among RNN, RNN with input context and RNN with transition context over two datasets. The dimensionality is increased from 5 to 15 on Tmall and 5 to 40 on Fashion.}
+\label{fig:dimension}
+\end{figure}
+
+
 % \begin{table*}[htbp]
 % \centering\scriptsize
 % \caption{Dimension}
