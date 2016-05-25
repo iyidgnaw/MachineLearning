@@ -98,7 +98,7 @@ Sequential information ia becoming a significant factor in modeling user behavio
 \begin{figure*}[htb]
 \centering
 \includegraphics[width=1\linewidth]{./introModel.pdf}
-\caption{The scenario of online purchase as an example of CA-RNN sequential prediction. This example shows how the input context and transition context are used in recurrent neural networks to predict user's next prefered item.}
+\caption{The scenario of online purchase as an example of CA-RNN sequential prediction. The left part shows input contexts are situations that users conduct behaviors and transition context is time interval between adjacent behaviors in sequences. The right part illustrates how the input context and transition context are used in recurrent neural networks to predict user's next prefered item.}
 \label{fig:Model-intro}
 \end{figure*}
 
@@ -156,14 +156,14 @@ Context-aware recommender system (CARS) \cite{adomavicius2011context} generates 
 \begin{figure*}[htb]
 \centering
 \includegraphics[width=1\linewidth]{./model.pdf}
-\caption{Overview of proposed CA-RNN model}
+\caption{Overview of proposed CA-RNN model. The right small square shows a state of CA-RNN. The left square illustrates the computational procedure of hidden layer in that state.}
 \label{fig:Model-overview}
 \end{figure*}
 
 %3.1
 \subsection{Problem Formulation}
-We have a set of users denoted as $U  = \{ u_1 ,u_2 ,...\}$, a set of items denoted as $V  = \{ v_1 ,v_2 ,...\}$. There are multiple input contexts denoted as $C_I = \{c_{i1} ,c_{i2} ,...\}$, such as weather, location, mood and so on. Meanwhile, each context contains several conditions. For example, mood context may consist of happy, sad and flat. The transition context $C_t$ accounts for the different time interval between two records of user. For each user $u$, the behavioral history is given as $V^u = \{v^u_{1}, v^u_{2}, ...\}$, where $v^u_{i}$ denotes the $i$ th selected item of user. And the history of all users is denoted as $V^U = \{V^u_{1}, V^u_{2}, ...\}$. The behavioral history is associated with corresponding timestamps $T^u = \{t^u_{1}, t^u_{2}, ...\}$ where $t_k$ denotes the $k$ th timestamp in one sequence. For each user $u$, at specific timestamp $t_k$, an combination of input contexts is denoted as $c_{I,k}^{u} = \{
-c_{i1,k}^{u},c_{i2,k}^{u},...\}$.
+We have a set of users denoted as $U  = \{ u_1 ,u_2 ,...\}$, a set of items denoted as $V  = \{ v_1 ,v_2 ,...\}$. There are multiple input contexts denoted as $C_I = \{C_{i1} ,C_{i2} ,...\}$, where the $C_{ik}$ denotes for one specific context such as weather, location, mood and so on. Meanwhile, each context contains several conditions. For example, mood context may consist of happy, sad and flat. The transition context $C_T$ accounts for the different time interval between two records of user. For each user $u$, the behavioral history is given as $V^u = \{v^u_{1}, v^u_{2}, ...\}$, where $v^u_{i}$ denotes the $i$ th selected item of user. And the history of all users is denoted as $V^U = \{V^u_{1}, V^u_{2}, ...\}$. The behavioral history is associated with corresponding timestamps $T^u = \{t^u_{1}, t^u_{2}, ...\}$ where $t_k$ denotes the $k$ th timestamp in one sequence. For each user $u$, at specific timestamp $t_k^u$, an combination of input contexts is denoted as $c_{I,k}^{u} = \{
+c_{i1,k}^{u},c_{i2,k}^{u},...\}$ and the transition context is denoted as $c_{T,k}^{u}$ which is decided by the interval type between $t_k^u$ and $t_{k-1}^u$.
 
 
 
@@ -186,9 +186,9 @@ The length of time interval between two statues has different impacts on predict
 \end{equation}
  where $t_k^u$ and $t_{k-1}^u$ denotes the present and the previous statues respectively, $t_k^u-t_{k-1}^u$ is the time interval.  All kinds of time intervals are continuously classified into several types according to their length. We suppose that each type should contain near the same quantity of different time intervals. Then, Equation \ref{eqh} should be rewritten as: 
 \begin{equation}  
-\textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )~,
+\textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}+\textbf{h}_{k-1}^{u}\textbf{W}_{c_{T,k}^{u}}\right )~,
 \end{equation}
-where $\left\lfloor t_k^u-t_{k-1}^u \right\rfloor$ denotes for the type of the time interval between $t_k^u$ and $t_{k-1}^u$ .
+where $c_{T,k}^{u}$ denotes for the transition context depending on the type of the time interval between $t_k^u$ and $t_{k-1}^u$ .
 
 
 
@@ -196,10 +196,10 @@ where $\left\lfloor t_k^u-t_{k-1}^u \right\rfloor$ denotes for the type of the t
 \subsection{ Context-aware Recurrent Neural Networks}
 Since context information is important in future predictions and conventional RNN cannot model it, it is essential to involve context information in our model. Thus, we add the input context $c_{I,k}^{u}$ to the transition matrix $\textbf{M}$ in traditional RNN model. In CA-RNN model, given a user $u$, his or her vector representation at time $k$ can be calculated by using an integrated contextual operating matrix for a specific context combination. This matrix describe how a contexts combination affects the properties of entities and how context-specific latent vectors of users and items can be generated from their original ones. Here, we can calculate context-specific latent vectors as: 
 \begin{equation}\label{eqHt}
-\textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }\right )~,
+\textbf{h}_{k}^{u}=f\left ( \textbf{r}_{v_{k}^{u}}\textbf{M}_{c_{I,k}^{u}}+\textbf{h}_{k-1}^{u}\textbf{W}_{c_{T,k}^{u}}\right )~,
 \end{equation}
 
-where  $\textbf{W}$ is a $d*d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d*d$ transition matrix denotes the combination of corresponding input contexts for users and items.  
+where  $\textbf{W}$ is a $d\times d$ dimensional transition matrix from the last status, $\textbf{r}_{v_{k}^{u}}$ is a  $d$ dimensional vector representation of the input item at time $k$ of user $u$, and $\textbf{M}_{c_{I,k}^{u}}$ is a  $d\times d$ transition matrix denotes the combination of corresponding input contexts for users and items.  
 
 We can introduce various combination operations to model different interactions among multiple input contexts. In this work, we study three typical combination operations as follows.
 
@@ -227,9 +227,9 @@ y_{u, k+1, c, v} = \mathbf{h}_{k}^{u}\mathbf{P}_{c, k+1}(\mathbf{r}_{v})^ \mathr
 \end{equation}
 where $\mathbf{P}_{c, k+1}$ is the representation of input context and transition context at status $k+1$. And it can be calculated by the addition or multiplication of $\mathbf{M}^{'}$ and $\mathbf{W}^{'}$ , the corresponding matrix of the two kinds context . Unlike $\mathbf{M}$ and $\mathbf{W}$ in equation 4, which are transition matrices, $\mathbf{M}^{'}$ and $\mathbf{W}^{'}$ are designed for incorporating context information to improve the predicting process. According to our experiments, addition performances better, so $\mathbf{P}_{c, k+1}$ can be calculated as:
 \begin{equation}   \label{eqPadd}
-\mathbf{P}_{c, k+1}=\mathbf{M}_{c_{I,k+1}^{u}}^{'} + \mathbf{W}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u}\right \rfloor}^{'}~
+\mathbf{P}_{c, k+1}=\mathbf{M}_{c_{I,k+1}^{u}}^{'} + \mathbf{W}_{c_{T,k+1}^{u}}^{'}~
 \end{equation}
-where $\mathbf{M}_{c_{I,k+1}^{u}}^{'}$ is the represntation of specific input contexts combination for user $u$ at time $k$ , and $\mathbf{W}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u}\right \rfloor}^{'}$ is the represntation of transition context for interval between the current and the next status. These matrices indicate the effect of current context to the following behavior.
+where $\mathbf{M}_{c_{I,k+1}^{u}}^{'}$ is the represntation of specific input contexts combination for user $u$ at time $k$ , and $\mathbf{W}_{c_{T,k+1}^{u}}^{'}$ is the represntation of transition context for interval between the current and the next status. These matrices indicate the effect of current context to the following behavior.
 
 
 
@@ -263,11 +263,11 @@ where $\lambda = {R, M ,W}$ denotes all the parameters to be estimated, $\lambda
 
 Moreover, parameters in CA-RNN can be further learnt with the BPTT algorithm. According to Equation \ref{eqHt}, given the derivation ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{h}_{k}^{u} } }$, the corresponding gradients of all parameters in the hidden layer can be calculated as: 
 \begin{displaymath}
-\frac{{\partial J}}{{\partial \mathbf{h}^u_{k-1} }} =  \left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right)\left({\mathbf{W}_{\left \lfloor t_{k}^{u} - t_{k-1}^{u} \right \rfloor}}\right)^\mathrm{T} ~,
+\frac{{\partial J}}{{\partial \mathbf{h}^u_{k-1} }} =  \left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right)\left({\mathbf{W}_{c_{T,k}^{u}}}\right)^\mathrm{T} ~,
 \end{displaymath}
 
 \begin{displaymath}
-\frac{{\partial J}}{{\partial {\mathbf{W}_{\left \lfloor t_{k}^{u} - t_{k-1}^{u} \right \rfloor}} }} =  \left({\mathbf{h}_{k-1}^u}\right)^\mathrm{T}\left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right) ~,
+\frac{{\partial J}}{{\partial {\mathbf{W}_{c_{T,k}^{u}}} }} =  \left({\mathbf{h}_{k-1}^u}\right)^\mathrm{T}\left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right) ~,
 \end{displaymath}
 
 \begin{displaymath}
@@ -278,12 +278,12 @@ Moreover, parameters in CA-RNN can be further learnt with the BPTT algorithm. Ac
 \frac{{\partial J}}{{\partial {\mathbf{M}_{c^u_{I,k+1}}} }} =  \left({\mathbf{r}_{v^u_k}}\right)^\mathrm{T}\left( {f'\left(  \cdot  \right) \otimes \frac{{\partial J}}{{\partial \mathbf{h}^u_{k} }}} \right) ~.
 \end{displaymath}
 This process can be repeated iteratively in the whole behavioral sequence. 
-Then, according to Equation \ref{eqMadd} and \ref{eqPadd}, given ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{P}_{c,k+1} } }$, the gradients of $\mathbf{M}^{'}_{c^u_{i,k+1}}$, $\mathbf{M}_{c^u_{i,k+1}}$ and $\mathbf{W}^{'}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}$ can be computed as: 
+Then, according to Equation \ref{eqMadd} and \ref{eqPadd}, given ${\partial J \mathord{\left/ \right. \kern-\nulldelimiterspace} {\partial \mathbf{P}_{c,k+1} } }$, the gradients of $\mathbf{M}^{'}_{c^u_{i,k+1}}$, $\mathbf{M}_{c^u_{i,k+1}}$ and $\mathbf{W}^{'}_{c_{T,k+1}^{u}}$ can be computed as: 
 \begin{displaymath}
 \frac{{\partial J}}{{\partial {\mathbf{M}^{'}_{c^u_{I,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
 \end{displaymath}
 \begin{displaymath}
-\frac{{\partial J}}{{\partial {\mathbf{W}^{'}_{\left \lfloor t_{k+1}^{u} - t_{k}^{u} \right \rfloor}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
+\frac{{\partial J}}{{\partial {\mathbf{W}^{'}_{c_{T,k+1}^{u}}} }} =  \frac{\partial J}{\partial \mathbf{P}_{c,k+1}} ~,
 \end{displaymath}
 \begin{displaymath}
 \frac{{\partial J}}{{\partial {\mathbf{M}^{'}_{c^u_{i,k+1}}} }} =  \frac{\partial J}{\partial \mathbf{M}^{'}_{c^u_{I,k+1}}} ~.
@@ -298,9 +298,9 @@ In this section, we conduct empirical experiments to demonstrate the effectivene
 \subsection{Experiment Datasets}
 Our experiments are conducted on two real datasets with various contexts:
 \begin{itemize}
-\item \textbf{Fashion}\footnote{https://tianchi.shuju.aliyun.com/competition/index.htm} is a public online e-commerce dataset released by TIANCHI\footnote{https://tianchi.shuju.aliyun.com/}, which records clothes purchase behaviors. It contains 13, 611, 038 transactions belonging to 1, 103, 702 users and 462, 008 items. The time information is collected based on the day level.
+\item \textbf{Fashion}\footnote{https://tianchi.shuju.aliyun.com/competition/index.htm} is a public online e-commerce dataset released by TIANCHI\footnote{https://tianchi.shuju.aliyun.com/}, which records clothes purchase behaviors. It contains 13, 611, 038 records belonging to 1, 103, 702 users and 462, 008 items. The time information is collected based on the day level.
 
-\item \textbf{Tmall}\footnote{https://102.alibaba.com/competition/addDiscovery/index.htm} is a public dataset from Tmall\footnote{https://www.tmall.com/}, one of the biggest online shopping websites in China. It covers products from food, clothes to electrical appliance and records the online transactions in terms of brands. It contains 182, 881 transactions belonging to 885 users and 9, 532 brands.The temporal information in the dataset is extracted based on day level.
+\item \textbf{Tmall}\footnote{https://102.alibaba.com/competition/addDiscovery/index.htm} is a public dataset from Tmall\footnote{https://www.tmall.com/}, one of the biggest online shopping websites in China. It covers products from food, clothes to electrical appliance and records the online transactions in terms of brands. It contains 182, 881 records belonging to 885 users and 9, 532 brands.The temporal information in the dataset is extracted based on day level.
 \end{itemize}
 
 We conduct some pre-process on these transaction datasets. For Fashion dataset, firstly we remove all the users that have bought in total less than 10 items. Second, we iteratively remove items bought by less than 3 times and users who have purchased the removed items. The second step is to make sure that each item is bought greater than or equal to 3 times and the transition in each user's purchase sequence is not changed. For Tmall dataset, xxxxxx.
@@ -311,7 +311,7 @@ For each purchase sequence of the two datasets, we use first 90\% of the items i
 \subsection{Incorporated Contexts }
 As mentioned above, we proposed to make use of two kinds of contexts named transition context and input context.
 
-The transition context matrix $\textbf{W}_{\left\lfloor t_k^u-t_{k-1}^u \right\rfloor }$ is determined by the type of time interval between $t_k^u$ and $t_{k-1}^u$. The time interval is continuously classified with the prerequisite that number of transactions is balanced in each type, as shown in Figure \ref{fig:comparision}. Such division of time interval is reasonable because on one hand short time interval is divided carefully and long time interval is treated as similar, on the other hand the balanced number of transactions can ensure the effective training process.
+The transition context matrix $\textbf{W}_{c_{T,k}^{u}}$ is determined by the type of time interval between $t_k^u$ and $t_{k-1}^u$. The time interval is continuously classified with the prerequisite that number of records is balanced in each type, as shown in Figure \ref{fig:comparision}. Such division of time interval is reasonable because on one hand short time interval is divided carefully and long time interval is treated as similar, on the other hand the balanced number of records can ensure the effective training process.
 \begin{figure}[!tb]
 \centering
 \subfigure[Fashion dataset.]{
@@ -335,7 +335,12 @@ The input context consists of week context and month context. Week context repre
 
 
 \subsection{Evaluation Metrics}
-The output of our model is a ranked list in which items are ranked according to the value representing the preference of each user. Thus, we evaluate the performance of each method through \textbf{Recall@k} and \textbf{F1-score@k} , which are two popular metrics for ranking tasks. The Mean Average Precision (\textbf{MAP}) is applied to evalute the quality of the whole ranked lists. The larger the value, the better the performance.
+The output of our model is a ranked list in which items are ranked according to the value representing the preference of each user. Thus, we evaluate the performance of each method through several widely-used metrics for ranking tasks.
+\begin{itemize}
+\item \textbf{Recall@k} and \textbf{F1-score@k} are two important metrics for ranking tasks. The evaluation score for our experiments is computed according to the value of each user's prefered item. We report recall@k and F1-score@k with $k=1$, $5$ and $10$ in our experiments. The larger the value, the better the performance.
+
+\item \textbf{Mean Average Precision (MAP)} is another commonly used global evaluation in ranking tasks. MAP is a standard meetric for measuring the quality of the whole ranking list. Top-bias property of MAP is particularly significant in evaluating ranking tasks such as top-N recommendation. The larger the value, the better the performance.
+\end{itemize}
 
 %table1
 \begin{table*}[!htbp]
@@ -352,7 +357,7 @@ The output of our model is a ranked list in which items are ranked according to 
         &Mutiply& 0.1713& 0.4068& 0.5222& 0.1713& 0.1356& 0.0950&0.2901\\
         &Combination& 0.1765& 0.3934& 0.5068& 0.1765& 0.1312& 0.0921&0.2865\\
     \midrule
-    \multirow{5}[0]{*}{Tianchi} 
+    \multirow{5}[0]{*}{Fashion} 
         &Week& 0.1087& 0.3325& 0.4713& 0.1087& 0.1108& 0.0857&0.2237\\
         &Month& 0.0839& 0.2793& 0.4125& 0.0839& 0.0931& 0.0750&0.1858\\
         &Plus& \textbf{0.1324}& \textbf{0.3720}& \textbf{0.5281}& \textbf{0.1324}& \textbf{0.1240}& \textbf{0.0960}& \textbf{0.2556}\\
@@ -374,7 +379,7 @@ The output of our model is a ranked list in which items are ranked according to 
         &Transition  &0.1887 & 0.4134  &0.5158&  0.1887& 0.1378  &0.0938&  0.3020   \\
         &All &0.2028  &0.4171  &0.5216  &0.2028  &0.1390  &0.0948 & 0.3074\\
     \midrule
-    \multirow{3}[0]{*}{Tianchi} 
+    \multirow{3}[0]{*}{Fashion} 
         &Input   &0.1324  &0.3720  &0.5281  &0.1324  &0.1240 & 0.0960  &0.2556   \\
         &Transition  &0.1129  &0.3284  &0.4392  &0.1129  &0.1095  &0.0799  &0.2186   \\
         &All &0.1648  &0.4305  &0.5804  &0.1648 & 0.1435&  0.1055  &0.2932\\
@@ -384,7 +389,6 @@ The output of our model is a ranked list in which items are ranked according to 
 \end{table*}%
 
 \subsection{Compared Methods}
-We compare CA-RNN with several state-of-the-art models.
 \begin{itemize}
 \item \textbf{Top}: 
 The most frequently bought items are selected as prediction for each user.
@@ -412,14 +416,17 @@ Typical method for temporal prediction, which was originally applied in word emb
 \subsection{Analysis of Contexts}
 As mentioned above, there are several methods, such as Plus, Multiply and Combination-specific, to compute the aggregation matrix for all contextual operating matrices. Here in this part, we will discuss the effect of each method.
 
-As indicated in Table 1, no matter in which method, the model aggregates input contexts outperforms the model incorporating each input context respectively. On all evalution matrics, the Plus method is clearly the best one of integrating input contexts. Especially on Tianchi dataset, compared with utilizing week information only, the Plus method improves the MAP value by 6.98\%. The performance of Combination-specific method seems to be close to that of the Plus method. However, the amount of parameters of Combination-specific method is larger than Plus method, this shortcut will get worse when the amount of conditions in each context is large. 
+As indicated in Table 1, no matter in which method, the model aggregates input contexts outperforms the model incorporating each input context respectively. On all evalution matrics, the Plus method is clearly the best one of integrating input contexts. Especially on Fashion dataset, compared with utilizing week information only, the Plus method improves the MAP value by 6.98\%. The performance of Combination-specific method seems to be close to that of the Plus method. However, the amount of parameters of Combination-specific method is larger than Plus method, this shortcut will get worse when the amount of conditions in each context is large. 
 
 Thus, we suppose to utilize Plus method to compute the aggregation matrix for all contextual operating matrices in CA-RNN.
 
-As discussed in the section of CARNN model, we suppose to utilize both Input context and Transition contexts simultaneously. Table 2  illustrates the comparision among incorporating different contexts seperately and put them together. The result indicates that CARNN consists of both Input and Transition contexts works on Tmall and Tianchi dataset. 
+As discussed in the section of CARNN model, we suppose to utilize both Input context and Transition contexts simultaneously. Table 2  illustrates the comparision among incorporating different contexts seperately and put them together. The result indicates that CARNN consists of both Input and Transition contexts works on Tmall and Fashion dataset. 
 
 
 \subsection{Performance Comparison}
+The performance comparsion on the Tmall dataset and the Fashion dataset evaluated by recall, F1-score and MAP is illustrated in table \ref{tab:result}. Compared to the baseline performance of POP, MF, FM and CARS2 have similar performance improvement on the two datasets. Jointly modeling sequential information and collaborative information, FPMC and HRM achieve great improvement by combining both sequential behavior and users’ general taste. Learning latent representations of recent behaviors, HRM further improves the performance of FPMC. Another great improvement is brought by RNN, and it is the best one among the compared methods. Moreover, we can observe that, our proposed CARNN achieve the best performance on the Tmall dataset and the Fashion dataset in terms of all the metrics. Using the best scores of each method, comparing with RNN, the MAP improvements of CARNN are 6.74\% and 11.04\% on Tmall and Fashion respectively. These great improvements indicate the superiority of our method brought by modeling sequential information and contextual information.
+
+
 \begin{table*}[htbp]
 \centering\scriptsize
 \caption{Performance comparison on two datasets evaluated by recall, F1-score, MAP.}
@@ -437,7 +444,7 @@ As discussed in the section of CARNN model, we suppose to utilize both Input con
         & RNN   &0.1282  &0.3412&  0.4392&  0.1282 & 0.1138 &0.0798 & 0.2400 \\
         & CARNN    &\textbf{0.2028}  &\textbf{0.4171}  &\textbf{0.5216}&  \textbf{0.2028}&  \textbf{0.1390}&\textbf{ 0.0948}  &\textbf{0.3074} \\
     \midrule
-    \multirow{8}[0]{*}{Tianchi} 
+    \multirow{8}[0]{*}{Fashion} 
         & POP   &0.0024  &0.0246  & 0.0272  & 0.0024   &0.0082  & 0.0049   &0.0314 \\
         & MF    & 0.0145  & 0.0462  & 0.0783  &0.0145   &0.0154   &0.0142   &0.0510 \\
         & FM   & 0.0241  &0.0660  & 0.1070   &0.0241   &0.0220  & 0.0195  & 0.0732 \\
@@ -454,6 +461,24 @@ As discussed in the section of CARNN model, we suppose to utilize both Input con
 
 
 \subsection{Impact of Parameters}
+
+Performance of CARNN, RNN, RNN with input context, RNN with transition context on Tmall dataset and Fashion dataset with varying dimensionality is shown in Figure \ref{fig:dimension}. As shown in Figure \ref{fig:dimension} (a), for Tmall dataset RNN with context achieve better performance than conventional RNN consistently with all dimensions. And even not with the best dimensionality, our methods can still outperform RNN. RNN with input context performs better than CARNN when evaluated by Recall@5 while CARNN performs best when evaluated by MAP. For Fashion dataset, the curves in Figure \ref{fig:dimension} (b) show the great advantages of CARNN comparing with other compared methods with different dimensionality evaluated by different metrics. And with increasing dimension, the value of Recall@5 and MAP incraese at first, then decrease after $d = 20$, which means that 20 is the best parameter for CARNN on Fashion dataset. We can also observe that the impact of dimensionality for Tmall dataset is smaller than that for Fashion dataset.
+
+
+\begin{figure}[!tb]
+\centering
+{
+\begin{minipage}[b]{0.5\textwidth}
+\includegraphics[width=1\textwidth]{./dimension.eps}
+\label{dimension}
+\end{minipage}
+}
+
+\caption{Performance comparison of CARNN among RNN, RNN with input context and RNN with transition context over two datasets. The dimensionality is increased from 5 to 15 on Tmall and 5 to 40 on Fashion.}
+\label{fig:dimension}
+\end{figure}
+
+
 % \begin{table*}[htbp]
 % \centering\scriptsize
 % \caption{Dimension}
