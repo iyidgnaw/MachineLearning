@@ -303,12 +303,39 @@ Our experiments are conducted on two real datasets with various contexts:
 \item \textbf{Tmall}\footnote{https://102.alibaba.com/competition/addDiscovery/index.htm} is a public dataset from Tmall\footnote{https://www.tmall.com/}, one of the biggest online shopping websites in China. It covers products from food, clothes to electrical appliance and records the online transactions in terms of brands. It contains 182, 881 records belonging to 885 users and 9, 532 brands.The temporal information in the dataset is extracted based on day level.
 \end{itemize}
 
-We conduct some pre-process on these datasets. For Fashion dataset, firstly we remove all the users that have bought in total less than 10 items. Second, we iteratively remove items bought by less than 3 times and users who have purchased the removed items. The second step is to make sure that each item is bought greater than or equal to 3 times and the transition in each user's purchase sequence is not changed. For Tmall dataset, xxxxxx.
+We conduct some pre-process on these transaction datasets. For Fashion dataset, firstly we remove all the users that have bought in total less than 10 items. Second, we iteratively remove items bought by less than 3 times and users who have purchased the removed items. The second step is to make sure that each item is bought greater than or equal to 3 times and the transition in each user's purchase sequence is not changed. For Tmall dataset, we remove users who bought less than 10 items and items that are bought less than 10 times due to repeat purchasing behaviors.
 
-For each purchase sequence of the two datasets, we use first 90\% of the items in the sequence for training, the remaining 10\% data for testing. 
+For each purchase sequence of the two datasets, we use first 90\% of the items in the sequence for training, the remaining 10\% data for testing. And the regulation parameter is set as $\lambda = 0.01$.
 
 
 \subsection{Incorporated Contexts }
+
+%table1
+\begin{table*}[!htbp]
+\centering\scriptsize
+\caption{Performance of different method of computing the aggregation}
+    \begin{tabular}{ccccccccc}
+    \toprule
+          & Method& recall@1 & recall@5 & recall@10&F1-score@1 & F1-score@5 & F1-score@10&MAP\\
+    \midrule
+    \multirow{5}[0]{*}{Tmall} 
+        &Week& 0.1681& 0.3788& 0.4984& 0.1681& 0.1263& 0.0906&0.2793\\
+        &Month& 0.1732& 0.3688& 0.4878& 0.1732& 0.1229& 0.0887&0.2752\\
+        &Plus& \textbf{0.1748}& \textbf{0.4266}& \textbf{0.5515}& \textbf{0.1748}& \textbf{0.1422}& \textbf{0.1003}& \textbf{0.2986}\\
+        &Mutiply& 0.1713& 0.4068& 0.5222& 0.1713& 0.1356& 0.0950&0.2901\\
+        &Combination& 0.1765& 0.3934& 0.5068& 0.1765& 0.1312& 0.0921&0.2865\\
+    \midrule
+    \multirow{5}[0]{*}{Fashion} 
+        &Week& 0.1087& 0.3325& 0.4713& 0.1087& 0.1108& 0.0857&0.2237\\
+        &Month& 0.0839& 0.2793& 0.4125& 0.0839& 0.0931& 0.0750&0.1858\\
+        &Plus& \textbf{0.1324}& \textbf{0.3720}& \textbf{0.5281}& \textbf{0.1324}& \textbf{0.1240}& \textbf{0.0960}& \textbf{0.2556}\\
+        &Mutiply& 0.1157& 0.3155& 0.4861& 0.1157& 0.1052& 0.0884&0.2298\\
+        &Combination& 0.1206& 0.3376& 0.4914& 0.1206& 0.1125& 0.0893&0.2346\\
+    \bottomrule
+\end{tabular}%
+\end{table*}%
+
+
 As mentioned above, we proposed to make use of two kinds of contexts named transition context and input context.
 
 The transition context matrix $\textbf{W}_{c_{T,k}^{u}}$ is determined by the type of time interval between $t_k^u$ and $t_{k-1}^u$. The time interval is continuously classified with the prerequisite that number of records is balanced in each type, as shown in Figure \ref{fig:comparision}. Such division of time interval is reasonable because on one hand short time interval is divided carefully and long time interval is treated as similar, on the other hand the balanced number of records can ensure the effective training process.
@@ -342,31 +369,6 @@ The output of our model is a ranked list in which items are ranked according to 
 \item \textbf{Mean Average Precision (MAP)} is another commonly used global evaluation in ranking tasks. MAP is a standard meetric for measuring the quality of the whole ranking list. Top-bias property of MAP is particularly significant in evaluating ranking tasks such as top-N recommendation. The larger the value, the better the performance.
 \end{itemize}
 
-%table1
-\begin{table*}[!htbp]
-\centering\scriptsize
-\caption{Performance of different method of computing the aggregation}
-    \begin{tabular}{ccccccccc}
-    \toprule
-          & Method& recall@1 & recall@5 & recall@10&F1-score@1 & F1-score@5 & F1-score@10&MAP\\
-    \midrule
-    \multirow{5}[0]{*}{Tmall} 
-        &Week& 0.1681& 0.3788& 0.4984& 0.1681& 0.1263& 0.0906&0.2793\\
-        &Month& 0.1732& 0.3688& 0.4878& 0.1732& 0.1229& 0.0887&0.2752\\
-        &Plus& \textbf{0.1748}& \textbf{0.4266}& \textbf{0.5515}& \textbf{0.1748}& \textbf{0.1422}& \textbf{0.1003}& \textbf{0.2986}\\
-        &Mutiply& 0.1713& 0.4068& 0.5222& 0.1713& 0.1356& 0.0950&0.2901\\
-        &Combination& 0.1765& 0.3934& 0.5068& 0.1765& 0.1312& 0.0921&0.2865\\
-    \midrule
-    \multirow{5}[0]{*}{Fashion} 
-        &Week& 0.1087& 0.3325& 0.4713& 0.1087& 0.1108& 0.0857&0.2237\\
-        &Month& 0.0839& 0.2793& 0.4125& 0.0839& 0.0931& 0.0750&0.1858\\
-        &Plus& \textbf{0.1324}& \textbf{0.3720}& \textbf{0.5281}& \textbf{0.1324}& \textbf{0.1240}& \textbf{0.0960}& \textbf{0.2556}\\
-        &Mutiply& 0.1157& 0.3155& 0.4861& 0.1157& 0.1052& 0.0884&0.2298\\
-        &Combination& 0.1206& 0.3376& 0.4914& 0.1206& 0.1125& 0.0893&0.2346\\
-    \bottomrule
-\end{tabular}%
-\end{table*}%
-
 \begin{table*}[htbp]
 \centering\scriptsize
 \caption{Input and Transition}
@@ -387,46 +389,6 @@ The output of our model is a ranked list in which items are ranked according to 
 \end{tabular}%
 \label{tab:InputAndTransition}%
 \end{table*}%
-
-\subsection{Compared Methods}
-\begin{itemize}
-\item \textbf{Top}: 
-The most frequently bought items are selected as prediction for each user.
-\item \textbf{MF}: 
-The state-of-the-art method of collaborative filtering, analyzes relationships between users and interdependencies among items.
-\item \textbf{FM}: 
-FMs are easily applicable to a wide variety of contexts. It has a linear complexity and empirically provide a better prediction quality in much less time.
-\item \textbf{CARS2}: 
-Utilizing an appropriate model that aims to represent the type of interactions between context variables, users and items.
-\item \textbf{FPMC}: 
-A method brings matrix factorization (MF) and Markov chains (MC) together. It can capture
-both sequential effects and long term user-taste.
-\item \textbf{HRM}: 
-It utilizies both sequential behavior and users$'$ general taste by involving transactions and user representations in prediction. Applying different aggregation operations to model complicated interactions among different factors.
-\item \textbf{RNN}: 
-Typical method for temporal prediction, which was originally applied in word embedding. It has been successfully extended to sequential modeling. 
-
-
-\end{itemize}
- To find out the best method among different aggregation operations, we aggregate the combination through Plus, Multiply and Condition-specific method respectively. Meanwhile, in order to discuss the individual effect of input contexts and transition context, we incorporate each context to our model separately on both data set. 
-
-
-
-
-\subsection{Analysis of Contexts}
-As mentioned above, there are several methods, such as Plus, Multiply and Combination-specific, to compute the aggregation matrix for all contextual operating matrices. Here in this part, we will discuss the effect of each method.
-
-As indicated in Table 1, no matter in which method, the model aggregates input contexts outperforms the model incorporating each input context respectively. On all evalution matrics, the Plus method is clearly the best one of integrating input contexts. Especially on Fashion dataset, compared with utilizing week information only, the Plus method improves the MAP value by 6.98\%. The performance of Combination-specific method seems to be close to that of the Plus method. However, the amount of parameters of Combination-specific method is larger than Plus method, this shortcut will get worse when the amount of conditions in each context is large. 
-
-Thus, we suppose to utilize Plus method to compute the aggregation matrix for all contextual operating matrices in CA-RNN.
-
-As discussed in the section of CARNN model, we suppose to utilize both Input context and Transition contexts simultaneously. Table 2  illustrates the comparision among incorporating different contexts seperately and put them together. The result indicates that CARNN consists of both Input and Transition contexts works on Tmall and Fashion dataset. 
-
-
-\subsection{Performance Comparison}
-The performance comparsion on the Tmall dataset and the Fashion dataset evaluated by recall, F1-score and MAP is illustrated in table \ref{tab:result}. Compared to the baseline performance of POP, MF, FM and CARS2 have similar performance improvement on the two datasets. Jointly modeling sequential information and collaborative information, FPMC and HRM achieve great improvement by combining both sequential behavior and users’ general taste. Learning latent representations of recent behaviors, HRM further improves the performance of FPMC. Another great improvement is brought by RNN, and it is the best one among the compared methods. Moreover, we can observe that, our proposed CARNN achieve the best performance on the Tmall dataset and the Fashion dataset in terms of all the metrics. Using the best scores of each method, comparing with RNN, the MAP improvements of CARNN are 6.74\% and 11.04\% on Tmall and Fashion respectively. These great improvements indicate the superiority of our method brought by modeling sequential information and contextual information.
-
-
 \begin{table*}[htbp]
 \centering\scriptsize
 \caption{Performance comparison on two datasets evaluated by recall, F1-score, MAP.}
@@ -457,6 +419,55 @@ The performance comparsion on the Tmall dataset and the Fashion dataset evaluate
 \end{tabular}%
 \label{tab:result}%
 \end{table*}%
+
+\subsection{Compared Methods}
+General Collaborative methods make use of taste informations from many other users to predict the interests of a user. 
+\begin{itemize}
+\item \textbf{Top}: 
+The most frequently bought items are selected as prediction for each user.
+\item \textbf{MF}: 
+The state-of-the-art method of collaborative filtering, analyzes relationships between users and interdependencies among items.
+\end{itemize}
+
+\par Context-aware methods incoporate contexts information into general method.
+\begin{itemize}
+\item \textbf{FM}: 
+FMs are easily applicable to a wide variety of contexts. It has a linear complexity and empirically provide a better prediction quality in much less time.
+\item \textbf{CARS2}: 
+Utilizing an appropriate model that aims to represent the type of interactions between context variables, users and items.
+\end{itemize}
+
+\par Sequential prediction method concentrate on modeling the temporal dependency on user’s sequential behaviors.
+\begin{itemize}
+\item \textbf{FPMC}: 
+A method brings matrix factorization (MF) and Markov chains (MC) together. It can capture
+both sequential effects and long term user-taste.
+\item \textbf{HRM}: 
+It utilizies both sequential behavior and users$'$ general taste by involving transactions and user representations in prediction. Applying different aggregation operations to model complicated interactions among different factors.
+\item \textbf{RNN}: 
+Typical method for temporal prediction, which was originally applied in word embedding. It has been successfully extended to sequential modeling. 
+
+
+\end{itemize}
+ To find out the best method among different aggregation operations, we aggregate the combination through Plus, Multiply and Condition-specific method respectively. Meanwhile, in order to discuss the individual effect of input contexts and transition context, we incorporate each context to our model separately on both data set. 
+
+
+
+
+\subsection{Analysis of Contexts}
+As mentioned above, there are several methods, such as Plus, Multiply and Combination-specific, to compute the aggregation matrix for all contextual operating matrices. Here in this part, we will discuss the effect of each method.
+
+As indicated in Table 1, no matter in which method, the model aggregates input contexts outperforms the model incorporating each input context respectively. On all evalution matrics, the Plus method is clearly the best one of integrating input contexts. Especially on Fashion dataset, compared with utilizing week information only, the Plus method improves the MAP value by 6.98\%. The performance of Combination-specific method seems to be close to that of the Plus method. However, the amount of parameters of Combination-specific method is larger than Plus method, this shortcut will get worse when the amount of conditions in each context is large. 
+
+Thus, we suppose to utilize Plus method to compute the aggregation matrix for all contextual operating matrices in CA-RNN.
+
+As discussed in the section of CARNN model, we suppose to utilize both Input context and Transition contexts simultaneously. Table 2  illustrates the comparision among incorporating different contexts seperately and put them together. The result indicates that CARNN consists of both Input and Transition contexts works on Tmall and Fashion dataset. 
+
+
+\subsection{Performance Comparison}
+The performance comparsion on the Tmall dataset and the Fashion dataset evaluated by recall, F1-score and MAP is illustrated in table \ref{tab:result}. Compared to the baseline performance of POP, MF, FM and CARS2 have similar performance improvement on the two datasets. Jointly modeling sequential information and collaborative information, FPMC and HRM achieve great improvement by combining both sequential behavior and users’ general taste. Learning latent representations of recent behaviors, HRM further improves the performance of FPMC. Another great improvement is brought by RNN, and it is the best one among the compared methods. Moreover, we can observe that, our proposed CARNN achieve the best performance on the Tmall dataset and the Fashion dataset in terms of all the metrics. Using the best scores of each method, comparing with RNN, the MAP improvements of CARNN are 6.74\% and 11.04\% on Tmall and Fashion respectively. These great improvements indicate the superiority of our method brought by modeling sequential information and contextual information.
+
+
 
 
 
